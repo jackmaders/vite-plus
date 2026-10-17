@@ -1,6 +1,14 @@
 import { defineConfig, lazyPlugins } from "vite-plus";
 
-const sharedConfig = defineConfig({
+export default defineConfig(({ mode }) => ({
+  fmt: {},
+  ...lintConfig,
+  plugins: mode === "test" ? [] : lazyPlugins(loadPlugins),
+  resolve: { tsconfigPaths: true },
+  staged: { "*": "vp check --fix" },
+}));
+
+const lintConfig = defineConfig({
   lint: {
     categories: {
       correctness: "error",
@@ -65,16 +73,6 @@ const sharedConfig = defineConfig({
   },
 });
 
-const config = defineConfig(({ mode }) => ({
-  ...sharedConfig,
-  fmt: {},
-  plugins: mode === "test" ? [] : lazyPlugins(loadPlugins),
-  resolve: { tsconfigPaths: true },
-  staged: {
-    "*": "vp check --fix",
-  },
-}));
-
 async function loadPlugins() {
   const [
     { devtools },
@@ -97,5 +95,3 @@ async function loadPlugins() {
     viteReact(),
   ];
 }
-
-export default config;
