@@ -1,5 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 
+const FEATURE_STAGGER_MS = 90;
+const FEATURE_INITIAL_DELAY_MS = 80;
+
 export const Route = createFileRoute("/")({ component: App });
 
 function App() {
@@ -57,7 +60,7 @@ function FeaturesSection() {
         <article
           key={title}
           className="island-shell feature-card rise-in rounded-2xl p-5"
-          style={{ animationDelay: `${index * 90 + 80}ms` }}
+          style={{ animationDelay: `${index * FEATURE_STAGGER_MS + FEATURE_INITIAL_DELAY_MS}ms` }}
         >
           <h2 className="mb-2 text-base font-semibold text-[var(--sea-ink)]">{title}</h2>
           <p className="m-0 text-sm text-[var(--sea-ink-soft)]">{desc}</p>
