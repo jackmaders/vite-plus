@@ -81,6 +81,7 @@ const lintConfig = defineConfig({
       "typescript/prefer-readonly-parameter-types": "off",
       "unicorn/prefer-global-this": "off",
       "vite-plus/prefer-vite-plus-imports": "error",
+      "vitest/no-hooks": "off",
       "vitest/no-importing-vitest-globals": "off",
       "vitest/prefer-importing-vitest-globals": "error",
     },
