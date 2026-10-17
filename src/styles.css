@@ -7,6 +7,7 @@
 }
 
 :root {
+  color-scheme: light;
   --sea-ink: #173a40;
   --sea-ink-soft: #416166;
   --lagoon: #4fb8b2;
@@ -29,6 +30,7 @@
 }
 
 :root[data-theme="dark"] {
+  color-scheme: dark;
   --sea-ink: #d7ece8;
   --sea-ink-soft: #afcdc8;
   --lagoon: #60d7cf;
@@ -52,6 +54,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
+    color-scheme: dark;
     --sea-ink: #d7ece8;
     --sea-ink-soft: #afcdc8;
     --lagoon: #60d7cf;
