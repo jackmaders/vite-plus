@@ -1,7 +1,13 @@
 import { defineConfig, lazyPlugins } from "vite-plus";
 
 export default defineConfig(({ mode }) => ({
-  fmt: {},
+  fmt: {
+    ignorePatterns: ["src/routeTree.gen.ts"],
+    jsdoc: { descriptionWithDot: true, separateTagGroups: true },
+    sortImports: { internalPattern: ["@/", "@test/"] },
+    sortPackageJson: { sortScripts: true },
+    sortTailwindcss: { stylesheet: "./src/styles.css" },
+  },
   ...lintConfig,
   plugins: mode === "test" ? [] : (lazyPlugins(loadPlugins) ?? []),
   resolve: { tsconfigPaths: true },

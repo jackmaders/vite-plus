@@ -4,7 +4,6 @@ import {
   RouterContextProvider,
   type AnyRouter,
 } from "@tanstack/react-router";
-
 import type { ComponentProps } from "react";
 
 function createTanStackRouterWrapper(

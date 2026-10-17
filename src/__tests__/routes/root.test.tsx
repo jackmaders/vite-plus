@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from "@testing-library/react";
 import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
+import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { routeTree } from "@/routeTree.gen";
