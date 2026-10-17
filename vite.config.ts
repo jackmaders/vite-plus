@@ -1,11 +1,4 @@
 import { defineConfig, lazyPlugins } from "vite-plus";
-import { devtools } from "@tanstack/devtools-vite";
-
-import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-
-import viteReact from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
-import { cloudflare } from "@cloudflare/vite-plugin";
 
 const config = defineConfig({
   staged: {
@@ -18,12 +11,12 @@ const config = defineConfig({
     options: { typeAware: true, typeCheck: true },
   },
   resolve: { tsconfigPaths: true },
-  plugins: lazyPlugins(() => [
-    devtools(),
-    cloudflare({ viteEnvironment: { name: "ssr" } }),
-    tailwindcss(),
-    tanstackStart(),
-    viteReact(),
+  plugins: lazyPlugins(async () => [
+    (await import("@tanstack/devtools-vite")).devtools(),
+    (await import("@cloudflare/vite-plugin")).cloudflare({ viteEnvironment: { name: "ssr" } }),
+    (await import("@tailwindcss/vite")).default(),
+    (await import("@tanstack/react-start/plugin/vite")).tanstackStart(),
+    (await import("@vitejs/plugin-react")).default(),
   ]),
 });
 
