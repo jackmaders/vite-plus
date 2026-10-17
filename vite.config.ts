@@ -15,7 +15,10 @@ const config = defineConfig({
     ignorePatterns: ["src/routeTree.gen.ts"],
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     options: { typeAware: true, typeCheck: true },
-    overrides: [{ env: { browser: true }, files: ["src/**"] }],
+    overrides: [
+      { env: { browser: true }, files: ["src/**"] },
+      { files: ["vite.config.ts"], rules: { "import/no-default-export": "off" } },
+    ],
     plugins: [
       "eslint",
       "typescript",
@@ -34,7 +37,9 @@ const config = defineConfig({
       "eslint/no-ternary": "off",
       "eslint/no-use-before-define": "off",
       "import/exports-last": "off",
+      "import/no-default-export": "error",
       "import/no-named-export": "off",
+      "import/prefer-default-export": "off",
       "oxc/no-async-await": "off",
       "oxc/no-rest-spread-properties": "off",
       "react-perf/jsx-no-new-object-as-prop": "off",
