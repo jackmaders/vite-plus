@@ -52,18 +52,18 @@ export function ThemeToggle() {
   }, []);
 
   useEffect(() => {
+    if (mode !== "auto") {
+      return;
+    }
+
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     function onChange() {
       applyThemeMode("auto");
     }
 
-    if (mode === "auto") {
-      media.addEventListener("change", onChange);
-    }
+    media.addEventListener("change", onChange);
     return () => {
-      if (mode === "auto") {
-        media.removeEventListener("change", onChange);
-      }
+      media.removeEventListener("change", onChange);
     };
   }, [mode]);
 
