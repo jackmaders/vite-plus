@@ -1,36 +1,21 @@
-import {
-  createMemoryHistory,
-  createRootRoute,
-  createRoute,
-  createRouter,
-} from "@tanstack/react-router";
+import { createMemoryHistory, createRootRoute, createRouter } from "@tanstack/react-router";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import { Header } from "@/components/header";
 import { createTanStackRouterWrapper } from "@test/vitest/wrappers/tanstack-router-wrapper";
 
-async function renderHeader(path: "/" | "/about" = "/") {
-  const rootRoute = createRootRoute();
-  const routeTree = rootRoute.addChildren([
-    createRoute({ getParentRoute: () => rootRoute, path: "/" }),
-    createRoute({ getParentRoute: () => rootRoute, path: "/about" }),
-  ]);
-  const { router, wrapper } = createTanStackRouterWrapper(
-    createRouter({ history: createMemoryHistory({ initialEntries: [path] }), routeTree }),
-  );
-  await router.load();
-  render(<Header />, { wrapper });
-}
-
 describe("header identity and documentation", () => {
   afterEach(cleanup);
 
-  it("provides a branded home link within the header navigation", async () => {
+  it("provides a branded home link within the header navigation", () => {
     expect.assertions(2);
 
+    // Arrange
+    const { wrapper } = createTanStackRouterWrapper();
+
     // Act
-    await renderHeader();
+    render(<Header />, { wrapper });
     const navigation = within(screen.getByRole("banner")).getByRole("navigation");
     const heading = within(navigation).getByRole("heading", { name: "TanStack Start" });
 
@@ -41,11 +26,14 @@ describe("header identity and documentation", () => {
     expect(heading.tagName).toBe("H2");
   });
 
-  it("opens the documentation in a new tab", async () => {
+  it("opens the documentation in a new tab", () => {
     expect.assertions(3);
 
+    // Arrange
+    const { wrapper } = createTanStackRouterWrapper();
+
     // Act
-    await renderHeader();
+    render(<Header />, { wrapper });
     const link = screen.getByRole("link", { name: "Docs" });
 
     // Assert
@@ -60,11 +48,14 @@ describe("header identity and documentation", () => {
 describe("header navigation", () => {
   afterEach(cleanup);
 
-  it("links to both pages and highlights home on the home page", async () => {
+  it("links to both pages and highlights home on the home page", () => {
     expect.assertions(5);
 
+    // Arrange
+    const { wrapper } = createTanStackRouterWrapper();
+
     // Act
-    await renderHeader();
+    render(<Header />, { wrapper });
     const home = screen.getByRole("link", { name: "Home" });
     const about = screen.getByRole("link", { name: "About" });
 
@@ -76,11 +67,19 @@ describe("header navigation", () => {
     expect([...about.classList]).not.toContain("is-active");
   });
 
-  it("highlights about instead of home on the about page", async () => {
+  it("highlights about instead of home on the about page", () => {
     expect.assertions(4);
 
+    // Arrange
+    const { wrapper } = createTanStackRouterWrapper(
+      createRouter({
+        history: createMemoryHistory({ initialEntries: ["/about"] }),
+        routeTree: createRootRoute(),
+      }),
+    );
+
     // Act
-    await renderHeader("/about");
+    render(<Header />, { wrapper });
     const home = screen.getByRole("link", { name: "Home" });
     const about = screen.getByRole("link", { name: "About" });
 
@@ -95,11 +94,14 @@ describe("header navigation", () => {
 describe("header social links", () => {
   afterEach(cleanup);
 
-  it("provides an accessible external link to X", async () => {
+  it("provides an accessible external link to X", () => {
     expect.assertions(3);
 
+    // Arrange
+    const { wrapper } = createTanStackRouterWrapper();
+
     // Act
-    await renderHeader();
+    render(<Header />, { wrapper });
     const link = screen.getByRole("link", { name: "Follow TanStack on X" });
 
     // Assert
@@ -108,11 +110,14 @@ describe("header social links", () => {
     expect(link.getAttribute("rel")).toMatch(/(?:^|\s)noreferrer(?:\s|$)/u);
   });
 
-  it("provides an accessible external link to GitHub", async () => {
+  it("provides an accessible external link to GitHub", () => {
     expect.assertions(3);
 
+    // Arrange
+    const { wrapper } = createTanStackRouterWrapper();
+
     // Act
-    await renderHeader();
+    render(<Header />, { wrapper });
     const link = screen.getByRole("link", { name: "Go to TanStack GitHub" });
 
     // Assert
@@ -128,11 +133,12 @@ describe("header theme control", () => {
     delete document.documentElement.dataset["theme"];
   });
 
-  it("allows switching the theme from the header", async () => {
+  it("allows switching the theme from the header", () => {
     expect.assertions(3);
 
     // Arrange
-    await renderHeader();
+    const { wrapper } = createTanStackRouterWrapper();
+    render(<Header />, { wrapper });
     const button = screen.getByRole("button", {
       name: "Theme mode: auto (system). Click to switch to light mode.",
     });
