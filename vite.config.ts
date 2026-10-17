@@ -17,6 +17,10 @@ const config = defineConfig({
     options: { typeAware: true, typeCheck: true },
     overrides: [
       { env: { browser: true }, files: ["src/**"] },
+      {
+        files: ["src/routes/**"],
+        rules: { "react/only-export-components": "off" },
+      },
       { files: ["vite.config.ts"], rules: { "import/no-default-export": "off" } },
     ],
     plugins: [
