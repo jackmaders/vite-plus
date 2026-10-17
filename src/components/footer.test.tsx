@@ -15,6 +15,7 @@ describe("footer", () => {
   });
 
   it("displays the current copyright year and framework attribution", () => {
+    expect.assertions(2);
     render(<Footer />);
 
     const footer = within(screen.getByRole("contentinfo"));
@@ -26,6 +27,7 @@ describe("footer", () => {
     { name: "Follow TanStack on X", url: "https://x.com/tan_stack" },
     { name: "Go to TanStack GitHub", url: "https://github.com/TanStack" },
   ])("provides an accessible external link: $name", ({ name, url }) => {
+    expect.assertions(3);
     render(<Footer />);
 
     const link = screen.getByRole("link", { name });
