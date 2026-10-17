@@ -35,6 +35,7 @@ const config = defineConfig({
       "import/no-named-export": "off",
       "oxc/no-async-await": "off",
       "oxc/no-rest-spread-properties": "off",
+      "react/jsx-max-depth": ["error", { max: 4 }],
       "react/jsx-no-literals": "off",
       "react/react-in-jsx-scope": "off",
       "typescript/explicit-function-return-type": "off",
