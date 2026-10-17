@@ -1,10 +1,10 @@
 import { createMemoryHistory, createRouter } from "@tanstack/react-router";
-import { createTanStackRouterWrapper } from "@test/vitest/wrappers/tanstack-router-wrapper";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import { Header } from "@/components/header";
 import { routeTree } from "@/routeTree.gen";
+import { createTanStackRouterWrapper } from "@test/vitest/wrappers/tanstack-router-wrapper";
 
 describe("header identity and documentation", () => {
   afterEach(cleanup);
