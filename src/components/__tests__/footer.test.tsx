@@ -1,6 +1,8 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vite-plus/test";
 
+import { Footer } from "@/components/footer";
+
 describe("footer", () => {
   beforeAll(() => {
     vi.useFakeTimers();
@@ -16,8 +18,8 @@ describe("footer", () => {
 
   it("displays the current copyright year and framework attribution", async () => {
     expect.assertions(2);
-    const { Footer } = await import("@/components/footer");
-    render(<Footer />);
+    const { Footer: DatedFooter } = await import("@/components/footer");
+    render(<DatedFooter />);
 
     const footer = within(screen.getByRole("contentinfo"));
     expect(footer.getByText("© 2042 Your name here. All rights reserved.")).toBeDefined();
@@ -27,9 +29,8 @@ describe("footer", () => {
   it.each([
     { name: "Follow TanStack on X", url: "https://x.com/tan_stack" },
     { name: "Go to TanStack GitHub", url: "https://github.com/TanStack" },
-  ])("provides an accessible external link: $name", async ({ name, url }) => {
+  ])("provides an accessible external link: $name", ({ name, url }) => {
     expect.assertions(3);
-    const { Footer } = await import("@/components/footer");
     render(<Footer />);
 
     const link = screen.getByRole("link", { name });
