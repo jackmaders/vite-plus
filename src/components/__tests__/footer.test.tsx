@@ -1,22 +1,22 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
-import { afterAll, afterEach, describe, expect, it, vi } from "vite-plus/test";
-
-import { Footer } from "./footer";
-
-vi.hoisted(() => {
-  vi.useFakeTimers();
-  vi.setSystemTime(new Date("2042-06-15T12:00:00Z"));
-});
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vite-plus/test";
 
 describe("footer", () => {
+  beforeAll(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2042-06-15T12:00:00Z"));
+    vi.resetModules();
+  });
+
   afterEach(cleanup);
 
   afterAll(() => {
     vi.useRealTimers();
   });
 
-  it("displays the current copyright year and framework attribution", () => {
+  it("displays the current copyright year and framework attribution", async () => {
     expect.assertions(2);
+    const { Footer } = await import("@/components/footer");
     render(<Footer />);
 
     const footer = within(screen.getByRole("contentinfo"));
@@ -27,8 +27,9 @@ describe("footer", () => {
   it.each([
     { name: "Follow TanStack on X", url: "https://x.com/tan_stack" },
     { name: "Go to TanStack GitHub", url: "https://github.com/TanStack" },
-  ])("provides an accessible external link: $name", ({ name, url }) => {
+  ])("provides an accessible external link: $name", async ({ name, url }) => {
     expect.assertions(3);
+    const { Footer } = await import("@/components/footer");
     render(<Footer />);
 
     const link = screen.getByRole("link", { name });
