@@ -57,9 +57,9 @@ export function ThemeToggle() {
     }
 
     const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = () => {
+    function onChange() {
       applyThemeMode("auto");
-    };
+    }
 
     media.addEventListener("change", onChange);
     return () => {
