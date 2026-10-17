@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => ({
       provider: "v8",
       thresholds: { 100: true, perFile: true },
     },
+    environment: "happy-dom",
   },
 }));
 
