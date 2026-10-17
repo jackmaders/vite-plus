@@ -19,10 +19,8 @@ describe("footer copyright", () => {
   it("displays the current copyright year and framework attribution", async () => {
     expect.assertions(2);
 
-    // Arrange
-    const { Footer: DatedFooter } = await import("@/components/footer");
-
     // Act
+    const { Footer: DatedFooter } = await import("@/components/footer");
     render(<DatedFooter />);
 
     const footer = within(screen.getByRole("contentinfo"));
@@ -39,11 +37,8 @@ describe("footer social links", () => {
   it("provides an accessible external link to X", () => {
     expect.assertions(3);
 
-    // Arrange
-    const component = <Footer />;
-
     // Act
-    render(component);
+    render(<Footer />);
 
     const link = screen.getByRole("link", { name: "Follow TanStack on X" });
 
@@ -56,11 +51,8 @@ describe("footer social links", () => {
   it("provides an accessible external link to GitHub", () => {
     expect.assertions(3);
 
-    // Arrange
-    const component = <Footer />;
-
     // Act
-    render(component);
+    render(<Footer />);
 
     const link = screen.getByRole("link", { name: "Go to TanStack GitHub" });
 
