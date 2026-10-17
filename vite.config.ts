@@ -3,7 +3,7 @@ import { defineConfig, lazyPlugins } from "vite-plus";
 export default defineConfig(({ mode }) => ({
   fmt: {},
   ...lintConfig,
-  plugins: mode === "test" ? [] : lazyPlugins(loadPlugins),
+  plugins: mode === "test" ? [] : (lazyPlugins(loadPlugins) ?? []),
   resolve: { tsconfigPaths: true },
   staged: { "*": "vp check --fix" },
   test: {

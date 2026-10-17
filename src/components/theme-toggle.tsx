@@ -20,9 +20,9 @@ export function ThemeToggle() {
     const nextMode = NEXT_THEME_MODE[mode];
     setMode(nextMode);
     if (nextMode === "auto") {
-      delete document.documentElement.dataset.theme;
+      delete document.documentElement.dataset["theme"];
     } else {
-      document.documentElement.dataset.theme = nextMode;
+      document.documentElement.dataset["theme"] = nextMode;
     }
   }
 
