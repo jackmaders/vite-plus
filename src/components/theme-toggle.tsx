@@ -53,7 +53,9 @@ export function ThemeToggle() {
 
   useEffect(() => {
     if (mode !== "auto") {
-      return;
+      return () => {
+        // No listener was attached, so no cleanup is needed.
+      };
     }
 
     const media = window.matchMedia("(prefers-color-scheme: dark)");
@@ -78,7 +80,6 @@ export function ThemeToggle() {
     mode === "auto"
       ? "Theme mode: auto (system). Click to switch to light mode."
       : `Theme mode: ${mode}. Click to switch mode.`;
-
   return (
     <button
       type="button"
