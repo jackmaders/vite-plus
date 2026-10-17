@@ -6,12 +6,12 @@
     "#/*": "./src/*"
   },
   "scripts": {
+    "build": "vp build",
+    "deploy": "pnpm run build && wrangler deploy",
     "dev": "vp dev --port 3000",
     "generate-routes": "tsr generate",
-    "build": "vp build",
-    "preview": "vp preview",
-    "deploy": "pnpm run build && wrangler deploy",
-    "prepare": "vp config"
+    "prepare": "vp config",
+    "preview": "vp preview"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
