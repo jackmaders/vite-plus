@@ -59,7 +59,7 @@ function App() {
             Edit <code>src/routes/index.tsx</code> to customize the home page.
           </li>
           <li>
-            Update <code>src/components/Header.tsx</code> and <code>src/components/Footer.tsx</code>{" "}
+            Update <code>src/components/header.tsx</code> and <code>src/components/footer.tsx</code>{" "}
             for brand links.
           </li>
           <li>
