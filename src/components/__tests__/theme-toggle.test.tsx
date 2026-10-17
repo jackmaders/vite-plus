@@ -1,0 +1,94 @@
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vite-plus/test";
+
+import { ThemeToggle } from "@/components/theme-toggle";
+
+const AUTO_LABEL = "Theme mode: auto (system). Click to switch to light mode.";
+const DARK_LABEL = "Theme mode: dark. Click to switch mode.";
+const LIGHT_LABEL = "Theme mode: light. Click to switch mode.";
+
+function resetTheme() {
+  cleanup();
+  delete document.documentElement.dataset["theme"];
+}
+
+describe("theme toggle initial mode", () => {
+  afterEach(resetTheme);
+
+  it("starts in system mode with an accessible button", () => {
+    expect.assertions(5);
+
+    // Act
+    render(<ThemeToggle />);
+    const button = screen.getByRole("button", { name: AUTO_LABEL });
+
+    // Assert
+    expect(button.textContent).toBe("Auto");
+    expect(button.getAttribute("aria-label")).toBe(AUTO_LABEL);
+    expect(button.getAttribute("title")).toBe(AUTO_LABEL);
+    expect(button.getAttribute("type")).toBe("button");
+    expect(document.documentElement.dataset["theme"]).toBeUndefined();
+  });
+});
+
+describe("theme toggle manual modes", () => {
+  afterEach(resetTheme);
+
+  it("switches from system mode to light mode", () => {
+    expect.assertions(4);
+
+    // Arrange
+    render(<ThemeToggle />);
+    const button = screen.getByRole("button");
+
+    // Act
+    fireEvent.click(button);
+
+    // Assert
+    expect(button.textContent).toBe("Light");
+    expect(button.getAttribute("aria-label")).toBe(LIGHT_LABEL);
+    expect(button.getAttribute("title")).toBe(LIGHT_LABEL);
+    expect(document.documentElement.dataset["theme"]).toBe("light");
+  });
+
+  it("switches from light mode to dark mode", () => {
+    expect.assertions(4);
+
+    // Arrange
+    render(<ThemeToggle />);
+    const button = screen.getByRole("button");
+    fireEvent.click(button);
+
+    // Act
+    fireEvent.click(button);
+
+    // Assert
+    expect(button.textContent).toBe("Dark");
+    expect(button.getAttribute("aria-label")).toBe(DARK_LABEL);
+    expect(button.getAttribute("title")).toBe(DARK_LABEL);
+    expect(document.documentElement.dataset["theme"]).toBe("dark");
+  });
+});
+
+describe("theme toggle system mode", () => {
+  afterEach(resetTheme);
+
+  it("returns from dark mode to system mode and removes the manual preference", () => {
+    expect.assertions(4);
+
+    // Arrange
+    render(<ThemeToggle />);
+    const button = screen.getByRole("button");
+    fireEvent.click(button);
+    fireEvent.click(button);
+
+    // Act
+    fireEvent.click(button);
+
+    // Assert
+    expect(button.textContent).toBe("Auto");
+    expect(button.getAttribute("aria-label")).toBe(AUTO_LABEL);
+    expect(button.getAttribute("title")).toBe(AUTO_LABEL);
+    expect(document.documentElement.dataset["theme"]).toBeUndefined();
+  });
+});
