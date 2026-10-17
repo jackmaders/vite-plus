@@ -7,13 +7,11 @@ const AUTO_LABEL = "Theme mode: auto (system). Click to switch to light mode.";
 const DARK_LABEL = "Theme mode: dark. Click to switch mode.";
 const LIGHT_LABEL = "Theme mode: light. Click to switch mode.";
 
-function resetTheme() {
-  cleanup();
-  delete document.documentElement.dataset["theme"];
-}
-
 describe("theme toggle initial mode", () => {
-  afterEach(resetTheme);
+  afterEach(() => {
+    cleanup();
+    delete document.documentElement.dataset["theme"];
+  });
 
   it("starts in system mode with an accessible button", () => {
     expect.assertions(5);
@@ -32,7 +30,10 @@ describe("theme toggle initial mode", () => {
 });
 
 describe("theme toggle manual modes", () => {
-  afterEach(resetTheme);
+  afterEach(() => {
+    cleanup();
+    delete document.documentElement.dataset["theme"];
+  });
 
   it("switches from system mode to light mode", () => {
     expect.assertions(4);
@@ -71,7 +72,10 @@ describe("theme toggle manual modes", () => {
 });
 
 describe("theme toggle system mode", () => {
-  afterEach(resetTheme);
+  afterEach(() => {
+    cleanup();
+    delete document.documentElement.dataset["theme"];
+  });
 
   it("returns from dark mode to system mode and removes the manual preference", () => {
     expect.assertions(4);
