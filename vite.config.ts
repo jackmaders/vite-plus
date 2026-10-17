@@ -52,6 +52,7 @@ const lintConfig = defineConfig({
       "react-perf",
       "promise",
       "node",
+      "vitest",
     ],
     rules: {
       "eslint/func-style": ["error", "declaration"],
