@@ -14,6 +14,7 @@ const config = defineConfig({
     },
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     options: { typeAware: true, typeCheck: true },
+    overrides: [{ env: { browser: true }, files: ["src/**"] }],
     plugins: [
       "eslint",
       "typescript",
