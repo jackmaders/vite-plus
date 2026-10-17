@@ -2,6 +2,17 @@ import { useEffect, useState } from "react";
 
 type ThemeMode = "light" | "dark" | "auto";
 
+const NEXT_THEME_MODE: Record<ThemeMode, ThemeMode> = {
+    auto: "light",
+    dark: "auto",
+    light: "dark",
+  },
+  THEME_LABEL: Record<ThemeMode, string> = {
+    auto: "Auto",
+    dark: "Dark",
+    light: "Light",
+  };
+
 function getInitialMode(): ThemeMode {
   if (typeof window === "undefined") {
     return "auto";
@@ -16,11 +27,11 @@ function getInitialMode(): ThemeMode {
 }
 
 function applyThemeMode(mode: ThemeMode) {
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches,
-    resolved = mode === "auto" ? (prefersDark ? "dark" : "light") : mode;
+  const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
+    theme = mode === "auto" ? systemTheme : mode;
 
   document.documentElement.classList.remove("light", "dark");
-  document.documentElement.classList.add(resolved);
+  document.documentElement.classList.add(theme);
 
   if (mode === "auto") {
     delete document.documentElement.dataset.theme;
@@ -28,7 +39,7 @@ function applyThemeMode(mode: ThemeMode) {
     document.documentElement.dataset.theme = mode;
   }
 
-  document.documentElement.style.colorScheme = resolved;
+  document.documentElement.style.colorScheme = theme;
 }
 
 export function ThemeToggle() {
@@ -57,7 +68,7 @@ export function ThemeToggle() {
   }, [mode]);
 
   function toggleMode() {
-    const nextMode: ThemeMode = mode === "light" ? "dark" : (mode === "dark" ? "auto" : "light");
+    const nextMode = NEXT_THEME_MODE[mode];
     setMode(nextMode);
     applyThemeMode(nextMode);
     window.localStorage.setItem("theme", nextMode);
@@ -76,7 +87,7 @@ export function ThemeToggle() {
       title={label}
       className="rounded-full border border-[var(--chip-line)] bg-[var(--chip-bg)] px-3 py-1.5 text-sm font-semibold text-[var(--sea-ink)] shadow-[0_8px_22px_rgba(30,90,72,0.08)] transition hover:-translate-y-0.5"
     >
-      {mode === "auto" ? "Auto" : (mode === "dark" ? "Dark" : "Light")}
+      {THEME_LABEL[mode]}
     </button>
   );
 }
