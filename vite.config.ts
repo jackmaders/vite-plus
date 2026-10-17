@@ -41,6 +41,7 @@ const config = defineConfig({
       "eslint/no-ternary": "off",
       "eslint/no-use-before-define": "off",
       "eslint/one-var": ["error", "never"],
+      "eslint/sort-imports": "off",
       "import/exports-last": "off",
       "import/no-default-export": "error",
       "import/no-named-export": "off",
