@@ -46,7 +46,14 @@ const lintConfig = defineConfig({
         files: ["src/routes/**"],
         rules: { "react/only-export-components": "off" },
       },
-      { files: ["*.config.ts"], rules: { "import/no-default-export": "off" } },
+      {
+        env: { node: true },
+        files: ["*.config.ts"],
+        rules: {
+          "import/no-default-export": "off",
+          "node/no-process-env": "off",
+        },
+      },
     ],
     plugins: [
       "eslint",
