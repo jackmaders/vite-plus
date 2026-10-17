@@ -26,15 +26,22 @@ describe("footer", () => {
     expect(footer.getByText("Built with TanStack Start")).toBeDefined();
   });
 
-  it.each([
-    { name: "Follow TanStack on X", url: "https://x.com/tan_stack" },
-    { name: "Go to TanStack GitHub", url: "https://github.com/TanStack" },
-  ])("provides an accessible external link: $name", ({ name, url }) => {
+  it("provides an accessible external link to X", () => {
     expect.assertions(3);
     render(<Footer />);
 
-    const link = screen.getByRole("link", { name });
-    expect(link.getAttribute("href")).toBe(url);
+    const link = screen.getByRole("link", { name: "Follow TanStack on X" });
+    expect(link.getAttribute("href")).toBe("https://x.com/tan_stack");
+    expect(link.getAttribute("target")).toBe("_blank");
+    expect(link.getAttribute("rel")).toMatch(/(?:^|\s)noreferrer(?:\s|$)/u);
+  });
+
+  it("provides an accessible external link to GitHub", () => {
+    expect.assertions(3);
+    render(<Footer />);
+
+    const link = screen.getByRole("link", { name: "Go to TanStack GitHub" });
+    expect(link.getAttribute("href")).toBe("https://github.com/TanStack");
     expect(link.getAttribute("target")).toBe("_blank");
     expect(link.getAttribute("rel")).toMatch(/(?:^|\s)noreferrer(?:\s|$)/u);
   });
