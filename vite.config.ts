@@ -1,7 +1,6 @@
 import { defineConfig, lazyPlugins } from "vite-plus";
 
-const config = defineConfig({
-  fmt: {},
+const sharedConfig = defineConfig({
   lint: {
     categories: {
       correctness: "error",
@@ -64,32 +63,39 @@ const config = defineConfig({
       "vite-plus/prefer-vite-plus-imports": "error",
     },
   },
-  plugins: lazyPlugins(async () => {
-    const [
-      { devtools },
-      { cloudflare },
-      { default: tailwindcss },
-      { tanstackStart },
-      { default: viteReact },
-    ] = await Promise.all([
-      import("@tanstack/devtools-vite"),
-      import("@cloudflare/vite-plugin"),
-      import("@tailwindcss/vite"),
-      import("@tanstack/react-start/plugin/vite"),
-      import("@vitejs/plugin-react"),
-    ]);
-    return [
-      devtools(),
-      cloudflare({ viteEnvironment: { name: "ssr" } }),
-      tailwindcss(),
-      tanstackStart(),
-      viteReact(),
-    ];
-  }),
+});
+
+const config = defineConfig(({ mode }) => ({
+  ...sharedConfig,
+  fmt: {},
+  plugins: mode === "test" ? [] : lazyPlugins(loadPlugins),
   resolve: { tsconfigPaths: true },
   staged: {
     "*": "vp check --fix",
   },
-});
+}));
+
+async function loadPlugins() {
+  const [
+    { devtools },
+    { cloudflare },
+    { default: tailwindcss },
+    { tanstackStart },
+    { default: viteReact },
+  ] = await Promise.all([
+    import("@tanstack/devtools-vite"),
+    import("@cloudflare/vite-plugin"),
+    import("@tailwindcss/vite"),
+    import("@tanstack/react-start/plugin/vite"),
+    import("@vitejs/plugin-react"),
+  ]);
+  return [
+    devtools(),
+    cloudflare({ viteEnvironment: { name: "ssr" } }),
+    tailwindcss(),
+    tanstackStart(),
+    viteReact(),
+  ];
+}
 
 export default config;
