@@ -10,6 +10,7 @@ vi.hoisted(() => {
 
 describe("footer", () => {
   afterEach(cleanup);
+
   afterAll(() => {
     vi.useRealTimers();
   });
