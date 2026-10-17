@@ -47,6 +47,7 @@ const config = defineConfig({
       "oxc/no-async-await": "off",
       "oxc/no-rest-spread-properties": "off",
       "react-perf/jsx-no-new-object-as-prop": "off",
+      "react/forbid-component-props": "off",
       "react/jsx-filename-extension": ["error", { extensions: [".tsx"] }],
       "react/jsx-max-depth": ["error", { max: 4 }],
       "react/jsx-no-literals": "off",
