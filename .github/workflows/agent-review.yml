@@ -1,0 +1,34 @@
+name: 🤖 The PR Agent
+
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: pr-agent-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    name: Review Pull Request
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: 🔎 Agent Code Review
+        uses: The-PR-Agent/pr-agent@8e5a9295973b24af4b70cafd0b660a230811ef9e # v0.47.0
+        env:
+          github_action_config.auto_describe: "false"
+          github_action_config.auto_improve: "false"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GOOGLE_AI_STUDIO.GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          config.model: gemini/gemini-3.8-flash
+          config.fallback_models: >-
+            ["gemini/gemini-3.6-flash", "gemini/gemini-4-argon",
+             "gemini/gemini-3.5-flash-lite", "gemini/gemini-3.1-flash-lite"]
