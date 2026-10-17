@@ -48,6 +48,8 @@ const config = defineConfig({
       "import/prefer-default-export": "off",
       "oxc/no-async-await": "off",
       "oxc/no-rest-spread-properties": "off",
+      "react-perf/jsx-no-new-array-as-prop": "off",
+      "react-perf/jsx-no-new-function-as-prop": "off",
       "react-perf/jsx-no-new-object-as-prop": "off",
       "react/forbid-component-props": "off",
       "react/jsx-filename-extension": ["error", { extensions: [".tsx"] }],
