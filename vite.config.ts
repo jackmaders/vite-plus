@@ -88,6 +88,7 @@ const lintConfig = defineConfig({
       "vitest/no-hooks": "off",
       "vitest/no-importing-vitest-globals": "off",
       "vitest/prefer-importing-vitest-globals": "error",
+      "vitest/require-test-timeout": "off",
     },
   },
 });
