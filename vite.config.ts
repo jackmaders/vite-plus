@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => ({
       thresholds: { 100: true, perFile: true },
     },
     environment: "happy-dom",
+    globals: false,
   },
 }));
 
@@ -80,6 +81,8 @@ const lintConfig = defineConfig({
       "typescript/prefer-readonly-parameter-types": "off",
       "unicorn/prefer-global-this": "off",
       "vite-plus/prefer-vite-plus-imports": "error",
+      "vitest/no-importing-vitest-globals": "off",
+      "vitest/prefer-importing-vitest-globals": "error",
     },
   },
 });
