@@ -36,6 +36,10 @@ const lintConfig = defineConfig({
     overrides: [
       { env: { browser: true }, files: ["src/**"] },
       {
+        files: ["**/*.{test,spec}.{ts,tsx}"],
+        rules: { "eslint/no-magic-numbers": "off" },
+      },
+      {
         files: ["src/routes/**"],
         rules: { "react/only-export-components": "off" },
       },
