@@ -20,8 +20,8 @@ describe("footer", () => {
     render(<Footer />);
 
     const footer = within(screen.getByRole("contentinfo"));
-    expect(footer.getByText("© 2042 Your name here. All rights reserved.")).toBeTruthy();
-    expect(footer.getByText("Built with TanStack Start")).toBeTruthy();
+    expect(footer.getByText("© 2042 Your name here. All rights reserved.")).toBeDefined();
+    expect(footer.getByText("Built with TanStack Start")).toBeDefined();
   });
 
   it.each([
