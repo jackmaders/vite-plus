@@ -36,6 +36,10 @@ const lintConfig = defineConfig({
     overrides: [
       { env: { browser: true }, files: ["src/**"] },
       {
+        files: ["tests/vitest/**"],
+        rules: { "react/only-export-components": "off" },
+      },
+      {
         files: ["**/*.{test,spec}.{ts,tsx}"],
         rules: { "eslint/no-magic-numbers": "off" },
       },
@@ -65,8 +69,10 @@ const lintConfig = defineConfig({
       "eslint/no-use-before-define": "off",
       "eslint/one-var": ["error", "never"],
       "eslint/sort-imports": "off",
+      "import/consistent-type-specifier-style": ["error", "prefer-top-level-if-only-type-imports"],
       "import/exports-last": "off",
       "import/no-default-export": "error",
+      "import/no-duplicates": ["error", { preferInline: true }],
       "import/no-named-export": "off",
       "import/prefer-default-export": "off",
       "oxc/no-async-await": "off",
@@ -78,8 +84,10 @@ const lintConfig = defineConfig({
       "react/jsx-filename-extension": ["error", { extensions: [".tsx"] }],
       "react/jsx-max-depth": ["error", { max: 4 }],
       "react/jsx-no-literals": "off",
+      "react/jsx-props-no-spreading": "off",
       "react/no-multi-comp": "off",
       "react/react-in-jsx-scope": "off",
+      "typescript/consistent-type-imports": ["error", { fixStyle: "inline-type-imports" }],
       "typescript/explicit-function-return-type": "off",
       "typescript/explicit-module-boundary-types": "off",
       "typescript/prefer-readonly-parameter-types": "off",

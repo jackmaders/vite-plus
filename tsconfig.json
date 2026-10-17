@@ -4,7 +4,7 @@
     "target": "ES2023",
     "jsx": "react-jsx",
     "module": "ESNext",
-    "paths": { "@/*": ["./src/*"] },
+    "paths": { "@/*": ["./src/*"], "@test/*": ["./tests/*"] },
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "types": ["vite-plus/client"],
 
