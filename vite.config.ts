@@ -45,6 +45,10 @@ const lintConfig = defineConfig({
         rules: { "react/only-export-components": "off" },
       },
       {
+        files: ["tests/e2e/**"],
+        rules: { "vitest/prefer-importing-vitest-globals": "off" },
+      },
+      {
         files: ["**/*.{test,spec}.{ts,tsx}"],
         rules: { "eslint/no-magic-numbers": "off" },
       },
