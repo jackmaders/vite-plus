@@ -37,6 +37,7 @@ const config = defineConfig({
       "oxc/no-rest-spread-properties": "off",
       "react/jsx-max-depth": ["error", { max: 4 }],
       "react/jsx-no-literals": "off",
+      "react/no-multi-comp": "off",
       "react/react-in-jsx-scope": "off",
       "typescript/explicit-function-return-type": "off",
       "typescript/explicit-module-boundary-types": "off",
