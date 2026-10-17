@@ -40,6 +40,7 @@ const config = defineConfig({
       "eslint/func-style": ["error", "declaration"],
       "eslint/no-ternary": "off",
       "eslint/no-use-before-define": "off",
+      "eslint/one-var": ["error", "never"],
       "import/exports-last": "off",
       "import/no-default-export": "error",
       "import/no-named-export": "off",

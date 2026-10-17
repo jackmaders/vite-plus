@@ -3,15 +3,15 @@ import { useEffect, useState } from "react";
 type ThemeMode = "light" | "dark" | "auto";
 
 const NEXT_THEME_MODE: Record<ThemeMode, ThemeMode> = {
-    auto: "light",
-    dark: "auto",
-    light: "dark",
-  },
-  THEME_LABEL: Record<ThemeMode, string> = {
-    auto: "Auto",
-    dark: "Dark",
-    light: "Light",
-  };
+  auto: "light",
+  dark: "auto",
+  light: "dark",
+};
+const THEME_LABEL: Record<ThemeMode, string> = {
+  auto: "Auto",
+  dark: "Dark",
+  light: "Light",
+};
 
 function getInitialMode(): ThemeMode {
   if (typeof window === "undefined") {
@@ -27,8 +27,8 @@ function getInitialMode(): ThemeMode {
 }
 
 function applyThemeMode(mode: ThemeMode) {
-  const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
-    theme = mode === "auto" ? systemTheme : mode;
+  const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  const theme = mode === "auto" ? systemTheme : mode;
 
   document.documentElement.classList.remove("light", "dark");
   document.documentElement.classList.add(theme);
@@ -56,10 +56,10 @@ export function ThemeToggle() {
       return;
     }
 
-    const media = window.matchMedia("(prefers-color-scheme: dark)"),
-      onChange = () => {
-        applyThemeMode("auto");
-      };
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = () => {
+      applyThemeMode("auto");
+    };
 
     media.addEventListener("change", onChange);
     return () => {
