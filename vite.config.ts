@@ -37,7 +37,12 @@ const lintConfig = defineConfig({
     },
     ignorePatterns: ["src/routeTree.gen.ts"],
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
-    options: { typeAware: true, typeCheck: true },
+    options: {
+      denyWarnings: true,
+      reportUnusedDisableDirectives: "error",
+      typeAware: true,
+      typeCheck: true,
+    },
     overrides: [
       { env: { browser: true }, files: ["src/**"] },
       {
