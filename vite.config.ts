@@ -109,7 +109,10 @@ const lintConfig = defineConfig({
       "typescript/prefer-readonly-parameter-types": "off",
       "unicorn/prefer-global-this": "off",
       "vite-plus/prefer-vite-plus-imports": "error",
-      "vitest/consistent-test-filename": ["error", { allTestPattern: "__tests__", pattern: "\\.spec\\.[tj]sx?$" }],
+      "vitest/consistent-test-filename": [
+        "error",
+        { allTestPattern: "__tests__", pattern: "\\.spec\\.[tj]sx?$" },
+      ],
       "vitest/no-hooks": "off",
       "vitest/no-importing-vitest-globals": "off",
       "vitest/prefer-importing-vitest-globals": "error",
