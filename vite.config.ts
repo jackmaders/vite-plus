@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => ({
   ...lintConfig,
   plugins: mode === "test" ? [] : (lazyPlugins(loadPlugins) ?? []),
   resolve: { tsconfigPaths: true },
-  staged: { "*": "vp check --fix" },
+  staged: { "*": "vp check" },
   test: {
     coverage: {
       exclude: ["src/routeTree.gen.ts"],
