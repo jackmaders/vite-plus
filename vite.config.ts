@@ -6,6 +6,15 @@ export default defineConfig(({ mode }) => ({
   plugins: mode === "test" ? [] : lazyPlugins(loadPlugins),
   resolve: { tsconfigPaths: true },
   staged: { "*": "vp check --fix" },
+  test: {
+    coverage: {
+      enabled: true,
+      exclude: ["src/routeTree.gen.ts"],
+      include: ["src/**/*.{ts,tsx}"],
+      provider: "v8",
+      thresholds: { 100: true, perFile: true },
+    },
+  },
 }));
 
 const lintConfig = defineConfig({
