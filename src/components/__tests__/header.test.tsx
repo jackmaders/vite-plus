@@ -71,12 +71,11 @@ describe("header navigation", () => {
     expect.assertions(4);
 
     // Arrange
-    const { wrapper } = createTanStackRouterWrapper(
-      createRouter({
-        history: createMemoryHistory({ initialEntries: ["/about"] }),
-        routeTree: createRootRoute(),
-      }),
-    );
+    const router = createRouter({
+      history: createMemoryHistory({ initialEntries: ["/about"] }),
+      routeTree: createRootRoute(),
+    });
+    const { wrapper } = createTanStackRouterWrapper(router);
 
     // Act
     render(<Header />, { wrapper });

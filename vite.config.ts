@@ -8,7 +8,6 @@ export default defineConfig(({ mode }) => ({
   staged: { "*": "vp check --fix" },
   test: {
     coverage: {
-      enabled: true,
       exclude: ["src/routeTree.gen.ts"],
       include: ["src/**/*.{ts,tsx}"],
       provider: "v8",
