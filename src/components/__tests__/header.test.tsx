@@ -1,9 +1,10 @@
-import { createMemoryHistory, createRootRoute, createRouter } from "@tanstack/react-router";
+import { createMemoryHistory, createRouter } from "@tanstack/react-router";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import { Header } from "@/components/header";
 import { createTanStackRouterWrapper } from "@test/vitest/wrappers/tanstack-router-wrapper";
+import { routeTree } from "@/routeTree.gen";
 
 describe("header identity and documentation", () => {
   afterEach(cleanup);
@@ -73,7 +74,7 @@ describe("header navigation", () => {
     // Arrange
     const router = createRouter({
       history: createMemoryHistory({ initialEntries: ["/about"] }),
-      routeTree: createRootRoute(),
+      routeTree,
     });
     const { wrapper } = createTanStackRouterWrapper(router);
 
