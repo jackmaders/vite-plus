@@ -2,7 +2,7 @@ import { defineConfig, lazyPlugins } from "vite-plus";
 
 export default defineConfig(({ mode }) => ({
   fmt: {
-    ignorePatterns: ["src/routeTree.gen.ts"],
+    ignorePatterns: [".agents/**", "src/routeTree.gen.ts"],
     jsdoc: { descriptionWithDot: true, separateTagGroups: true },
     sortImports: { internalPattern: ["@/", "@test/"] },
     sortPackageJson: { sortScripts: true },
@@ -35,7 +35,7 @@ const lintConfig = defineConfig({
       style: "error",
       suspicious: "error",
     },
-    ignorePatterns: ["src/routeTree.gen.ts"],
+    ignorePatterns: [".agents/**", "src/routeTree.gen.ts"],
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     options: {
       denyWarnings: true,

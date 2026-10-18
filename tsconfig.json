@@ -1,5 +1,6 @@
 {
   "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": [".agents/**", "node_modules", "bower_components", "jspm_packages"],
   "compilerOptions": {
     "target": "ES2023",
     "jsx": "react-jsx",
