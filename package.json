@@ -5,8 +5,7 @@
   "scripts": {
     "build": "vp build",
     "deploy": "pnpm run build && wrangler deploy",
-    "dev": "vp dev --port 3000",
-    "generate-routes": "tsr generate",
+    "dev": "vp dev",
     "prepare": "vp config",
     "preview": "vp preview",
     "test:e2e": "playwright test"
