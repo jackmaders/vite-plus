@@ -28,6 +28,8 @@ export default defineConfig(({ mode }) => ({
   },
 }));
 
+const CI = Boolean(process.env["CI"]);
+
 const lintConfig = defineConfig({
   lint: {
     categories: {
@@ -227,14 +229,14 @@ const lintConfig = defineConfig({
       "react/no-multi-comp": "off",
       "react/react-in-jsx-scope": "off",
       "tailwindcss/classnames-order": "off",
-      "tailwindcss/enforces-canonical-classname": "error",
-      "tailwindcss/enforces-negative-arbitrary-values": "error",
-      "tailwindcss/enforces-shorthand": "error",
-      "tailwindcss/important-modifier-suffix": "error",
-      "tailwindcss/no-arbitrary-value": "error",
-      "tailwindcss/no-contradicting-classname": "error",
-      "tailwindcss/no-custom-classname": "error",
-      "tailwindcss/no-unnecessary-arbitrary-value": "error",
+      "tailwindcss/enforces-canonical-classname": CI ? "error" : "off",
+      "tailwindcss/enforces-negative-arbitrary-values": CI ? "error" : "off",
+      "tailwindcss/enforces-shorthand": CI ? "error" : "off",
+      "tailwindcss/important-modifier-suffix": CI ? "error" : "off",
+      "tailwindcss/no-arbitrary-value": CI ? "error" : "off",
+      "tailwindcss/no-contradicting-classname": CI ? "error" : "off",
+      "tailwindcss/no-custom-classname": CI ? "error" : "off",
+      "tailwindcss/no-unnecessary-arbitrary-value": CI ? "error" : "off",
       "typescript/consistent-type-imports": ["error", { fixStyle: "inline-type-imports" }],
       "typescript/explicit-function-return-type": "off",
       "typescript/explicit-module-boundary-types": "off",
