@@ -1,13 +1,15 @@
 {
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": [".agents/**", "node_modules", "bower_components", "jspm_packages"],
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.test.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
   "compilerOptions": {
     "target": "ES2023",
     "jsx": "react-jsx",
     "module": "ESNext",
     "paths": { "@/*": ["./src/*"], "@test/*": ["./tests/*"] },
-    "lib": ["ES2023", "DOM", "DOM.Iterable"],
-    "types": ["vite-plus/client"],
 
     /* Bundler mode */
     "moduleResolution": "bundler",
