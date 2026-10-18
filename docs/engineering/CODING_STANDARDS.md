@@ -4,6 +4,15 @@ Applies when naming application modules, exports, functions, variables, or SQL
 columns, or changing database schemas, input validation schemas, database
 operations, component props, error handling, or object and data design.
 
+## Code organization
+
+- Place entry points before their implementation helpers so readers see the
+  workflow before its details.
+- When adjacent blocks express different concepts, separate them with blank
+  lines.
+- Declare local variables near their first use, inside the smallest block that
+  needs them.
+
 ## Naming
 
 ### Functions and variables
