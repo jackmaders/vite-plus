@@ -31,7 +31,7 @@ release. Add a tool name to select part of the graph. For example, run
 - When naming application modules, exports, or SQL columns, or changing database
   schemas, input validation schemas, database operations, or component props, read
   [coding standards](docs/engineering/CODING_STANDARDS.md).
-- When adding routes, placing components, or changing route authentication,
-  loader data fetching, or server functions, read
+- When designing modules, adding routes, placing components, or changing route
+  authentication, loader data fetching, or server functions, read
   [architecture](docs/engineering/ARCHITECTURE.md).
 - When naming or placing test files, read [testing](docs/engineering/TESTING.md).

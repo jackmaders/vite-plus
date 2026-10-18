@@ -1,7 +1,14 @@
 # Architecture
 
-Applies when adding routes, placing components, or changing route authentication,
-loader data fetching, or server functions.
+Applies when designing modules, adding routes, placing components, or changing
+route authentication, loader data fetching, or server functions.
+
+## Module responsibilities
+
+- When behaviors change for independent reasons, separate them into
+  modules with distinct responsibilities.
+- When user groups have different requirements, isolate their behavior
+  so changes for one group leave the others unaffected.
 
 ## Routes
 
