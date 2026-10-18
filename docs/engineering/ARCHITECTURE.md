@@ -26,5 +26,11 @@ loader data fetching, or server functions.
 
 ## Components
 
+- Place feature-specific components in
+  `src/features/<feature>/components`.
+- Place application-wide components in `src/components`, using the
+  specialized `ui` and `form` directories where applicable.
+- When another feature needs a feature-specific component, move it to
+  `src/components`.
 - Place shadcn UI primitives in `src/components/ui`.
 - Place reusable TanStack Form components in `src/components/form`.

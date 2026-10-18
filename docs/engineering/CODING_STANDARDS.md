@@ -1,7 +1,7 @@
 # Coding standards
 
 Applies when naming application modules, exports, or SQL columns, or changing
-database schemas, input validation schemas, or database operations.
+database schemas, input validation schemas, database operations, or component props.
 
 ## Naming
 
@@ -45,3 +45,11 @@ database schemas, input validation schemas, or database operations.
 ## Error handling
 
 // todo
+
+## Component props
+
+- When a component wraps an element or another component, derive its props
+  from `ComponentProps<"element">` or
+  `ComponentProps<typeof WrappedComponent>`.
+- When a wrapper owns props, exclude them from the forwarded props using
+  `Omit` and spread the remaining props onto the wrapped element or component.

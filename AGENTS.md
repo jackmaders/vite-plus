@@ -29,7 +29,7 @@ release. Add a tool name to select part of the graph. For example, run
 ## Context
 
 - When naming application modules, exports, or SQL columns, or changing database
-  schemas, input validation schemas, or database operations, read
+  schemas, input validation schemas, database operations, or component props, read
   [coding standards](docs/engineering/CODING_STANDARDS.md).
 - When adding routes, placing components, or changing route authentication,
   loader data fetching, or server functions, read
