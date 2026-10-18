@@ -30,5 +30,6 @@ release. Add a tool name to select part of the graph. For example, run
 
 - When naming application modules, exports, or SQL columns, read
   [coding standards](docs/engineering/CODING_STANDARDS.md).
-- When adding modules or changing dependencies between modules or server/client boundaries, read [architecture](docs/engineering/ARCHITECTURE.md).
+- When adding routes or changing route authentication or loader data fetching, read
+  [architecture](docs/engineering/ARCHITECTURE.md).
 - When naming or placing test files, read [testing](docs/engineering/TESTING.md).
