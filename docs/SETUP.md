@@ -17,7 +17,7 @@ cd <project-name>
 vp install
 ```
 
-Set the project name in `package.json` and `wrangler.jsonc`:
+Set the project name in `package.json` and `wrangler.jsonc` from the current directory:
 
 ```bash
 PROJECT_NAME="$(basename "$PWD")"
@@ -48,3 +48,5 @@ gh api --method POST 'repos/{owner}/{repo}/rulesets' \
   --input .github/rulesets/protect-main.json
 gh api 'repos/{owner}/{repo}/rules/branches/main'
 ```
+
+AI reviews require a Gemini API key stored as a repository secret: `gh secret set GEMINI_API_KEY`.
