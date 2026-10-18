@@ -30,7 +30,8 @@ release. Add a tool name to select part of the graph. For example, run
 
 - When naming application modules, exports, functions, variables, or SQL columns,
   or changing database schemas, input validation schemas, database operations,
-  component props, error handling, object and data design, or code organization, read
+  component props, error handling, object and data design, code organization,
+  or writing comments, read
   [coding standards](docs/engineering/CODING_STANDARDS.md).
 - When designing modules or their public interfaces, integrating vendor SDKs,
   adding routes, placing components, or changing route authentication, loader

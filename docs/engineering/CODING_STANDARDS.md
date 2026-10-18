@@ -1,8 +1,9 @@
 # Coding standards
 
 Applies when naming application modules, exports, functions, variables, or SQL
-columns, or changing database schemas, input validation schemas, database
-operations, component props, error handling, or object and data design.
+columns, changing database schemas, input validation schemas, database
+operations, component props, error handling, or object and data design, or
+writing comments.
 
 ## Code organization
 
@@ -43,6 +44,19 @@ operations, component props, error handling, or object and data design.
 ### Framework conventions
 
 - When a framework requires a particular name, use that name.
+
+## Comments
+
+- Keep comments accurate as the code changes.
+- Explain business constraints, non-obvious behavior, or risks when maintainers
+  need that context to use or change the code safely.
+- Document public API behavior, inputs, outputs, and side effects.
+- Do not add comments that narrate why a change was made, who requested it, or
+  what feedback it addresses; keep that history in the conversation or commit.
+- Remove comments that only restate the code. Prefer clear names and helpers
+  that explain mechanics.
+- Delete commented-out code; version history retains it.
+- Write TODOs with an action and the condition for resolving them.
 
 ## Objects and data
 
