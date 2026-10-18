@@ -25,3 +25,19 @@ release. Add a tool name to select part of the graph. For example, run
 - [ ] If setup, runtime, or package-manager behavior looks wrong, run `vp env doctor` and include its output when asking for help.
 
 <!--VITE PLUS END-->
+
+## Task context
+
+Read the documents matching the task before making the relevant changes. Paths
+below are relative to the repository root.
+
+- **Code:** Before writing or reviewing application code, read
+  [coding standards](docs/engineering/CODING_STANDARDS.md).
+- **Architecture:** Before adding modules or changing dependencies between modules
+  or server/client boundaries, read
+  [architecture](docs/engineering/ARCHITECTURE.md).
+- **Testing:** Before choosing, writing, or changing tests or test infrastructure,
+  read [testing](docs/engineering/TESTING.md).
+
+Before editing a file, check for `AGENTS.md` files between the repository root and
+its directory, and read any applicable instructions.
