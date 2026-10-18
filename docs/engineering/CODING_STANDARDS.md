@@ -1,6 +1,7 @@
 # Coding standards
 
-Applies when naming application modules, exports, or SQL columns.
+Applies when naming application modules, exports, or SQL columns, or changing
+database schemas, input validation schemas, or database operations.
 
 ## Naming
 
@@ -26,3 +27,17 @@ Applies when naming application modules, exports, or SQL columns.
 ### Framework conventions
 
 - When a framework requires a particular name, use that name.
+
+## Database
+
+- When declaring a foreign key, specify its deletion behavior explicitly.
+- Declare Drizzle indexes and composite unique constraints in the table
+  callback. Column-level unique constraints may remain on the column.
+- When validation mirrors table fields, derive Zod schemas from the
+  Drizzle schema.
+- Limit client input schemas to fields the client must supply. Omit
+  generated and server-owned fields from create inputs.
+- When reading or writing user-owned records, scope the operation to
+  the authenticated user's ID.
+- If an operation expects a row but `.returning()` returns none,
+  throw an error.
