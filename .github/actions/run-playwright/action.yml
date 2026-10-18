@@ -1,0 +1,27 @@
+name: Run Playwright
+description: Sets up a Playwright browser, runs E2E tests, and uploads failure reports
+
+inputs:
+  browser:
+    description: Playwright browser project to run
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Playwright
+      uses: ./.github/actions/setup-playwright
+      with:
+        browser: ${{ inputs.browser }}
+    - name: Run browser tests
+      shell: bash
+      run: vp run test:e2e --project=${{ inputs.browser }}
+    - name: Upload failure report
+      if: ${{ !cancelled() && failure() }}
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: playwright-report-${{ inputs.browser }}
+        path: |
+          playwright-report/
+          test-results/
+        retention-days: 7

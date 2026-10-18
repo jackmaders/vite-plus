@@ -3,6 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 const CI = Boolean(process.env["CI"]);
 const CI_RETRIES = 2;
 const CI_WORKERS = 1;
+const BASE_URL = CI ? "http://localhost:4173" : "http://localhost:5173";
 
 export default defineConfig({
   forbidOnly: CI,
@@ -14,7 +15,14 @@ export default defineConfig({
   ],
   reporter: "html",
   testDir: "./tests/e2e",
-  testMatch: "**/*.test.ts",
-  use: { trace: "on-first-retry" },
+  use: {
+    baseURL: BASE_URL,
+    trace: "on-first-retry",
+  },
+  webServer: {
+    command: CI ? "vp preview" : "vp dev",
+    reuseExistingServer: !CI,
+    url: BASE_URL,
+  },
   ...(CI ? { retries: CI_RETRIES, workers: CI_WORKERS } : {}),
 });
