@@ -1,8 +1,14 @@
-import { configDefaults, defineConfig, lazyPlugins } from "vite-plus";
+import { cloudflareTest } from "@cloudflare/vitest-plugin";
+import { defineConfig, lazyPlugins } from "vite-plus";
 
 export default defineConfig(({ mode }) => ({
   fmt: {
-    ignorePatterns: [".agents/**", "src/app/routeTree.gen.ts"],
+    ignorePatterns: [
+      ".agents/**",
+      "drizzle/**",
+      "src/app/routeTree.gen.ts",
+      "worker-configuration.d.ts",
+    ],
     jsdoc: { descriptionWithDot: true, separateTagGroups: true },
     overrides: [{ files: ["wrangler.jsonc"], options: { trailingComma: "none" } }],
     sortImports: { internalPattern: ["@/", "@test/"] },
@@ -20,11 +26,24 @@ export default defineConfig(({ mode }) => ({
       provider: "v8",
       thresholds: { 100: true, perFile: true },
     },
-    environment: "happy-dom",
-    // Workers tests require a separate runtime configuration.
-    exclude: [...configDefaults.exclude, "src/**/__tests__/workers/**"],
     globals: false,
-    include: ["src/**/__tests__/**/*.spec.{ts,tsx}"],
+    projects: [
+      {
+        test: {
+          environment: "happy-dom",
+          exclude: ["src/**/__tests__/workers/**"],
+          include: ["src/**/__tests__/**/*.spec.{ts,tsx}"],
+          name: "client",
+        },
+      },
+      {
+        plugins: [cloudflareTest({ wrangler: { configPath: "wrangler.jsonc" } })],
+        test: {
+          include: ["src/**/__tests__/workers/**/*.spec.ts"],
+          name: "workers",
+        },
+      },
+    ],
   },
 }));
 
@@ -41,7 +60,12 @@ const lintConfig = defineConfig({
       style: "error",
       suspicious: "error",
     },
-    ignorePatterns: [".agents/**", "src/app/routeTree.gen.ts"],
+    ignorePatterns: [
+      ".agents/**",
+      "drizzle/**",
+      "src/app/routeTree.gen.ts",
+      "worker-configuration.d.ts",
+    ],
     jsPlugins: [
       { name: "vite-plus", specifier: "vite-plus/oxlint-plugin" },
       { name: "@tanstack/router", specifier: "@tanstack/eslint-plugin-router" },
@@ -195,6 +219,7 @@ const lintConfig = defineConfig({
         env: { node: true },
         files: ["*.config.ts"],
         rules: {
+          "eslint/max-lines": "off",
           "import/no-default-export": "off",
           "node/no-process-env": "off",
         },

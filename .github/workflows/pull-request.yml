@@ -50,6 +50,8 @@ jobs:
         run: vp run build
       - name: Verify generated routes
         run: git diff --exit-code -- src/app/routeTree.gen.ts
+      - name: Verify generated types
+        run: vp run cf:generate && git diff --exit-code -- worker-configuration.d.ts
       - name: Upload build artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
