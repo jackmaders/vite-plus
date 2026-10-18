@@ -28,14 +28,73 @@ release. Add a tool name to select part of the graph. For example, run
 
 ## Context
 
-- When naming application modules, exports, functions, variables, or SQL columns,
-  or changing database schemas, input validation schemas, database operations,
-  component props, error handling, object and data design, code organization,
-  writing comments, or applying function-level design conventions, read
-  [coding standards](docs/engineering/CODING_STANDARDS.md).
-- When deciding module boundaries or public APIs, integrating vendor SDKs,
-  adding routes, placing components, or changing route authentication, loader
-  data fetching, or server functions, read
-  [architecture](docs/engineering/ARCHITECTURE.md).
+- When naming server or client modules, exports, functions, variables, or SQL
+  columns, or changing database schemas, validation schemas, queries, component
+  props, error handling, object design, code organization, comments, or function
+  signatures, read [coding standards](docs/engineering/CODING_STANDARDS.md).
+- When designing module interfaces, adapting vendor SDKs, adding routes, placing
+  UI or form primitives, or changing route authentication, loader prefetching,
+  or server functions, read [architecture](docs/engineering/ARCHITECTURE.md).
 - When implementing new behavior or writing, reviewing, or organizing tests, read
   [testing](docs/engineering/TESTING.md).
+- When organizing FSD layers, slices, or segments, defining slice public APIs,
+  resolving cross-imports, or placing code or static assets, read
+  [feature-sliced-design](.agents/skills/feature-sliced-design/SKILL.md).
+- When adding, styling, composing, or debugging shadcn/ui components,
+  registries, or presets, read [shadcn](.agents/skills/shadcn/SKILL.md).
+- When auditing UI design, UX, or accessibility against web interface
+  guidelines, read
+  [web-design-guidelines](.agents/skills/web-design-guidelines/SKILL.md).
+- When auditing or optimizing page load performance, interaction latency, Core
+  Web Vitals, or Lighthouse scores, read
+  [web-perf](.agents/skills/web-perf/SKILL.md).
+- When configuring TanStack Start, SSR, streaming, server functions,
+  middleware, or API routes, read
+  [tanstack-start](.agents/skills/tanstack-start/SKILL.md).
+- When configuring TanStack Router, route trees, file-based routes, search
+  params, loaders, or navigation, read
+  [tanstack-router](.agents/skills/tanstack-router/SKILL.md).
+- When managing server state with TanStack Query, query keys, caching,
+  prefetching, mutations, optimistic updates, or infinite queries, read
+  [tanstack-query](.agents/skills/tanstack-query/SKILL.md).
+- When building forms with TanStack Form, field or form validation, array or
+  linked fields, or schema adapters, read
+  [tanstack-form](.agents/skills/tanstack-form/SKILL.md).
+- When building tables or datagrids with TanStack Table, column definitions,
+  sorting, filtering, pagination, grouping, or row selection, read
+  [tanstack-table](.agents/skills/tanstack-table/SKILL.md).
+- When configuring TanStack Devtools panels or custom devtools plugins, read
+  [tanstack-devtools](.agents/skills/tanstack-devtools/SKILL.md).
+- When configuring Better Auth server or client instances, database adapters,
+  sessions, OAuth, or plugins, read
+  [better-auth-best-practices](.agents/skills/better-auth-best-practices/SKILL.md).
+- When configuring Better Auth email and password authentication, email
+  verification, password reset flows, or password hashing, read
+  [email-and-password-best-practices](.agents/skills/email-and-password-best-practices/SKILL.md).
+- When hardening Better Auth with rate limiting, secret management, CSRF
+  protection, trusted origins, cookie security, token encryption, IP tracking,
+  or audit logging, read
+  [better-auth-security-best-practices](.agents/skills/better-auth-security-best-practices/SKILL.md).
+- When defining or querying Drizzle schemas, tables, indexes, relations, joins,
+  or inferred types, read [drizzle](.agents/skills/drizzle/SKILL.md).
+- When performing a security review or applying secure-by-default TypeScript and
+  JavaScript practices, read
+  [security-best-practices](.agents/skills/security-best-practices/SKILL.md).
+- When configuring Vite build options, plugins, SSR, or Rolldown migration, read
+  [vite](.agents/skills/vite/SKILL.md).
+- When selecting Cloudflare products or designing architecture across Workers,
+  storage, networking, AI, or security, read
+  [cloudflare](.agents/skills/cloudflare/SKILL.md).
+- When writing, reviewing, or configuring Cloudflare Workers, bindings, or
+  runtime APIs, read
+  [workers-best-practices](.agents/skills/workers-best-practices/SKILL.md).
+- When running or troubleshooting Wrangler CLI commands, local dev, previews,
+  deployments, or `wrangler.jsonc`, read
+  [wrangler](.agents/skills/wrangler/SKILL.md).
+- When writing or configuring Vitest tests, mocks, fixtures, filtering, or
+  coverage, read [vitest](.agents/skills/vitest/SKILL.md).
+- When writing, debugging, or configuring Playwright E2E, component, API,
+  visual, accessibility, or security tests, read
+  [playwright-best-practices](.agents/skills/playwright-best-practices/SKILL.md).
+- When automating browser interactions or inspecting live web pages from the
+  CLI, read [playwright-cli](.agents/skills/playwright-cli/SKILL.md).

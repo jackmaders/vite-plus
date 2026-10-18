@@ -25,8 +25,8 @@ This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
 
 If you prefer not to use Tailwind CSS:
 
-1. Remove the demo pages in `src/routes/demo/`
-2. Replace the Tailwind import in `src/styles.css` with your own styles
+1. Remove the demo routes in `src/app/routes/demo/` and demo pages in `src/pages/`
+2. Replace the Tailwind import in `src/app/styles/styles.css` with your own styles
 3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
 4. Remove `@tailwindcss/vite` and `tailwindcss` from `package.json`
 
@@ -44,11 +44,11 @@ KV, D1, R2, and Durable Object bindings are configured in `wrangler.jsonc` — s
 
 ## Routing
 
-This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/routes`.
+This project uses [TanStack Router](https://tanstack.com/router) with file-based routing. Routes are managed as files in `src/app/routes`.
 
 ### Adding A Route
 
-To add a new route to your application just add a new file in the `./src/routes` directory.
+To add a new route to your application just add a new file in the `./src/app/routes` directory that delegates to a page in `./src/pages`.
 
 TanStack will automatically generate the content of the route file for you.
 
@@ -74,7 +74,7 @@ More information on the `Link` component can be found in the [Link documentation
 
 ### Using A Layout
 
-In the File Based Routing setup the layout is located in `src/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
+In the File Based Routing setup the root layout is located in `src/app/routes/__root.tsx`. Anything you add to the root route will appear in all the routes. The route content will appear in the JSX where you render `{children}` in the `shellComponent`.
 
 Here is an example layout that includes a header:
 
@@ -118,7 +118,7 @@ TanStack Start provides server functions that allow you to write server-side cod
 ```tsx
 import { createServerFn } from "@tanstack/react-start";
 
-const getServerTime = createServerFn({
+export const getServerTimeFn = createServerFn({
   method: "GET",
 }).handler(async () => {
   return new Date().toISOString();
@@ -129,7 +129,7 @@ function MyComponent() {
   const [time, setTime] = useState("");
 
   useEffect(() => {
-    getServerTime().then(setTime);
+    getServerTimeFn().then(setTime);
   }, []);
 
   return <div>Server time: {time}</div>;
@@ -162,23 +162,16 @@ For example:
 ```tsx
 import { createFileRoute } from "@tanstack/react-router";
 
+import { PeoplePage, fetchPeople } from "@/pages/people";
+
 export const Route = createFileRoute("/people")({
-  loader: async () => {
-    const response = await fetch("https://swapi.dev/api/people");
-    return response.json();
-  },
-  component: PeopleComponent,
+  loader: () => fetchPeople(),
+  component: PeopleRoute,
 });
 
-function PeopleComponent() {
+function PeopleRoute() {
   const data = Route.useLoaderData();
-  return (
-    <ul>
-      {data.results.map((person) => (
-        <li key={person.name}>{person.name}</li>
-      ))}
-    </ul>
-  );
+  return <PeoplePage people={data.results} />;
 }
 ```
 

@@ -1,7 +1,7 @@
 # Coding standards
 
-Applies when naming application modules, exports, functions, variables, or SQL
-columns, changing database schemas, input validation schemas, database
+Applies when naming server or client modules, exports, functions, variables, or
+SQL columns, changing database schemas, input validation schemas, database
 operations, component props, error handling, or object and data design, or
 writing comments, or applying function-level design conventions.
 
@@ -31,24 +31,18 @@ writing comments, or applying function-level design conventions.
 - Give widely used variables descriptive names. Give related private
   helpers names that distinguish their specific operations.
 
-### Server modules
+### Server and client modules
 
+- When a module defines server functions, name it `<name>.functions.ts`.
 - When a file directly imports an external server-only runtime dependency,
   name it `<name>.server.ts`.
-- Keep ordinary filenames for files that only import local server modules.
-- When a module defines server functions, name it `<name>.functions.ts`.
+- When a file directly imports an external client-only runtime dependency,
+  name it `<name>.client.ts`.
+- Keep ordinary filenames for files that only import local server or client
+  modules.
+- When a slice needs separate barrel files for server and client exports,
+  use `index.server.ts` and `index.client.ts`.
 - When an export is created with `createServerFn`, suffix its name with `Fn`.
-
-### Data modules
-
-- When a module defines TanStack Query keys and query options, name it
-  `<entity>-query-options.ts`.
-- When a module contains entity-specific database reads and writes, name it
-  `<entity>-db-queries.ts`, applying the server dependency suffix when required.
-- When a module defines Zod schemas for an entity, name it
-  `<entity>-schema.ts`.
-- When a module defines a mutation hook, name it `use-<verb>-<entity>.ts`.
-- Use snake_case for SQL column names.
 
 ### Framework conventions
 
@@ -92,6 +86,7 @@ writing comments, or applying function-level design conventions.
 
 ## Database
 
+- Use snake_case for SQL column names.
 - When declaring a foreign key, specify its deletion behavior explicitly.
 - Declare Drizzle indexes and composite unique constraints in the table
   callback. Column-level unique constraints may remain on the column.

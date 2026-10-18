@@ -1,8 +1,8 @@
 # Architecture
 
 Applies when designing modules or their public interfaces, integrating vendor SDKs,
-adding routes, placing components, or changing route authentication, loader data
-fetching, or server functions.
+adding routes, placing UI or form primitives, or changing route authentication,
+loader data fetching, or server functions.
 
 ## Module design
 
@@ -18,9 +18,6 @@ fetching, or server functions.
   steps so they can change independently.
 - When a stated requirement needs an abstraction, introduce it.
   Otherwise, keep the design simple.
-- Extract a module when it enables independent tests, removes duplication,
-  names a concept, or isolates independently changing behavior.
-  Otherwise, keep the module intact.
 - When exposing helpers would couple callers to changing implementation
   details, keep those helpers private. Expose the operations callers need.
 
@@ -34,8 +31,10 @@ fetching, or server functions.
 
 ## Routes
 
+- Place TanStack Router file routes in `src/app/routes` as thin wrappers
+  that delegate to `src/pages`.
 - When a route requires authentication, place it under
-  `src/routes/_authenticated`.
+  `src/app/routes/_authenticated`.
 - When a route uses TanStack Query for data required on initial render,
   populate the query cache in its loader before rendering.
 
@@ -55,11 +54,5 @@ fetching, or server functions.
 
 ## Components
 
-- Place feature-specific components in
-  `src/features/<feature>/components`.
-- Place application-wide components in `src/components`, using the
-  specialized `ui` and `form` directories where applicable.
-- When another feature needs a feature-specific component, move it to
-  `src/components`.
-- Place shadcn UI primitives in `src/components/ui`.
-- Place reusable TanStack Form components in `src/components/form`.
+- Place shadcn UI primitives in `src/shared/ui/shadcn`.
+- Place reusable TanStack Form components in `src/shared/ui/form`.

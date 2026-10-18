@@ -13,12 +13,6 @@
       "skillPath": "security/SKILL.md",
       "computedHash": "7a230edf3a24ce18162cb4379f59b6a19b8d24ca04db530609d0f15cede556dc"
     },
-    "bulletproof-react-patterns": {
-      "source": "grahamcrackers/skills",
-      "sourceType": "github",
-      "skillPath": "skills/bulletproof-react-patterns/SKILL.md",
-      "computedHash": "21440284bed25f9ed947b2c09e7d5a1d0908717f9df85615cd267f6ba12a1638"
-    },
     "cloudflare": {
       "source": "cloudflare/skills",
       "sourceType": "github",
