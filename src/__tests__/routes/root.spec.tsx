@@ -24,6 +24,8 @@ describe("root route document metadata", () => {
     // Act
     render(<RouterProvider router={router} />, {});
     const viewportContent = Array.from(
+      // Viewport metadata has no accessible Testing Library query.
+      // oxlint-disable-next-line testing-library/no-node-access
       document.querySelectorAll('meta[name="viewport"]'),
       (viewport) => viewport.getAttribute("content"),
     );

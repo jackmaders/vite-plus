@@ -1,4 +1,5 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -35,15 +36,16 @@ describe("theme toggle manual modes", () => {
     delete document.documentElement.dataset["theme"];
   });
 
-  it("switches from system mode to light mode", () => {
+  it("switches from system mode to light mode", async () => {
     expect.assertions(4);
 
     // Arrange
+    const user = userEvent.setup();
     render(<ThemeToggle />);
     const button = screen.getByRole("button");
 
     // Act
-    fireEvent.click(button);
+    await user.click(button);
 
     // Assert
     expect(button.textContent).toBe("Light");
@@ -52,16 +54,17 @@ describe("theme toggle manual modes", () => {
     expect(document.documentElement.dataset["theme"]).toBe("light");
   });
 
-  it("switches from light mode to dark mode", () => {
+  it("switches from light mode to dark mode", async () => {
     expect.assertions(4);
 
     // Arrange
+    const user = userEvent.setup();
     render(<ThemeToggle />);
     const button = screen.getByRole("button");
-    fireEvent.click(button);
+    await user.click(button);
 
     // Act
-    fireEvent.click(button);
+    await user.click(button);
 
     // Assert
     expect(button.textContent).toBe("Dark");
@@ -77,17 +80,17 @@ describe("theme toggle system mode", () => {
     delete document.documentElement.dataset["theme"];
   });
 
-  it("returns from dark mode to system mode and removes the manual preference", () => {
+  it("returns from dark mode to system mode and removes the manual preference", async () => {
     expect.assertions(4);
 
     // Arrange
+    const user = userEvent.setup();
     render(<ThemeToggle />);
     const button = screen.getByRole("button");
-    fireEvent.click(button);
-    fireEvent.click(button);
+    await user.dblClick(button);
 
     // Act
-    fireEvent.click(button);
+    await user.click(button);
 
     // Assert
     expect(button.textContent).toBe("Auto");

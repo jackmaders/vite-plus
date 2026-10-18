@@ -1,5 +1,6 @@
 import { createMemoryHistory, createRouter } from "@tanstack/react-router";
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import { Header } from "@/components/header";
@@ -133,10 +134,11 @@ describe("header theme control", () => {
     delete document.documentElement.dataset["theme"];
   });
 
-  it("allows switching the theme from the header", () => {
+  it("allows switching the theme from the header", async () => {
     expect.assertions(3);
 
     // Arrange
+    const user = userEvent.setup();
     const { wrapper } = createTanStackRouterWrapper();
     render(<Header />, { wrapper });
     const button = screen.getByRole("button", {
@@ -144,7 +146,7 @@ describe("header theme control", () => {
     });
 
     // Act
-    fireEvent.click(button);
+    await user.click(button);
 
     // Assert
     expect(button.textContent).toBe("Light");
