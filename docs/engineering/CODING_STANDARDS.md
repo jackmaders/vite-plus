@@ -3,7 +3,7 @@
 Applies when naming application modules, exports, functions, variables, or SQL
 columns, changing database schemas, input validation schemas, database
 operations, component props, error handling, or object and data design, or
-writing comments, or designing function interfaces and behavior.
+writing comments, or applying function-level design conventions.
 
 ## Code organization
 
@@ -116,7 +116,8 @@ writing comments, or designing function interfaces and behavior.
   return an empty collection. When absence is a distinct result callers
   must handle, use `null`.
 
-// todo: Decide server-operation and TanStack Query error-handling conventions.
+// todo: Document server-operation and TanStack Query error-handling conventions
+// after their approaches are agreed.
 
 ## Component props
 

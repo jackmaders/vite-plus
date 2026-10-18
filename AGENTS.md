@@ -31,9 +31,9 @@ release. Add a tool name to select part of the graph. For example, run
 - When naming application modules, exports, functions, variables, or SQL columns,
   or changing database schemas, input validation schemas, database operations,
   component props, error handling, object and data design, code organization,
-  writing comments, or designing function interfaces and behavior, read
+  writing comments, or applying function-level design conventions, read
   [coding standards](docs/engineering/CODING_STANDARDS.md).
-- When designing modules or their public interfaces, integrating vendor SDKs,
+- When deciding module boundaries or public APIs, integrating vendor SDKs,
   adding routes, placing components, or changing route authentication, loader
   data fetching, or server functions, read
   [architecture](docs/engineering/ARCHITECTURE.md).
