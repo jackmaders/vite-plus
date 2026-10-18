@@ -36,4 +36,5 @@ release. Add a tool name to select part of the graph. For example, run
   components, or changing route authentication, loader data fetching, or server
   functions, read
   [architecture](docs/engineering/ARCHITECTURE.md).
-- When naming or placing test files, read [testing](docs/engineering/TESTING.md).
+- When implementing new behavior or writing, reviewing, or organizing tests, read
+  [testing](docs/engineering/TESTING.md).
