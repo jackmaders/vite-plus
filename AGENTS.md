@@ -32,9 +32,9 @@ release. Add a tool name to select part of the graph. For example, run
   or changing database schemas, input validation schemas, database operations, or
   component props, read
   [coding standards](docs/engineering/CODING_STANDARDS.md).
-- When designing modules or their public interfaces, adding routes, placing
-  components, or changing route authentication, loader data fetching, or server
-  functions, read
+- When designing modules or their public interfaces, integrating vendor SDKs,
+  adding routes, placing components, or changing route authentication, loader
+  data fetching, or server functions, read
   [architecture](docs/engineering/ARCHITECTURE.md).
 - When implementing new behavior or writing, reviewing, or organizing tests, read
   [testing](docs/engineering/TESTING.md).

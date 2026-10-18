@@ -1,7 +1,8 @@
 # Architecture
 
-Applies when designing modules or their public interfaces, adding routes, placing
-components, or changing route authentication, loader data fetching, or server functions.
+Applies when designing modules or their public interfaces, integrating vendor SDKs,
+adding routes, placing components, or changing route authentication, loader data
+fetching, or server functions.
 
 ## Module design
 
@@ -22,6 +23,14 @@ components, or changing route authentication, loader data fetching, or server fu
   Otherwise, keep the module intact.
 - When exposing helpers would couple callers to changing implementation
   details, keep those helpers private. Expose the operations callers need.
+
+## Dependency boundaries
+
+- Isolate vendor SDK calls behind application-owned adapters.
+  Keep vendor API changes inside those adapters.
+- When concrete dependencies would couple consumers to unrelated
+  implementation details, introduce dependency interfaces.
+  Define those interfaces around the operations consumers need.
 
 ## Routes
 
