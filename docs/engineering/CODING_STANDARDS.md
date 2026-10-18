@@ -19,6 +19,15 @@ writing comments, or designing function interfaces and behavior.
 ### Functions and variables
 
 - Name functions for their purpose or result.
+- Name values for what they represent where they are used, and match names to
+  their actual shape or behavior.
+- Name related functions so callers can distinguish their behavior without
+  reading their implementations.
+- Use readable words and familiar abbreviations.
+- Use named constants for numbers with business meaning, and descriptive,
+  searchable names for domain values.
+- Avoid prefixes that only repeat the declared type; name values for their
+  domain meaning and role.
 - Give widely used variables descriptive names. Give related private
   helpers names that distinguish their specific operations.
 
