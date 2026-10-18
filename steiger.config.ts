@@ -3,9 +3,7 @@ import { defineConfig } from "steiger";
 
 export default defineConfig([
   ...fsd.configs.recommended,
-  {
-    ignores: ["**/__tests__/**", "**/routeTree.gen.ts"],
-  },
+  { ignores: ["**/__tests__/**", "**/routeTree.gen.ts", "**/shared/ui/shadcn/**"] },
   {
     files: ["./src/**"],
     rules: {

@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => ({
   staged: { "*": "vp check --fix", "src/**": () => "steiger ./src" },
   test: {
     coverage: {
-      exclude: ["src/app/routeTree.gen.ts"],
+      exclude: ["src/app/routeTree.gen.ts", "src/shared/ui/shadcn/**"],
       include: ["src/**/*.{ts,tsx}"],
       provider: "v8",
       thresholds: { 100: true, perFile: true },
@@ -178,6 +178,18 @@ const lintConfig = defineConfig({
       {
         files: ["src/app/routes/**"],
         rules: { "react/only-export-components": "off" },
+      },
+      {
+        files: ["src/shared/ui/shadcn/**"],
+        rules: {
+          "eslint/sort-keys": "off",
+          "import/no-namespace": "off",
+          "react-perf/jsx-no-jsx-as-prop": "off",
+          "react/only-export-components": "off",
+          "tailwindcss/enforces-shorthand": "off",
+          "tailwindcss/no-arbitrary-value": "off",
+          "tailwindcss/no-custom-classname": "off",
+        },
       },
       {
         env: { node: true },
