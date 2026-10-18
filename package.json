@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.26.0",
+    "@commitlint/cli": "^21.2.3",
     "@feature-sliced/steiger-plugin": "^0.8.0",
     "@playwright/test": "^1.64.1",
     "@steiger/toolkit": "^0.2.3",
