@@ -3,12 +3,23 @@
 Applies when designing modules, adding routes, placing components, or changing
 route authentication, loader data fetching, or server functions.
 
-## Module responsibilities
+## Module design
 
-- When behaviors change for independent reasons, separate them into
-  modules with distinct responsibilities.
+- Group operations that serve the same purpose. When behaviors change for
+  independent reasons, separate them into modules with distinct responsibilities.
 - When user groups have different requirements, isolate their behavior
   so changes for one group leave the others unaffected.
+- When behavior repeatedly uses several fields owned by another module,
+  move that behavior to the owning module.
+- When parts of a long function share mutable state, group related state
+  and operations into focused modules.
+- Separate workflow sequencing from the implementation of individual
+  steps so they can change independently.
+- When a stated requirement needs an abstraction, introduce it.
+  Otherwise, keep the design simple.
+- Extract a module when it enables independent tests, removes duplication,
+  names a concept, or isolates independently changing behavior.
+  Otherwise, keep the module intact.
 
 ## Routes
 
