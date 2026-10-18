@@ -1,7 +1,7 @@
 # Architecture
 
-Applies when adding routes or changing route authentication, loader data fetching,
-or server functions.
+Applies when adding routes, placing components, or changing route authentication,
+loader data fetching, or server functions.
 
 ## Routes
 
@@ -23,3 +23,8 @@ or server functions.
 - When an operation accesses user-owned data, pass the authenticated user
   from middleware context to database operations and derive ownership
   fields from that user.
+
+## Components
+
+- Place shadcn UI primitives in `src/components/ui`.
+- Place reusable TanStack Form components in `src/components/form`.
