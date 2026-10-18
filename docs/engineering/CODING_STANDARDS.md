@@ -1,26 +1,28 @@
 # Coding standards
 
-Applies when writing or reviewing application code.
+Applies when naming application modules, exports, or SQL columns.
 
-## Rules
+## Naming
 
-- Follow the conventions in the nearest relevant implementation. When introducing
-  a different pattern, explain the reason.
-- Keep code specific to one route or component beside its use. Extract shared code
-  when multiple callers need the same behavior.
-- Use names that describe the domain concept or behavior. Explain non-obvious
-  constraints in comments beside the code they affect.
-- Use existing styling tokens in `src/styles.css` when they fit the design.
+### Server modules
 
-## Tooling
+- When a file directly imports an external server-only runtime dependency,
+  name it `<name>.server.ts`.
+- Keep ordinary filenames for files that only import local server modules.
+- When a module defines server functions, name it `<name>.functions.ts`.
+- When an export is created with `createServerFn`, suffix its name with `Fn`.
 
-Formatting, lint rules, and TypeScript options are defined in `vite.config.ts` and
-`tsconfig.json`. Consult those files when resolving tooling failures; keep their
-enforceable rules there as the source of truth.
+### Data modules
 
-## Verification
+- When a module defines TanStack Query keys and query options, name it
+  `<entity>-query-options.ts`.
+- When a module contains entity-specific database reads and writes, name it
+  `<entity>-db-queries.ts`, applying the server dependency suffix when required.
+- When a module defines Zod schemas for an entity, name it
+  `<entity>-schema.ts`.
+- When a module defines a mutation hook, name it `use-<verb>-<entity>.ts`.
+- Use snake_case for SQL column names.
 
-Complete the validation checklist in the root `AGENTS.md`. Explain any intentional
-departure from an existing convention in the handoff.
+### Framework conventions
 
-<!-- Review: Which recurring code-review decisions need an explicit rule here? -->
+- When a framework requires a particular name, use that name.

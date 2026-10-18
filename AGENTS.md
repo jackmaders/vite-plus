@@ -26,18 +26,9 @@ release. Add a tool name to select part of the graph. For example, run
 
 <!--VITE PLUS END-->
 
-## Task context
+## Context
 
-Read the documents matching the task before making the relevant changes. Paths
-below are relative to the repository root.
-
-- **Code:** Before writing or reviewing application code, read
+- When naming application modules, exports, or SQL columns, read
   [coding standards](docs/engineering/CODING_STANDARDS.md).
-- **Architecture:** Before adding modules or changing dependencies between modules
-  or server/client boundaries, read
-  [architecture](docs/engineering/ARCHITECTURE.md).
-- **Testing:** Before choosing, writing, or changing tests or test infrastructure,
-  read [testing](docs/engineering/TESTING.md).
-
-Before editing a file, check for `AGENTS.md` files between the repository root and
-its directory, and read any applicable instructions.
+- When adding modules or changing dependencies between modules or server/client boundaries, read [architecture](docs/engineering/ARCHITECTURE.md).
+- When naming or placing test files, read [testing](docs/engineering/TESTING.md).
