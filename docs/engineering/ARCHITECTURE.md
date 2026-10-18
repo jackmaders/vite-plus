@@ -1,7 +1,7 @@
 # Architecture
 
-Applies when designing modules, adding routes, placing components, or changing
-route authentication, loader data fetching, or server functions.
+Applies when designing modules or their public interfaces, adding routes, placing
+components, or changing route authentication, loader data fetching, or server functions.
 
 ## Module design
 
@@ -20,6 +20,8 @@ route authentication, loader data fetching, or server functions.
 - Extract a module when it enables independent tests, removes duplication,
   names a concept, or isolates independently changing behavior.
   Otherwise, keep the module intact.
+- When exposing helpers would couple callers to changing implementation
+  details, keep those helpers private. Expose the operations callers need.
 
 ## Routes
 

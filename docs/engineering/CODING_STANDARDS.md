@@ -1,9 +1,16 @@
 # Coding standards
 
-Applies when naming application modules, exports, or SQL columns, or changing
-database schemas, input validation schemas, database operations, or component props.
+Applies when naming application modules, exports, functions, variables, or SQL
+columns, or changing database schemas, input validation schemas, database
+operations, or component props.
 
 ## Naming
+
+### Functions and variables
+
+- Name functions for their purpose or result.
+- Give widely used variables descriptive names. Give related private
+  helpers names that distinguish their specific operations.
 
 ### Server modules
 
