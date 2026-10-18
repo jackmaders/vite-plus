@@ -29,6 +29,8 @@ jobs:
           cache: true
       - name: Check code quality
         run: vp check
+      - name: Check architecture
+        run: vp run lint:arch
 
   build:
     name: 🏗️ Build
@@ -47,7 +49,7 @@ jobs:
       - name: Build project
         run: vp run build
       - name: Verify generated routes
-        run: git diff --exit-code -- src/routeTree.gen.ts
+        run: git diff --exit-code -- src/app/routeTree.gen.ts
 
   test:
     name: 🧪 Unit Tests

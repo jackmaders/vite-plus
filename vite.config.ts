@@ -2,20 +2,20 @@ import { configDefaults, defineConfig, lazyPlugins } from "vite-plus";
 
 export default defineConfig(({ mode }) => ({
   fmt: {
-    ignorePatterns: [".agents/**", "src/routeTree.gen.ts"],
+    ignorePatterns: [".agents/**", "src/app/routeTree.gen.ts"],
     jsdoc: { descriptionWithDot: true, separateTagGroups: true },
     overrides: [{ files: ["wrangler.jsonc"], options: { trailingComma: "none" } }],
     sortImports: { internalPattern: ["@/", "@test/"] },
     sortPackageJson: { sortScripts: true },
-    sortTailwindcss: { stylesheet: "./src/styles.css" },
+    sortTailwindcss: { stylesheet: "./src/app/styles/styles.css" },
   },
   ...lintConfig,
   plugins: mode === "test" ? [] : (lazyPlugins(loadPlugins) ?? []),
   resolve: { tsconfigPaths: true },
-  staged: { "*": "vp check --fix" },
+  staged: { "*": "vp check --fix", "src/**": () => "steiger ./src" },
   test: {
     coverage: {
-      exclude: ["src/routeTree.gen.ts"],
+      exclude: ["src/app/routeTree.gen.ts"],
       include: ["src/**/*.{ts,tsx}"],
       provider: "v8",
       thresholds: { 100: true, perFile: true },
@@ -41,7 +41,7 @@ const lintConfig = defineConfig({
       style: "error",
       suspicious: "error",
     },
-    ignorePatterns: [".agents/**", "src/routeTree.gen.ts"],
+    ignorePatterns: [".agents/**", "src/app/routeTree.gen.ts"],
     jsPlugins: [
       { name: "vite-plus", specifier: "vite-plus/oxlint-plugin" },
       { name: "@tanstack/router", specifier: "@tanstack/eslint-plugin-router" },
@@ -176,7 +176,7 @@ const lintConfig = defineConfig({
         rules: { "eslint/no-magic-numbers": "off" },
       },
       {
-        files: ["src/routes/**"],
+        files: ["src/app/routes/**"],
         rules: { "react/only-export-components": "off" },
       },
       {
@@ -215,6 +215,7 @@ const lintConfig = defineConfig({
       "import/no-default-export": "error",
       "import/no-duplicates": ["error", { preferInline: true }],
       "import/no-named-export": "off",
+      "import/no-relative-parent-imports": "off",
       "import/prefer-default-export": "off",
       "oxc/no-async-await": "off",
       "oxc/no-rest-spread-properties": "off",
@@ -252,7 +253,7 @@ const lintConfig = defineConfig({
       "vitest/prefer-importing-vitest-globals": "error",
       "vitest/require-test-timeout": "off",
     },
-    settings: { tailwindcss: { cssConfigPath: "./src/styles.css" } },
+    settings: { tailwindcss: { cssConfigPath: "./src/app/styles/styles.css" } },
   },
 });
 
@@ -274,7 +275,10 @@ async function loadPlugins() {
     devtools(),
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     tailwindcss(),
-    tanstackStart(),
+    tanstackStart({
+      router: { routeFileIgnorePattern: "__tests__" },
+      srcDirectory: "src/app",
+    }),
     viteReact(),
   ];
 }

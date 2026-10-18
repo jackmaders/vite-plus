@@ -1,11 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-
 const FEATURE_STAGGER_MS = 90;
 const FEATURE_INITIAL_DELAY_MS = 80;
 
-export const Route = createFileRoute("/")({ component: App });
-
-function App() {
+export function HomePage() {
   return (
     <main className="mx-auto w-page px-4 pt-14 pb-8">
       <HeroSection />
@@ -80,15 +76,15 @@ function QuickStartSection() {
       </p>
       <ul className="m-0 list-disc space-y-2 pl-5 text-sm text-(--sea-ink-soft)">
         <li>
-          Edit <code>src/routes/index.tsx</code> to customize the home page.
+          Edit <code>src/pages/home/ui/home-page.tsx</code> to customize the home page.
         </li>
         <li>
-          Update <code>src/components/header.tsx</code> and <code>src/components/footer.tsx</code>{" "}
+          Update <code>src/app/layouts/header.tsx</code> and <code>src/app/layouts/footer.tsx</code>{" "}
           for brand links.
         </li>
         <li>
-          Add routes in <code>src/routes</code> and tweak visual tokens in{" "}
-          <code>src/styles.css</code>.
+          Add routes in <code>src/app/routes</code> and tweak visual tokens in{" "}
+          <code>src/app/styles/styles.css</code>.
         </li>
       </ul>
     </section>

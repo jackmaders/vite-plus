@@ -1,7 +1,7 @@
 import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vite-plus/test";
 
-import { Footer } from "@/components/footer";
+import { Footer } from "@/app/layouts/footer";
 
 describe("footer copyright", () => {
   beforeAll(() => {
@@ -20,7 +20,7 @@ describe("footer copyright", () => {
     expect.assertions(2);
 
     // Act
-    const { Footer: DatedFooter } = await import("@/components/footer");
+    const { Footer: DatedFooter } = await import("@/app/layouts/footer");
     render(<DatedFooter />);
 
     const footer = within(screen.getByRole("contentinfo"));

@@ -1,10 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
-
-export const Route = createFileRoute("/about")({
-  component: About,
-});
-
-function About() {
+export function AboutPage() {
   return (
     <main className="mx-auto w-page px-4 py-12">
       <section className="rounded-2xl border border-(--line) bg-linear-165 from-(--surface-strong) to-(--surface) p-6 shadow-island backdrop-blur-xs transition duration-180 ease-in-out sm:p-8">

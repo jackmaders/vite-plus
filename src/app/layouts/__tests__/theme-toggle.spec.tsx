@@ -2,7 +2,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
-import { ThemeToggle } from "@/components/theme-toggle";
+import { ThemeToggle } from "@/app/layouts/theme-toggle";
 
 const AUTO_LABEL = "Theme mode: auto (system). Click to switch to light mode.";
 const DARK_LABEL = "Theme mode: dark. Click to switch mode.";

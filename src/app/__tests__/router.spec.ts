@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vite-plus/test";
 
-import { getRouter } from "@/router";
+import { getRouter } from "@/app/router";
 
 describe("router route matching", () => {
   it("matches the home page within the root document", () => {

@@ -3,8 +3,8 @@ import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
-import { Header } from "@/components/header";
-import { routeTree } from "@/routeTree.gen";
+import { Header } from "@/app/layouts/header";
+import { routeTree } from "@/app/routeTree.gen";
 import { createTanStackRouterWrapper } from "@test/vitest/wrappers/tanstack-router-wrapper";
 
 describe("header identity and documentation", () => {

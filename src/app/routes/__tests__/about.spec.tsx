@@ -2,7 +2,7 @@ import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/rea
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { routeTree } from "@/routeTree.gen";
+import { routeTree } from "@/app/routeTree.gen";
 
 vi.mock(import("@tanstack/react-devtools"));
 
