@@ -3,7 +3,7 @@
 Applies when naming application modules, exports, functions, variables, or SQL
 columns, changing database schemas, input validation schemas, database
 operations, component props, error handling, or object and data design, or
-writing comments.
+writing comments, or designing function interfaces and behavior.
 
 ## Code organization
 
@@ -44,6 +44,18 @@ writing comments.
 ### Framework conventions
 
 - When a framework requires a particular name, use that name.
+
+## Function design
+
+- When positional arguments are hard to understand or allow invalid
+  combinations, use a named parameter object.
+- Replace boolean mode arguments with separate operations or named options so
+  the call site shows the behavior.
+- Make side effects clear in the function name or contract. Keep checks
+  separate from unrelated state changes.
+- Name predicates so callers can understand what `true` and `false` mean.
+- When multiple functions repeat dispatch on the same type, centralize that
+  dispatch so adding a variant does not require updating each function.
 
 ## Comments
 
