@@ -1,4 +1,4 @@
-import { defineConfig, lazyPlugins } from "vite-plus";
+import { configDefaults, defineConfig, lazyPlugins } from "vite-plus";
 
 export default defineConfig(({ mode }) => ({
   fmt: {
@@ -20,7 +20,10 @@ export default defineConfig(({ mode }) => ({
       thresholds: { 100: true, perFile: true },
     },
     environment: "happy-dom",
+    // Workers tests require a separate runtime configuration.
+    exclude: [...configDefaults.exclude, "src/**/__tests__/workers/**"],
     globals: false,
+    include: ["src/**/__tests__/**/*.spec.{ts,tsx}"],
   },
 }));
 

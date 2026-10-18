@@ -41,3 +41,7 @@ database schemas, input validation schemas, or database operations.
   the authenticated user's ID.
 - If an operation expects a row but `.returning()` returns none,
   throw an error.
+
+## Error handling
+
+// todo

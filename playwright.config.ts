@@ -14,6 +14,7 @@ export default defineConfig({
   ],
   reporter: "html",
   testDir: "./tests/e2e",
+  testMatch: "**/*.test.ts",
   use: { trace: "on-first-retry" },
   ...(CI ? { retries: CI_RETRIES, workers: CI_WORKERS } : {}),
 });
