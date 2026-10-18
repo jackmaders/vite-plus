@@ -3,7 +3,22 @@ import { defineConfig, devices } from "@playwright/test";
 const CI = Boolean(process.env["CI"]);
 const CI_RETRIES = 2;
 const CI_WORKERS = 1;
-const BASE_URL = CI ? "http://localhost:4173" : "http://localhost:5173";
+
+const PLAYWRIGHT_BASE_URL = (process.env["PLAYWRIGHT_BASE_URL"] ?? "").trim();
+const PLAYWRIGHT_TARGET = (process.env["PLAYWRIGHT_TARGET"] ?? "").trim();
+
+const DEV_URL = "http://localhost:5173";
+const PREVIEW_URL = "http://localhost:4173";
+
+const usePreview = CI || PLAYWRIGHT_TARGET === "preview";
+const localBaseUrl = usePreview ? PREVIEW_URL : DEV_URL;
+const baseURL = PLAYWRIGHT_BASE_URL || localBaseUrl;
+
+const webServer = {
+  command: usePreview ? "vp preview" : "vp dev",
+  reuseExistingServer: !CI,
+  url: baseURL,
+};
 
 export default defineConfig({
   forbidOnly: CI,
@@ -13,16 +28,14 @@ export default defineConfig({
     { name: "firefox", use: { ...devices["Desktop Firefox"] } },
     { name: "webkit", use: { ...devices["Desktop Safari"] } },
   ],
-  reporter: "html",
+  reporter: CI ? [["github"], ["html", { open: "never" }]] : [["list"], ["html"]],
   testDir: "./tests/e2e",
+  testMatch: "**/*.test.ts",
   use: {
-    baseURL: BASE_URL,
-    trace: "on-first-retry",
+    baseURL,
+    screenshot: "only-on-failure",
+    trace: CI ? "on-first-retry" : "retain-on-failure",
   },
-  webServer: {
-    command: CI ? "vp preview" : "vp dev",
-    reuseExistingServer: !CI,
-    url: BASE_URL,
-  },
+  ...(PLAYWRIGHT_BASE_URL ? {} : { webServer }),
   ...(CI ? { retries: CI_RETRIES, workers: CI_WORKERS } : {}),
 });

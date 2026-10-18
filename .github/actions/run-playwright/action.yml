@@ -2,6 +2,10 @@ name: Run Playwright
 description: Sets up a Playwright browser, runs E2E tests, and uploads failure reports
 
 inputs:
+  base-url:
+    description: Base URL to run Playwright tests against (skips starting a local server when set)
+    required: false
+    default: ""
   browser:
     description: Playwright browser project to run
     required: true
@@ -15,6 +19,9 @@ runs:
         browser: ${{ inputs.browser }}
     - name: Run browser tests
       shell: bash
+      env:
+        PLAYWRIGHT_BASE_URL: ${{ inputs.base-url }}
+        PLAYWRIGHT_TARGET: preview
       run: vp run test:e2e --project=${{ inputs.browser }}
     - name: Upload failure report
       if: ${{ !cancelled() && failure() }}
