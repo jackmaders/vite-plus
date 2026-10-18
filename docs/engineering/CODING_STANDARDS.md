@@ -2,7 +2,7 @@
 
 Applies when naming application modules, exports, functions, variables, or SQL
 columns, or changing database schemas, input validation schemas, database
-operations, component props, or error handling.
+operations, component props, error handling, or object and data design.
 
 ## Naming
 
@@ -34,6 +34,17 @@ operations, component props, or error handling.
 ### Framework conventions
 
 - When a framework requires a particular name, use that name.
+
+## Objects and data
+
+- When getters or setters couple callers to internal storage, replace
+  them with operations that preserve freedom to change the storage.
+- When a requirement calls for variation, choose an extension strategy
+  that supports that requirement.
+- Ask collaborators for operations directly. Avoid chaining through
+  returned service objects; ordinary access to plain data is fine.
+- When business behavior must change independently, separate it from
+  raw data so callers can use the data without depending on that behavior.
 
 ## Database
 
