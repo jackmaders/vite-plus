@@ -36,7 +36,10 @@ const lintConfig = defineConfig({
       suspicious: "error",
     },
     ignorePatterns: [".agents/**", "src/routeTree.gen.ts"],
-    jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
+    jsPlugins: [
+      { name: "vite-plus", specifier: "vite-plus/oxlint-plugin" },
+      { name: "@tanstack/router", specifier: "@tanstack/eslint-plugin-router" },
+    ],
     options: {
       denyWarnings: true,
       reportUnusedDisableDirectives: "error",
@@ -85,6 +88,8 @@ const lintConfig = defineConfig({
       "vitest",
     ],
     rules: {
+      "@tanstack/router/create-route-property-order": "error",
+      "@tanstack/router/route-param-names": "error",
       "eslint/func-style": ["error", "declaration"],
       "eslint/no-ternary": "off",
       "eslint/no-use-before-define": "off",
