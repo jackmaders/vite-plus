@@ -4,6 +4,7 @@ export default defineConfig(({ mode }) => ({
   fmt: {
     ignorePatterns: [".agents/**", "src/routeTree.gen.ts"],
     jsdoc: { descriptionWithDot: true, separateTagGroups: true },
+    overrides: [{ files: ["wrangler.jsonc"], options: { trailingComma: "none" } }],
     sortImports: { internalPattern: ["@/", "@test/"] },
     sortPackageJson: { sortScripts: true },
     sortTailwindcss: { stylesheet: "./src/styles.css" },
