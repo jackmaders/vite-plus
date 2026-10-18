@@ -65,8 +65,8 @@ describe("header navigation", () => {
     expect(home.getAttribute("href")).toBe("/");
     expect(about.getAttribute("href")).toBe("/about");
     expect(home.getAttribute("aria-current")).toBe("page");
-    expect([...home.classList]).toContain("is-active");
-    expect([...about.classList]).not.toContain("is-active");
+    expect([...home.classList]).toContain("after:scale-x-100");
+    expect([...about.classList]).not.toContain("after:scale-x-100");
   });
 
   it("highlights about instead of home on the about page", () => {
@@ -86,9 +86,9 @@ describe("header navigation", () => {
 
     // Assert
     expect(about.getAttribute("aria-current")).toBe("page");
-    expect([...about.classList]).toContain("is-active");
+    expect([...about.classList]).toContain("after:scale-x-100");
     expect(home.getAttribute("aria-current")).toBeNull();
-    expect([...home.classList]).not.toContain("is-active");
+    expect([...home.classList]).not.toContain("after:scale-x-100");
   });
 });
 

@@ -41,6 +41,7 @@ const lintConfig = defineConfig({
       { name: "@tanstack/router", specifier: "@tanstack/eslint-plugin-router" },
       { name: "testing-library", specifier: "eslint-plugin-testing-library" },
       { name: "playwright", specifier: "eslint-plugin-playwright" },
+      { name: "tailwindcss", specifier: "eslint-plugin-tailwindcss" },
     ],
     options: {
       denyWarnings: true,
@@ -221,6 +222,15 @@ const lintConfig = defineConfig({
       "react/jsx-props-no-spreading": "off",
       "react/no-multi-comp": "off",
       "react/react-in-jsx-scope": "off",
+      "tailwindcss/classnames-order": "off",
+      "tailwindcss/enforces-canonical-classname": "error",
+      "tailwindcss/enforces-negative-arbitrary-values": "error",
+      "tailwindcss/enforces-shorthand": "error",
+      "tailwindcss/important-modifier-suffix": "error",
+      "tailwindcss/no-arbitrary-value": "error",
+      "tailwindcss/no-contradicting-classname": "error",
+      "tailwindcss/no-custom-classname": "error",
+      "tailwindcss/no-unnecessary-arbitrary-value": "error",
       "typescript/consistent-type-imports": ["error", { fixStyle: "inline-type-imports" }],
       "typescript/explicit-function-return-type": "off",
       "typescript/explicit-module-boundary-types": "off",
@@ -236,6 +246,7 @@ const lintConfig = defineConfig({
       "vitest/prefer-importing-vitest-globals": "error",
       "vitest/require-test-timeout": "off",
     },
+    settings: { tailwindcss: { cssConfigPath: "./src/styles.css" } },
   },
 });
 
