@@ -2,7 +2,7 @@
 
 Applies when naming application modules, exports, functions, variables, or SQL
 columns, or changing database schemas, input validation schemas, database
-operations, or component props.
+operations, component props, or error handling.
 
 ## Naming
 
@@ -51,7 +51,17 @@ operations, or component props.
 
 ## Error handling
 
-// todo
+- Handle failures with guard clauses or separate error handling.
+  Keep the success path readable as sequential steps.
+- When callers need application-owned error types, translate vendor
+  exceptions at the adapter boundary.
+- Represent expected alternatives with conditions, explicit results,
+  or defaults. Reserve exceptions for failures.
+- When an empty value preserves the API's meaning, use it—for example,
+  return an empty collection. When absence is a distinct result callers
+  must handle, use `null`.
+
+// todo: Decide server-operation and TanStack Query error-handling conventions.
 
 ## Component props
 

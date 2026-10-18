@@ -18,6 +18,8 @@ Applies when implementing new behavior or writing, reviewing, or organizing test
   changes should affect only the relevant test data and expectations.
 - Assert externally observable results so implementation changes that
   preserve behavior leave tests passing.
+- Test expected exceptions, including their required recovery or
+  propagation behavior.
 - Separate test setup, the action under test, and assertions into distinct
   Arrange, Act, and Assert sections.
 - Place all `expect` statements in the Assert section. Perform actions and capture
