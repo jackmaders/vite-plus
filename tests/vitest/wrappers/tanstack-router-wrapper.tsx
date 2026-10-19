@@ -1,5 +1,6 @@
+import { QueryClient } from "@tanstack/react-query";
 import {
-  createRootRoute,
+  createRootRouteWithContext,
   createRouter,
   RouterContextProvider,
   type AnyRouter,
@@ -7,7 +8,10 @@ import {
 import type { ComponentProps } from "react";
 
 function createTanStackRouterWrapper(
-  router: AnyRouter = createRouter({ routeTree: createRootRoute() }),
+  router: AnyRouter = createRouter({
+    context: { queryClient: new QueryClient() },
+    routeTree: createRootRouteWithContext<{ queryClient: QueryClient }>()(),
+  }),
 ) {
   function RouterWrapper(props: Omit<ComponentProps<typeof RouterContextProvider>, "router">) {
     return <RouterContextProvider {...props} router={router} />;

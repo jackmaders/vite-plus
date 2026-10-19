@@ -1,3 +1,4 @@
+import { QueryClient } from "@tanstack/react-query";
 import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
@@ -16,6 +17,7 @@ describe("home route content", () => {
 
     // Arrange
     const router = createRouter({
+      context: { queryClient: new QueryClient() },
       history: createMemoryHistory({ initialEntries: ["/"] }),
       routeTree,
     });
@@ -43,6 +45,7 @@ describe("home route links", () => {
 
     // Arrange
     const router = createRouter({
+      context: { queryClient: new QueryClient() },
       history: createMemoryHistory({ initialEntries: ["/"] }),
       routeTree,
     });

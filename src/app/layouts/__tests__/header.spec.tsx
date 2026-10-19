@@ -1,3 +1,4 @@
+import { QueryClient } from "@tanstack/react-query";
 import { createMemoryHistory, createRouter } from "@tanstack/react-router";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -74,6 +75,7 @@ describe("header navigation", () => {
 
     // Arrange
     const router = createRouter({
+      context: { queryClient: new QueryClient() },
       history: createMemoryHistory({ initialEntries: ["/about"] }),
       routeTree,
     });

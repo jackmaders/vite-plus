@@ -65,6 +65,7 @@ const lintConfig = defineConfig({
     ],
     jsPlugins: [
       { name: "vite-plus", specifier: "vite-plus/oxlint-plugin" },
+      { name: "@tanstack/query", specifier: "@tanstack/eslint-plugin-query" },
       { name: "@tanstack/router", specifier: "@tanstack/eslint-plugin-router" },
       { name: "testing-library", specifier: "eslint-plugin-testing-library" },
       { name: "playwright", specifier: "eslint-plugin-playwright" },
@@ -237,6 +238,13 @@ const lintConfig = defineConfig({
       "vitest",
     ],
     rules: {
+      "@tanstack/query/exhaustive-deps": "error",
+      "@tanstack/query/infinite-query-property-order": "error",
+      "@tanstack/query/mutation-property-order": "error",
+      "@tanstack/query/no-rest-destructuring": "warn",
+      "@tanstack/query/no-unstable-deps": "error",
+      "@tanstack/query/no-void-query-fn": "error",
+      "@tanstack/query/stable-query-client": "error",
       "@tanstack/router/create-route-property-order": "error",
       "@tanstack/router/route-param-names": "error",
       "eslint/func-style": ["error", "declaration"],
