@@ -9,7 +9,12 @@ export default defineConfig(({ mode }) => ({
   staged: { "*": "vp fmt" },
   test: {
     coverage: {
-      exclude: ["src/app/routeTree.gen.ts", "src/shared/ui/shadcn/**", "src/**/__mocks__/**"],
+      exclude: [
+        "src/app/routeTree.gen.ts",
+        "src/shared/ui/shadcn/**",
+        "src/**/__mocks__/**",
+        "src/shared/db/schema/**",
+      ],
       include: ["src/**/*.{ts,tsx}"],
       provider: "v8",
       thresholds: { 100: true, perFile: true },

@@ -15,4 +15,11 @@ export {
   type User,
   type Verification,
 } from "./auth";
-export { examples, type Example, type NewExample } from "./examples";
+export {
+  insertTodoSchema,
+  selectTodoSchema,
+  todos,
+  updateTodoSchema,
+  type NewTodo,
+  type Todo,
+} from "./todos";
