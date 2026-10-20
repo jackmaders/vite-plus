@@ -19,6 +19,7 @@ todos.json
 # dotenv environment variable files
 .env.*
 !.env.example
+.dev.vars*
 
 # Playwright
 /test-results/

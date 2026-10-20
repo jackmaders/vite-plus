@@ -2,25 +2,14 @@ import { cloudflareTest } from "@cloudflare/vitest-plugin";
 import { defineConfig, lazyPlugins } from "vite-plus";
 
 export default defineConfig(({ mode }) => ({
-  fmt: {
-    ignorePatterns: [
-      ".agents/**",
-      "drizzle/**",
-      "src/app/routeTree.gen.ts",
-      "worker-configuration.d.ts",
-    ],
-    jsdoc: { descriptionWithDot: true, separateTagGroups: true },
-    overrides: [{ files: ["wrangler.jsonc"], options: { trailingComma: "none" } }],
-    sortImports: { internalPattern: ["@/", "@test/"] },
-    sortPackageJson: { sortScripts: true },
-  },
+  ...fmtConfig,
   ...lintConfig,
   plugins: mode === "test" ? [] : (lazyPlugins(loadPlugins) ?? []),
   resolve: { tsconfigPaths: true },
   staged: { "*": "vp fmt" },
   test: {
     coverage: {
-      exclude: ["src/app/routeTree.gen.ts", "src/shared/ui/shadcn/**"],
+      exclude: ["src/app/routeTree.gen.ts", "src/shared/ui/shadcn/**", "src/**/__mocks__/**"],
       include: ["src/**/*.{ts,tsx}"],
       provider: "v8",
       thresholds: { 100: true, perFile: true },
@@ -28,6 +17,20 @@ export default defineConfig(({ mode }) => ({
     globals: false,
     projects: [
       {
+        resolve: {
+          alias: [
+            {
+              find: /^(?!.*__mocks__).*(?:^|\/|\.)auth\.server(?:\.ts)?$/u,
+              replacement: new URL("src/shared/auth/__mocks__/auth.server.ts", import.meta.url)
+                .pathname,
+            },
+            {
+              find: /^(?!.*__mocks__).*(?:^|\/|\.)db\.server(?:\.ts)?$/u,
+              replacement: new URL("src/shared/db/__mocks__/db.server.ts", import.meta.url)
+                .pathname,
+            },
+          ],
+        },
         test: {
           environment: "happy-dom",
           exclude: ["src/**/__tests__/workers/**"],
@@ -324,3 +327,18 @@ async function loadPlugins() {
     viteReact(),
   ];
 }
+
+const fmtConfig = defineConfig({
+  fmt: {
+    ignorePatterns: [
+      ".agents/**",
+      "drizzle/**",
+      "src/app/routeTree.gen.ts",
+      "worker-configuration.d.ts",
+    ],
+    jsdoc: { descriptionWithDot: true, separateTagGroups: true },
+    overrides: [{ files: ["wrangler.jsonc"], options: { trailingComma: "none" } }],
+    sortImports: { internalPattern: ["@/", "@test/"] },
+    sortPackageJson: { sortScripts: true },
+  },
+});

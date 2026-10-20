@@ -10,5 +10,17 @@
       "migrations_pattern": "./drizzle/*.sql"
     }
   ],
-  "main": "@tanstack/react-start/server-entry"
+  "main": "@tanstack/react-start/server-entry",
+  "observability": {
+    "enabled": true,
+    "traces": {
+      "enabled": true
+    }
+  },
+  "secrets": {
+    "required": ["BETTER_AUTH_SECRET"]
+  },
+  "vars": {
+    "BETTER_AUTH_URL": "http://localhost:5173"
+  }
 }

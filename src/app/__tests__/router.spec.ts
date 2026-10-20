@@ -49,6 +49,34 @@ describe("router route matching", () => {
   });
 });
 
+describe("router auth route matching", () => {
+  it("matches the profile page within authenticated layout", () => {
+    expect.assertions(1);
+
+    // Act
+    const router = getRouter();
+    const matches = router.matchRoutes("/profile");
+
+    // Assert
+    expect(matches.map((match) => match.routeId)).toStrictEqual([
+      "__root__",
+      "/_authenticated",
+      "/_authenticated/profile",
+    ]);
+  });
+
+  it("matches api auth splat routes within the root document", () => {
+    expect.assertions(1);
+
+    // Act
+    const router = getRouter();
+    const matches = router.matchRoutes("/api/auth/sign-in");
+
+    // Assert
+    expect(matches.map((match) => match.routeId)).toStrictEqual(["__root__", "/api/auth/$"]);
+  });
+});
+
 describe("router instance isolation", () => {
   it("creates independent routers so changing one does not affect another", () => {
     expect.assertions(3);
