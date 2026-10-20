@@ -91,3 +91,31 @@ describe("root route devtools panels", () => {
     expect(screen.getByText("React Query Devtools Panel")).toBeDefined();
   });
 });
+
+describe("root route notFoundComponent", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("renders the not found page for an unrecognised route", async () => {
+    expect.assertions(3);
+
+    // Arrange
+    const router = createRouter({
+      context: { queryClient: new QueryClient() },
+      history: createMemoryHistory({ initialEntries: ["/non-existent-page"] }),
+      routeTree,
+    });
+    await router.load();
+
+    // Act
+    render(<RouterProvider router={router} />);
+
+    // Assert
+    expect(screen.getByRole("heading", { name: "Page Not Found" })).toBeDefined();
+    expect(
+      screen.getByText("The page you are looking for does not exist or has been moved."),
+    ).toBeDefined();
+    expect(screen.getByRole("link", { name: "Return Home" }).getAttribute("href")).toBe("/");
+  });
+});

@@ -1,7 +1,7 @@
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
-import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
+import { HeadContent, Link, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
 import { Footer } from "../layouts/footer";
@@ -30,8 +30,30 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
     ],
   }),
+  notFoundComponent: NotFound,
   shellComponent: RootDocument,
 });
+
+function NotFound() {
+  return (
+    <main className="mx-auto w-page px-4 py-16 text-center">
+      <h1 className="font-display text-4xl font-bold tracking-tight text-(--sea-ink) sm:text-5xl">
+        Page Not Found
+      </h1>
+      <p className="mt-4 text-base text-(--sea-ink-soft)">
+        The page you are looking for does not exist or has been moved.
+      </p>
+      <div className="mt-8">
+        <Link
+          className="inline-flex items-center justify-center rounded-xl bg-(--sea-ink) px-5 py-2.5 text-sm font-semibold text-white shadow-xs transition hover:opacity-90"
+          to="/"
+        >
+          Return Home
+        </Link>
+      </div>
+    </main>
+  );
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
