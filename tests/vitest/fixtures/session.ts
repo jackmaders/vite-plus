@@ -5,7 +5,6 @@ const TEST_USER: User = {
   email: "test@example.com",
   emailVerified: false,
   id: "user-1",
-  // oxlint-disable-next-line unicorn/no-null
   image: null,
   name: "Test User",
   updatedAt: new Date("2026-10-14T00:00:00Z"),

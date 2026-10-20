@@ -19,10 +19,8 @@ describe("profile page component", () => {
     expect.assertions(3);
 
     // Arrange
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     vi.mocked(useSession).mockReturnValue({
       data: TEST_SESSION,
-      // oxlint-disable-next-line unicorn/no-null
       error: null,
       isPending: false,
     } as unknown as SessionHookResult);
@@ -40,11 +38,8 @@ describe("profile page component", () => {
     expect.assertions(1);
 
     // Arrange
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     vi.mocked(useSession).mockReturnValue({
-      // oxlint-disable-next-line unicorn/no-null
       data: null,
-      // oxlint-disable-next-line unicorn/no-null
       error: null,
       isPending: true,
     } as unknown as SessionHookResult);

@@ -35,7 +35,6 @@ describe("session.server getSession", () => {
 
     // Arrange
     vi.mocked(getRequestHeaders).mockReturnValueOnce(new Headers());
-    // oxlint-disable-next-line unicorn/no-null
     vi.mocked(auth.api.getSession).mockResolvedValueOnce(null);
 
     // Act
@@ -70,7 +69,6 @@ describe("session.server ensureSession", () => {
 
     // Arrange
     vi.mocked(getRequestHeaders).mockReturnValueOnce(new Headers());
-    // oxlint-disable-next-line unicorn/no-null
     vi.mocked(auth.api.getSession).mockResolvedValueOnce(null);
 
     // Act & Assert

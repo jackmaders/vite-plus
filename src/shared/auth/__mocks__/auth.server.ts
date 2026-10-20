@@ -2,7 +2,6 @@ import { vi } from "vite-plus/test";
 
 const auth = {
   api: {
-    // oxlint-disable-next-line unicorn/no-null
     getSession: vi.fn<() => Promise<unknown>>().mockResolvedValue(null),
   },
   handler: vi.fn<() => Promise<Response>>(),

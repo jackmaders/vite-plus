@@ -115,7 +115,6 @@ type TableWithForeignKeys = Record<symbol, { reference: () => { foreignTable: un
 
 function getFirstForeignKeyReference(table: unknown) {
   const fksSymbol = Symbol.for("drizzle:SQLiteInlineForeignKeys");
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const target = table as TableWithForeignKeys;
   const fks = target[fksSymbol];
   if (!fks || fks.length === 0) {

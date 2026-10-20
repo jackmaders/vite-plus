@@ -30,7 +30,6 @@ describe("authMiddleware behavior", () => {
       status: "success",
     });
     const serverFn = getServerMiddleware();
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     const input = { context: {}, next } as unknown as MiddlewareInput;
 
     // Act
@@ -48,7 +47,6 @@ describe("authMiddleware behavior", () => {
     vi.mocked(ensureSession).mockRejectedValueOnce(new Error("Unauthorized"));
     const next = vi.fn<() => Promise<void>>();
     const serverFn = getServerMiddleware();
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     const input = { context: {}, next } as unknown as MiddlewareInput;
 
     // Act & Assert

@@ -30,7 +30,6 @@ describe("session.functions getSessionFn", () => {
 
     // Arrange
     const { getSessionFn } = await import("@/shared/auth/session.functions");
-    // oxlint-disable-next-line unicorn/no-null
     vi.mocked(getSession).mockResolvedValueOnce(null);
 
     // Act

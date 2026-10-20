@@ -35,7 +35,6 @@ describe("_authenticated route beforeLoad guard", () => {
     // Arrange
     vi.mocked(getSessionFn).mockResolvedValueOnce(TEST_SESSION);
     const beforeLoad = getBeforeLoad();
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     const emptyArgs = {} as unknown as BeforeLoadArgs;
 
     // Act
@@ -49,10 +48,8 @@ describe("_authenticated route beforeLoad guard", () => {
     expect.assertions(1);
 
     // Arrange
-    // oxlint-disable-next-line unicorn/no-null
     vi.mocked(getSessionFn).mockResolvedValueOnce(null);
     const beforeLoad = getBeforeLoad();
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
     const emptyArgs = {} as unknown as BeforeLoadArgs;
 
     // Act
@@ -74,7 +71,6 @@ describe("_authenticated route layout and navigation", () => {
     expect.assertions(1);
 
     // Arrange
-    // oxlint-disable-next-line unicorn/no-null
     vi.mocked(getSessionFn).mockResolvedValueOnce(null);
     const router = createRouter({
       context: { queryClient: new QueryClient() },

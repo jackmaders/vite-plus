@@ -16,7 +16,6 @@ function getHandlers() {
   if (!handlers) {
     throw new TypeError("Expected handlers to be defined");
   }
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   return handlers as Record<string, AuthServerRouteHandler>;
 }
 
