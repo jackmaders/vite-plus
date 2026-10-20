@@ -28,6 +28,15 @@ const todos = sqliteTable(
 type Todo = typeof todos.$inferSelect;
 type NewTodo = typeof todos.$inferInsert;
 
+type CreateTodoInput = Pick<NewTodo, "title"> & {
+  description?: string | null | undefined;
+};
+
+interface UpdateTodoInput {
+  description?: string | null | undefined;
+  title?: string | undefined;
+}
+
 const selectTodoSchema = createSelectSchema(todos);
 const insertTodoSchema = createInsertSchema(todos).omit({
   createdAt: true,
@@ -37,4 +46,13 @@ const insertTodoSchema = createInsertSchema(todos).omit({
 });
 const updateTodoSchema = insertTodoSchema.partial();
 
-export { insertTodoSchema, selectTodoSchema, todos, updateTodoSchema, type NewTodo, type Todo };
+export {
+  insertTodoSchema,
+  selectTodoSchema,
+  todos,
+  updateTodoSchema,
+  type CreateTodoInput,
+  type NewTodo,
+  type Todo,
+  type UpdateTodoInput,
+};
