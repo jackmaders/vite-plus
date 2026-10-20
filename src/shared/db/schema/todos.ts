@@ -17,7 +17,8 @@ const todos = sqliteTable(
     title: text("title").notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp" })
       .notNull()
-      .$defaultFn(() => new Date()),
+      .$defaultFn(() => new Date())
+      .$onUpdate(() => new Date()),
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),

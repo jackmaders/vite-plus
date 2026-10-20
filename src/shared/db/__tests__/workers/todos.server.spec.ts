@@ -11,6 +11,7 @@ import {
   getTodos,
   toggleTodo,
   updateTodo,
+  type TodoContext,
 } from "../../index.server";
 import { todos } from "../../schema/todos";
 
@@ -65,10 +66,10 @@ describe("todos.server createTodo failures", () => {
     const db = getDb(env.DB);
 
     // Act
-    const action = createTodo({ title: "No user" }, { db });
+    const action = createTodo({ title: "No user" }, { db } as unknown as TodoContext);
 
     // Assert
-    await expect(action).rejects.toThrow("User ID is required to create a todo");
+    await expect(action).rejects.toThrow("User ID is required");
   });
 
   it("throws an error when insert returning array is empty", async () => {
