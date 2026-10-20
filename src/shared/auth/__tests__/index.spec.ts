@@ -1,29 +1,7 @@
-import type { createAuthClient, useStore } from "better-auth/react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
-vi.mock(import("better-auth/react"), () => {
-  const mockClient = {
-    signIn: vi.fn<() => void>(),
-    signOut: vi.fn<() => void>(),
-    signUp: vi.fn<() => void>(),
-    useSession: vi.fn<() => void>(),
-  };
-
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-  return {
-    createAuthClient: vi.fn<() => typeof mockClient>(() => mockClient),
-    useStore: vi.fn<() => void>(),
-  } as unknown as { createAuthClient: typeof createAuthClient; useStore: typeof useStore };
-});
-
-vi.mock(import("@/shared/auth/session.functions"), async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-    getSessionFn: vi.fn<() => void>() as unknown as typeof actual.getSessionFn,
-  };
-});
+vi.mock(import("better-auth/react"));
+vi.mock(import("@/shared/auth/session.functions"));
 
 describe("shared/auth barrel exports", () => {
   it("exports universal client utilities from index.ts", async () => {

@@ -4,15 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { getRouter } from "@/app/router";
 
-vi.mock(import("@tanstack/react-router-ssr-query"), async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    setupRouterSsrQueryIntegration: vi.fn<typeof actual.setupRouterSsrQueryIntegration>(
-      actual.setupRouterSsrQueryIntegration,
-    ),
-  };
-});
+vi.mock(import("@tanstack/react-router-ssr-query"));
 
 describe("router route matching", () => {
   it("matches the home page within the root document", () => {

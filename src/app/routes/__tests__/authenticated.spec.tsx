@@ -6,27 +6,9 @@ import { Route as ProfileRoute } from "@/app/routes/_authenticated/profile";
 import { getSessionFn } from "@/shared/auth";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 
-vi.mock(import("@/shared/auth"), async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-    getSessionFn: vi.fn<() => void>() as unknown as typeof actual.getSessionFn,
-  };
-});
-
-vi.mock(import("@/pages/profile"), () => ({
-  ProfilePage: () => <div>Mocked Profile Page</div>,
-}));
-
-vi.mock(import("@tanstack/react-router"), async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-    Outlet: (() => <div>Mocked Child Outlet</div>) as unknown as typeof actual.Outlet,
-  };
-});
+vi.mock(import("@/shared/auth"));
+vi.mock(import("@/pages/profile"));
+vi.mock(import("@tanstack/react-router"));
 
 function getBeforeLoad() {
   const { beforeLoad } = AuthenticatedRoute.options;

@@ -60,6 +60,7 @@ const lintConfig = defineConfig({
       style: "error",
       suspicious: "error",
     },
+    globals: { document: "readonly" },
     ignorePatterns: [
       ".agents/**",
       "drizzle/**",
@@ -263,6 +264,7 @@ const lintConfig = defineConfig({
       "import/no-relative-parent-imports": "off",
       "import/prefer-default-export": "off",
       "oxc/no-async-await": "off",
+      "oxc/no-optional-chaining": "off",
       "oxc/no-rest-spread-properties": "off",
       "react-perf/jsx-no-new-array-as-prop": "off",
       "react-perf/jsx-no-new-function-as-prop": "off",

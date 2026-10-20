@@ -5,14 +5,7 @@ import { ProfilePage } from "@/pages/profile";
 import { useSession } from "@/shared/auth/index.client";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 
-vi.mock(import("@/shared/auth/index.client"), async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-    useSession: vi.fn<() => void>() as unknown as typeof actual.useSession,
-  };
-});
+vi.mock(import("@/shared/auth/index.client"));
 
 type SessionHookResult = ReturnType<typeof useSession>;
 

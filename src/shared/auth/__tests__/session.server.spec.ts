@@ -5,13 +5,7 @@ import { auth } from "@/shared/auth/auth.server";
 import { ensureSession, getSession } from "@/shared/auth/session.server";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 
-vi.mock(import("@tanstack/react-start/server"), async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    getRequestHeaders: vi.fn<typeof actual.getRequestHeaders>(),
-  };
-});
+vi.mock(import("@tanstack/react-start/server"));
 
 vi.mock(import("@/shared/auth/auth.server"));
 

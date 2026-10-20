@@ -3,27 +3,8 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { getSession } from "@/shared/auth/session.server";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 
-vi.mock(import("@tanstack/react-start"), async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-    createServerFn: vi.fn<() => { handler: (fn: (...args: unknown[]) => unknown) => unknown }>(
-      () => ({
-        handler: (fn: (...args: unknown[]) => unknown) => fn,
-      }),
-    ) as unknown as typeof actual.createServerFn,
-  };
-});
-
-vi.mock(import("@/shared/auth/session.server"), async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-    getSession: vi.fn<() => void>() as unknown as typeof actual.getSession,
-  };
-});
+vi.mock(import("@tanstack/react-start"));
+vi.mock(import("@/shared/auth/session.server"));
 
 describe("session.functions getSessionFn", () => {
   afterEach(() => {

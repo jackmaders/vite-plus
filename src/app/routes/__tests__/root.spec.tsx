@@ -1,4 +1,3 @@
-import type { TanStackDevtoolsReactInit } from "@tanstack/react-devtools";
 import { QueryClient } from "@tanstack/react-query";
 import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
 import { cleanup, render, screen } from "@testing-library/react";
@@ -6,31 +5,9 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { routeTree } from "@/app/routeTree.gen";
 
-vi.mock(import("@tanstack/react-devtools"), () => ({
-  TanStackDevtools: ({ plugins }: TanStackDevtoolsReactInit) => {
-    const list = plugins ?? [];
-    return (
-      <div>
-        {list.map((plugin, index) => {
-          const content =
-            typeof plugin.render === "function"
-              ? plugin.render(document.createElement("div"), {
-                  devtoolsOpen: false,
-                  theme: "dark",
-                })
-              : plugin.render;
-          return <div key={String(plugin.id ?? index)}>{content}</div>;
-        })}
-      </div>
-    );
-  },
-}));
-vi.mock(import("@tanstack/react-router-devtools"), () => ({
-  TanStackRouterDevtoolsPanel: () => <div>Router Devtools Panel</div>,
-}));
-vi.mock(import("@tanstack/react-query-devtools"), () => ({
-  ReactQueryDevtoolsPanel: () => <div>React Query Devtools Panel</div>,
-}));
+vi.mock(import("@tanstack/react-devtools"));
+vi.mock(import("@tanstack/react-router-devtools"));
+vi.mock(import("@tanstack/react-query-devtools"));
 
 describe("root route document metadata", () => {
   afterEach(() => {

@@ -4,14 +4,7 @@ import { authMiddleware } from "@/shared/auth/middleware";
 import { ensureSession } from "@/shared/auth/session.server";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 
-vi.mock(import("@/shared/auth/session.server"), async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-    ensureSession: vi.fn<() => void>() as unknown as typeof actual.ensureSession,
-  };
-});
+vi.mock(import("@/shared/auth/session.server"));
 
 function getServerMiddleware() {
   const serverFn = authMiddleware.options.server;
