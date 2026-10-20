@@ -280,6 +280,7 @@ const lintConfig = defineConfig({
       "typescript/explicit-function-return-type": "off",
       "typescript/explicit-module-boundary-types": "off",
       "typescript/prefer-readonly-parameter-types": "off",
+      "typescript/return-await": ["error", "always"],
       "unicorn/prefer-global-this": "off",
       "vite-plus/prefer-vite-plus-imports": "error",
       "vitest/consistent-test-filename": [
