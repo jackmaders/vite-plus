@@ -62,28 +62,30 @@ function TodoItem({ isUpdating = false, onDelete, onToggle, onUpdate, todo }: To
 
   if (isEditing) {
     return (
-      <Card className="flex flex-col gap-2 p-4">
-        <Input
-          disabled={isUpdating}
-          onChange={handleTitleChange}
-          placeholder="Title"
-          value={title}
-        />
-        <Input
-          disabled={isUpdating}
-          onChange={handleDescriptionChange}
-          placeholder="Description"
-          value={description}
-        />
-        <div className="flex justify-end gap-2">
-          <Button disabled={isUpdating} onClick={handleCancelEditing} size="sm" variant="outline">
-            Cancel
-          </Button>
-          <Button disabled={title.trim() === "" || isUpdating} onClick={handleSave} size="sm">
-            Save
-          </Button>
-        </div>
-      </Card>
+      <section aria-label="Edit todo">
+        <Card className="flex flex-col gap-2 p-4">
+          <Input
+            disabled={isUpdating}
+            onChange={handleTitleChange}
+            placeholder="Title"
+            value={title}
+          />
+          <Input
+            disabled={isUpdating}
+            onChange={handleDescriptionChange}
+            placeholder="Description"
+            value={description}
+          />
+          <div className="flex justify-end gap-2">
+            <Button disabled={isUpdating} onClick={handleCancelEditing} size="sm" variant="outline">
+              Cancel
+            </Button>
+            <Button disabled={title.trim() === "" || isUpdating} onClick={handleSave} size="sm">
+              Save
+            </Button>
+          </div>
+        </Card>
+      </section>
     );
   }
 

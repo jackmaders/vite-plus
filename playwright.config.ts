@@ -28,7 +28,7 @@ export default defineConfig({
     { name: "firefox", use: { ...devices["Desktop Firefox"] } },
     { name: "webkit", use: { ...devices["Desktop Safari"] } },
   ],
-  reporter: CI ? [["github"], ["html", { open: "never" }]] : [["list"], ["html"]],
+  reporter: CI ? [["github"]] : [["list"]],
   testDir: "./tests/e2e",
   testMatch: "**/*.test.ts",
   use: {

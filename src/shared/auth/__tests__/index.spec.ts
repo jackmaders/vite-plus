@@ -19,12 +19,13 @@ describe("shared/auth barrel exports", () => {
   });
 
   it("exports server functions from index.ts", async () => {
-    expect.assertions(1);
+    expect.assertions(2);
 
     // Arrange
     const universalAuth = await import("@/shared/auth");
 
     // Assert
+    expect(universalAuth.authMiddleware).toBeDefined();
     expect(universalAuth.getSessionFn).toBeDefined();
   });
 
