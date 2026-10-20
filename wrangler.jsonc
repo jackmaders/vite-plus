@@ -7,7 +7,7 @@
     {
       "binding": "DB",
       "migrations_dir": "./drizzle",
-      "migrations_pattern": "./drizzle/*.sql"
+      "migrations_pattern": "drizzle/*/migration.sql"
     }
   ],
   "main": "@tanstack/react-start/server-entry",

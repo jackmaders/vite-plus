@@ -1,2 +1,9 @@
 export { getDb } from "./db.server";
-export { examples, type Example, type NewExample } from "./schema/examples";
+export {
+  insertTodoSchema,
+  selectTodoSchema,
+  todos,
+  updateTodoSchema,
+  type NewTodo,
+  type Todo,
+} from "./schema";
