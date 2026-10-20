@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { routeTree } from "@/app/routeTree.gen";
 
 vi.mock(import("@tanstack/react-devtools"));
+vi.mock(import("@/shared/auth/auth.server"));
 
 describe("home route content", () => {
   afterEach(() => {

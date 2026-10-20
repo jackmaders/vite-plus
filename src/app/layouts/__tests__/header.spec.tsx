@@ -1,12 +1,23 @@
 import { QueryClient } from "@tanstack/react-query";
-import { createMemoryHistory, createRouter } from "@tanstack/react-router";
+import {
+  createMemoryHistory,
+  createRootRouteWithContext,
+  createRoute,
+  createRouter,
+} from "@tanstack/react-router";
 import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import { Header } from "@/app/layouts/header";
-import { routeTree } from "@/app/routeTree.gen";
 import { createTanStackRouterWrapper } from "@test/vitest/wrappers/tanstack-router-wrapper";
+
+function createAboutPageRouteTree() {
+  const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()();
+  const homeRoute = createRoute({ getParentRoute: () => rootRoute, path: "/" });
+  const aboutRoute = createRoute({ getParentRoute: () => rootRoute, path: "/about" });
+  return rootRoute.addChildren([homeRoute, aboutRoute]);
+}
 
 describe("header identity and documentation", () => {
   afterEach(cleanup);
@@ -77,7 +88,7 @@ describe("header navigation", () => {
     const router = createRouter({
       context: { queryClient: new QueryClient() },
       history: createMemoryHistory({ initialEntries: ["/about"] }),
-      routeTree,
+      routeTree: createAboutPageRouteTree(),
     });
     const { wrapper } = createTanStackRouterWrapper(router);
 
