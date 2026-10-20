@@ -1,7 +1,7 @@
 import { relations, sql } from "drizzle-orm";
-import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-export const user = sqliteTable("user", {
+const user = sqliteTable("user", {
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .notNull(),
@@ -12,11 +12,11 @@ export const user = sqliteTable("user", {
   name: text("name").notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-    .$onUpdate(() => /* @__PURE__ */ new Date())
+    .$onUpdate(() => new Date())
     .notNull(),
 });
 
-export const session = sqliteTable(
+const session = sqliteTable(
   "session",
   {
     createdAt: integer("created_at", { mode: "timestamp_ms" })
@@ -27,7 +27,7 @@ export const session = sqliteTable(
     ipAddress: text("ip_address"),
     token: text("token").notNull().unique(),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .$onUpdate(() => new Date())
       .notNull(),
     userAgent: text("user_agent"),
     userId: text("user_id")
@@ -37,7 +37,7 @@ export const session = sqliteTable(
   (table) => [index("session_userId_idx").on(table.userId)],
 );
 
-export const account = sqliteTable(
+const account = sqliteTable(
   "account",
   {
     accessToken: text("access_token"),
@@ -58,7 +58,7 @@ export const account = sqliteTable(
     }),
     scope: text("scope"),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" })
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .$onUpdate(() => new Date())
       .notNull(),
     userId: text("user_id")
       .notNull()
@@ -67,7 +67,7 @@ export const account = sqliteTable(
   (table) => [index("account_userId_idx").on(table.userId)],
 );
 
-export const verification = sqliteTable(
+const verification = sqliteTable(
   "verification",
   {
     createdAt: integer("created_at", { mode: "timestamp_ms" })
@@ -78,37 +78,55 @@ export const verification = sqliteTable(
     identifier: text("identifier").notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
-      .$onUpdate(() => /* @__PURE__ */ new Date())
+      .$onUpdate(() => new Date())
       .notNull(),
     value: text("value").notNull(),
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
-export const userRelations = relations(user, ({ many }) => ({
+const userRelations = relations(user, ({ many }) => ({
   accounts: many(account),
   sessions: many(session),
 }));
 
-export const sessionRelations = relations(session, ({ one }) => ({
+const sessionRelations = relations(session, ({ one }) => ({
   user: one(user, {
     fields: [session.userId],
     references: [user.id],
   }),
 }));
 
-export const accountRelations = relations(account, ({ one }) => ({
+const accountRelations = relations(account, ({ one }) => ({
   user: one(user, {
     fields: [account.userId],
     references: [user.id],
   }),
 }));
 
-export type User = typeof user.$inferSelect;
-export type NewUser = typeof user.$inferInsert;
-export type Session = typeof session.$inferSelect;
-export type NewSession = typeof session.$inferInsert;
-export type Account = typeof account.$inferSelect;
-export type NewAccount = typeof account.$inferInsert;
-export type Verification = typeof verification.$inferSelect;
-export type NewVerification = typeof verification.$inferInsert;
+type User = typeof user.$inferSelect;
+type NewUser = typeof user.$inferInsert;
+type Session = typeof session.$inferSelect;
+type NewSession = typeof session.$inferInsert;
+type Account = typeof account.$inferSelect;
+type NewAccount = typeof account.$inferInsert;
+type Verification = typeof verification.$inferSelect;
+type NewVerification = typeof verification.$inferInsert;
+
+export {
+  account,
+  accountRelations,
+  session,
+  sessionRelations,
+  user,
+  userRelations,
+  verification,
+  type Account,
+  type NewAccount,
+  type NewSession,
+  type NewUser,
+  type NewVerification,
+  type Session,
+  type User,
+  type Verification,
+};
