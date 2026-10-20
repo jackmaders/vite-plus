@@ -17,20 +17,6 @@ export default defineConfig(({ mode }) => ({
     globals: false,
     projects: [
       {
-        resolve: {
-          alias: [
-            {
-              find: /^(?!.*__mocks__).*(?:^|\/|\.)auth\.server(?:\.ts)?$/u,
-              replacement: new URL("src/shared/auth/__mocks__/auth.server.ts", import.meta.url)
-                .pathname,
-            },
-            {
-              find: /^(?!.*__mocks__).*(?:^|\/|\.)db\.server(?:\.ts)?$/u,
-              replacement: new URL("src/shared/db/__mocks__/db.server.ts", import.meta.url)
-                .pathname,
-            },
-          ],
-        },
         test: {
           environment: "happy-dom",
           exclude: ["src/**/__tests__/workers/**"],
@@ -84,8 +70,10 @@ const lintConfig = defineConfig({
     overrides: [
       { env: { browser: true }, files: ["src/**"] },
       {
-        files: ["src/**/*.{test,spec}.{ts,tsx}", "tests/vitest/**"],
+        files: ["src/**/*.{test,spec}.{ts,tsx}", "tests/vitest/**", "**/__mocks__/**"],
         rules: {
+          "eslint/no-magic-numbers": "off",
+          "import/group-exports": "off",
           "testing-library/await-async-events": "error",
           "testing-library/await-async-queries": "error",
           "testing-library/await-async-utils": "error",
@@ -118,6 +106,8 @@ const lintConfig = defineConfig({
           "testing-library/prefer-user-event": "error",
           "testing-library/prefer-user-event-setup": "error",
           "testing-library/render-result-naming-convention": "error",
+          "typescript/no-unsafe-type-assertion": "off",
+          "unicorn/no-null": "off",
         },
       },
       {
@@ -196,10 +186,6 @@ const lintConfig = defineConfig({
           "playwright/valid-title": "error",
           "vitest/prefer-importing-vitest-globals": "off",
         },
-      },
-      {
-        files: ["**/*.{test,spec}.{ts,tsx}"],
-        rules: { "eslint/no-magic-numbers": "off" },
       },
       {
         files: ["src/app/routes/**"],

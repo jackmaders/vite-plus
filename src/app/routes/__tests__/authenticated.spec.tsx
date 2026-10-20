@@ -1,14 +1,18 @@
+import { QueryClient } from "@tanstack/react-query";
+import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { Route as AuthenticatedRoute } from "@/app/routes/_authenticated";
-import { Route as ProfileRoute } from "@/app/routes/_authenticated/profile";
+import { routeTree } from "@/app/routeTree.gen";
 import { getSessionFn } from "@/shared/auth";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 
 vi.mock(import("@/shared/auth"));
 vi.mock(import("@/pages/profile"));
-vi.mock(import("@tanstack/react-router"));
+vi.mock(import("@tanstack/react-devtools"));
+vi.mock(import("@tanstack/react-router-devtools"));
+vi.mock(import("@tanstack/react-query-devtools"));
 
 function getBeforeLoad() {
   const { beforeLoad } = AuthenticatedRoute.options;
@@ -16,22 +20,6 @@ function getBeforeLoad() {
     throw new TypeError("Expected beforeLoad to be defined");
   }
   return beforeLoad;
-}
-
-function getAuthenticatedLayoutComponent() {
-  const { component } = AuthenticatedRoute.options;
-  if (!component) {
-    throw new TypeError("Expected layout component to be defined");
-  }
-  return component;
-}
-
-function getProfileComponent() {
-  const { component } = ProfileRoute.options;
-  if (!component) {
-    throw new TypeError("Expected profile route component to be defined");
-  }
-  return component;
 }
 
 type BeforeLoadArgs = NonNullable<Parameters<ReturnType<typeof getBeforeLoad>>[0]>;
@@ -79,30 +67,43 @@ describe("_authenticated route beforeLoad guard", () => {
   });
 });
 
-describe("_authenticated route component layout", () => {
+describe("_authenticated route layout and navigation", () => {
   afterEach(cleanup);
 
-  it("renders the child outlet in authenticated layout", () => {
+  it("redirects unauthenticated users attempting to access /profile to /", async () => {
     expect.assertions(1);
 
+    // Arrange
+    // oxlint-disable-next-line unicorn/no-null
+    vi.mocked(getSessionFn).mockResolvedValueOnce(null);
+    const router = createRouter({
+      context: { queryClient: new QueryClient() },
+      history: createMemoryHistory({ initialEntries: ["/profile"] }),
+      routeTree,
+    });
+    await router.load();
+
     // Act
-    const Component = getAuthenticatedLayoutComponent();
-    render(<Component />);
+    render(<RouterProvider router={router} />);
 
     // Assert
-    expect(screen.getByText("Mocked Child Outlet")).toBeDefined();
+    expect(router.state.location.pathname).toBe("/");
   });
-});
 
-describe("_authenticated/profile route component", () => {
-  afterEach(cleanup);
-
-  it("renders the ProfilePage component", () => {
+  it("renders profile route inside layout when user is authenticated", async () => {
     expect.assertions(1);
 
+    // Arrange
+    vi.mocked(getSessionFn).mockResolvedValue(TEST_SESSION);
+    const router = createRouter({
+      context: { queryClient: new QueryClient() },
+      history: createMemoryHistory({ initialEntries: ["/profile"] }),
+      routeTree,
+    });
+    await router.load();
+
     // Act
-    const Component = getProfileComponent();
-    render(<Component />);
+    render(<RouterProvider router={router} />);
 
     // Assert
     expect(screen.getByText("Mocked Profile Page")).toBeDefined();
