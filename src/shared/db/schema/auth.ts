@@ -7,7 +7,9 @@ const user = sqliteTable("user", {
     .notNull(),
   email: text("email").notNull().unique(),
   emailVerified: integer("email_verified", { mode: "boolean" }).default(false).notNull(),
-  id: text("id").primaryKey(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
   image: text("image"),
   name: text("name").notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" })
@@ -23,7 +25,9 @@ const session = sqliteTable(
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),
     expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
-    id: text("id").primaryKey(),
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
     ipAddress: text("ip_address"),
     token: text("token").notNull().unique(),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" })
@@ -48,7 +52,9 @@ const account = sqliteTable(
     createdAt: integer("created_at", { mode: "timestamp_ms" })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),
-    id: text("id").primaryKey(),
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
     idToken: text("id_token"),
     password: text("password"),
     providerId: text("provider_id").notNull(),
@@ -74,7 +80,9 @@ const verification = sqliteTable(
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
       .notNull(),
     expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
-    id: text("id").primaryKey(),
+    id: text("id")
+      .primaryKey()
+      .$defaultFn(() => crypto.randomUUID()),
     identifier: text("identifier").notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp_ms" })
       .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
