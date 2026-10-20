@@ -1,20 +1,38 @@
 import { and, desc, eq } from "drizzle-orm";
 
-import type { getDb } from "./db.server";
+import { getDb } from "./db.server";
 import { todos, type CreateTodoInput, type UpdateTodoInput } from "./schema/todos";
 
 type Database = ReturnType<typeof getDb>;
 
-async function getTodos(db: Database, userId: string) {
-  const result = await db
-    .select()
-    .from(todos)
-    .where(eq(todos.userId, userId))
-    .orderBy(desc(todos.createdAt));
+const EMPTY_LENGTH = 0;
+
+interface TodoContext {
+  db?: Database | undefined;
+  userId?: string | undefined;
+}
+
+function getWhereClause(id: string, userId: string | undefined) {
+  if (typeof userId === "string" && userId.length > EMPTY_LENGTH) {
+    return and(eq(todos.id, id), eq(todos.userId, userId));
+  }
+  return eq(todos.id, id);
+}
+
+async function getTodos({ db = getDb(), userId }: TodoContext = {}) {
+  const query = db.select().from(todos);
+  if (typeof userId === "string" && userId.length > EMPTY_LENGTH) {
+    const result = await query.where(eq(todos.userId, userId)).orderBy(desc(todos.createdAt));
+    return result;
+  }
+  const result = await query.orderBy(desc(todos.createdAt));
   return result;
 }
 
-async function createTodo(db: Database, userId: string, input: CreateTodoInput) {
+async function createTodo(input: CreateTodoInput, { db = getDb(), userId }: TodoContext = {}) {
+  if (typeof userId !== "string" || userId.trim().length === EMPTY_LENGTH) {
+    throw new Error("User ID is required to create a todo");
+  }
   const [created] = await db
     .insert(todos)
     .values({
@@ -30,12 +48,16 @@ async function createTodo(db: Database, userId: string, input: CreateTodoInput) 
   return created;
 }
 
-// eslint-disable-next-line eslint/max-params
-async function toggleTodo(db: Database, userId: string, id: string, completed: boolean) {
+async function toggleTodo(
+  id: string,
+  completed: boolean,
+  { db = getDb(), userId }: TodoContext = {},
+) {
+  const whereClause = getWhereClause(id, userId);
   const [updated] = await db
     .update(todos)
     .set({ completed, updatedAt: new Date() })
-    .where(and(eq(todos.id, id), eq(todos.userId, userId)))
+    .where(whereClause)
     .returning();
   if (!updated) {
     throw new Error("Todo not found");
@@ -43,12 +65,16 @@ async function toggleTodo(db: Database, userId: string, id: string, completed: b
   return updated;
 }
 
-// eslint-disable-next-line eslint/max-params
-async function updateTodo(db: Database, userId: string, id: string, input: UpdateTodoInput) {
+async function updateTodo(
+  id: string,
+  input: UpdateTodoInput,
+  { db = getDb(), userId }: TodoContext = {},
+) {
+  const whereClause = getWhereClause(id, userId);
   const [updated] = await db
     .update(todos)
     .set({ ...input, updatedAt: new Date() })
-    .where(and(eq(todos.id, id), eq(todos.userId, userId)))
+    .where(whereClause)
     .returning();
   if (!updated) {
     throw new Error("Todo not found");
@@ -56,15 +82,21 @@ async function updateTodo(db: Database, userId: string, id: string, input: Updat
   return updated;
 }
 
-async function deleteTodo(db: Database, userId: string, id: string) {
-  const [deleted] = await db
-    .delete(todos)
-    .where(and(eq(todos.id, id), eq(todos.userId, userId)))
-    .returning();
+async function deleteTodo(id: string, { db = getDb(), userId }: TodoContext = {}) {
+  const whereClause = getWhereClause(id, userId);
+  const [deleted] = await db.delete(todos).where(whereClause).returning();
   if (!deleted) {
     throw new Error("Todo not found");
   }
   return deleted;
 }
 
-export { createTodo, deleteTodo, getTodos, toggleTodo, updateTodo, type Database };
+export {
+  createTodo,
+  deleteTodo,
+  getTodos,
+  toggleTodo,
+  updateTodo,
+  type Database,
+  type TodoContext,
+};

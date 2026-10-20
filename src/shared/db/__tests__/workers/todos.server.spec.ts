@@ -1,6 +1,8 @@
 import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { beforeAll, beforeEach, describe, expect, it } from "vite-plus/test";
+
+import { createEmptyInsertMockDb, resetTestDb, setupTestDb } from "@test/vitest/fixtures/test-db";
 
 import {
   createTodo,
@@ -9,30 +11,8 @@ import {
   getTodos,
   toggleTodo,
   updateTodo,
-  type Database,
 } from "../../index.server";
-import { user } from "../../schema/auth";
 import { todos } from "../../schema/todos";
-
-async function setupTestDb(): Promise<void> {
-  const schemaSql =
-    "CREATE TABLE IF NOT EXISTS user (id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, email_verified INTEGER DEFAULT false NOT NULL, image TEXT, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL);" +
-    "CREATE TABLE IF NOT EXISTS todos (id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE, title TEXT NOT NULL, description TEXT, completed INTEGER DEFAULT false NOT NULL, created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL);" +
-    "CREATE INDEX IF NOT EXISTS todos_user_id_idx ON todos (user_id);";
-  await env.DB.exec(schemaSql);
-}
-
-async function resetTestDb(): Promise<void> {
-  const db = getDb(env.DB);
-  await db.delete(todos);
-  await db
-    .insert(user)
-    .values([
-      { email: "user-a@example.com", id: "user-a", name: "User A" },
-      { email: "user-b@example.com", id: "user-b", name: "User B" },
-    ])
-    .onConflictDoNothing();
-}
 
 describe("todos.server createTodo creation", () => {
   beforeAll(setupTestDb);
@@ -46,7 +26,7 @@ describe("todos.server createTodo creation", () => {
     const input = { description: "Wipe counters", title: "  Clean kitchen  " };
 
     // Act
-    const created = await createTodo(db, "user-a", input);
+    const created = await createTodo(input, { db, userId: "user-a" });
 
     // Assert
     expect(created).toMatchObject({
@@ -67,7 +47,7 @@ describe("todos.server createTodo creation", () => {
     const input = { title: "Simple task" };
 
     // Act
-    const created = await createTodo(db, "user-a", input);
+    const created = await createTodo(input, { db, userId: "user-a" });
 
     // Assert
     expect(created.description).toBeNull();
@@ -78,22 +58,27 @@ describe("todos.server createTodo failures", () => {
   beforeAll(setupTestDb);
   beforeEach(resetTestDb);
 
+  it("throws an error when userId is missing in context", async () => {
+    expect.assertions(1);
+
+    // Arrange
+    const db = getDb(env.DB);
+
+    // Act
+    const action = createTodo({ title: "No user" }, { db });
+
+    // Assert
+    await expect(action).rejects.toThrow("User ID is required to create a todo");
+  });
+
   it("throws an error when insert returning array is empty", async () => {
     expect.assertions(1);
 
     // Arrange
-    const mockDb = {
-      insert: vi
-        .fn<() => { values: () => { returning: () => Promise<unknown[]> } }>()
-        .mockReturnValue({
-          values: vi.fn<() => { returning: () => Promise<unknown[]> }>().mockReturnValue({
-            returning: vi.fn<() => Promise<unknown[]>>().mockResolvedValue([]),
-          }),
-        }),
-    } as unknown as Database;
+    const mockDb = createEmptyInsertMockDb();
 
     // Act
-    const action = createTodo(mockDb, "user-a", { title: "Test" });
+    const action = createTodo({ title: "Test" }, { db: mockDb, userId: "user-a" });
 
     // Assert
     await expect(action).rejects.toThrow("Failed to create todo");
@@ -109,15 +94,15 @@ describe("todos.server getTodos", () => {
 
     // Arrange
     const db = getDb(env.DB);
-    const first = await createTodo(db, "user-a", { title: "First todo" });
+    const first = await createTodo({ title: "First todo" }, { db, userId: "user-a" });
     await db
       .update(todos)
       .set({ createdAt: new Date(Date.now() - 10_000) })
       .where(eq(todos.id, first.id));
-    const second = await createTodo(db, "user-a", { title: "Second todo" });
+    const second = await createTodo({ title: "Second todo" }, { db, userId: "user-a" });
 
     // Act
-    const results = await getTodos(db, "user-a");
+    const results = await getTodos({ db, userId: "user-a" });
 
     // Assert
     expect(results).toHaveLength(2);
@@ -130,11 +115,11 @@ describe("todos.server getTodos", () => {
 
     // Arrange
     const db = getDb(env.DB);
-    await createTodo(db, "user-b", { title: "User B todo" });
-    const userATodo = await createTodo(db, "user-a", { title: "User A todo" });
+    await createTodo({ title: "User B todo" }, { db, userId: "user-b" });
+    const userATodo = await createTodo({ title: "User A todo" }, { db, userId: "user-a" });
 
     // Act
-    const results = await getTodos(db, "user-a");
+    const results = await getTodos({ db, userId: "user-a" });
 
     // Assert
     expect(results).toHaveLength(1);
@@ -151,10 +136,10 @@ describe("todos.server toggleTodo", () => {
 
     // Arrange
     const db = getDb(env.DB);
-    const created = await createTodo(db, "user-a", { title: "Toggle test" });
+    const created = await createTodo({ title: "Toggle test" }, { db, userId: "user-a" });
 
     // Act
-    const toggled = await toggleTodo(db, "user-a", created.id, true);
+    const toggled = await toggleTodo(created.id, true, { db, userId: "user-a" });
 
     // Assert
     expect(toggled.id).toBe(created.id);
@@ -166,10 +151,10 @@ describe("todos.server toggleTodo", () => {
 
     // Arrange
     const db = getDb(env.DB);
-    const todoB = await createTodo(db, "user-b", { title: "User B todo" });
+    const todoB = await createTodo({ title: "User B todo" }, { db, userId: "user-b" });
 
     // Act
-    const action = toggleTodo(db, "user-a", todoB.id, true);
+    const action = toggleTodo(todoB.id, true, { db, userId: "user-a" });
 
     // Assert
     await expect(action).rejects.toThrow("Todo not found");
@@ -182,7 +167,7 @@ describe("todos.server toggleTodo", () => {
     const db = getDb(env.DB);
 
     // Act
-    const action = toggleTodo(db, "user-a", "non-existent-id", true);
+    const action = toggleTodo("non-existent-id", true, { db, userId: "user-a" });
 
     // Assert
     await expect(action).rejects.toThrow("Todo not found");
@@ -198,16 +183,23 @@ describe("todos.server updateTodo", () => {
 
     // Arrange
     const db = getDb(env.DB);
-    const created = await createTodo(db, "user-a", {
-      description: "Initial description",
-      title: "Initial title",
-    });
+    const created = await createTodo(
+      {
+        description: "Initial description",
+        title: "Initial title",
+      },
+      { db, userId: "user-a" },
+    );
 
     // Act
-    const updated = await updateTodo(db, "user-a", created.id, {
-      description: "Updated description",
-      title: "Updated title",
-    });
+    const updated = await updateTodo(
+      created.id,
+      {
+        description: "Updated description",
+        title: "Updated title",
+      },
+      { db, userId: "user-a" },
+    );
 
     // Assert
     expect(updated.title).toBe("Updated title");
@@ -224,10 +216,10 @@ describe("todos.server updateTodo error cases", () => {
 
     // Arrange
     const db = getDb(env.DB);
-    const todoB = await createTodo(db, "user-b", { title: "User B todo" });
+    const todoB = await createTodo({ title: "User B todo" }, { db, userId: "user-b" });
 
     // Act
-    const action = updateTodo(db, "user-a", todoB.id, { title: "Unauthorized update" });
+    const action = updateTodo(todoB.id, { title: "Unauthorized update" }, { db, userId: "user-a" });
 
     // Assert
     await expect(action).rejects.toThrow("Todo not found");
@@ -240,7 +232,11 @@ describe("todos.server updateTodo error cases", () => {
     const db = getDb(env.DB);
 
     // Act
-    const action = updateTodo(db, "user-a", "non-existent-id", { title: "Non-existent update" });
+    const action = updateTodo(
+      "non-existent-id",
+      { title: "Non-existent update" },
+      { db, userId: "user-a" },
+    );
 
     // Assert
     await expect(action).rejects.toThrow("Todo not found");
@@ -256,11 +252,11 @@ describe("todos.server deleteTodo", () => {
 
     // Arrange
     const db = getDb(env.DB);
-    const created = await createTodo(db, "user-a", { title: "To be deleted" });
+    const created = await createTodo({ title: "To be deleted" }, { db, userId: "user-a" });
 
     // Act
-    const deleted = await deleteTodo(db, "user-a", created.id);
-    const remaining = await getTodos(db, "user-a");
+    const deleted = await deleteTodo(created.id, { db, userId: "user-a" });
+    const remaining = await getTodos({ db, userId: "user-a" });
 
     // Assert
     expect(deleted.id).toBe(created.id);
@@ -272,10 +268,10 @@ describe("todos.server deleteTodo", () => {
 
     // Arrange
     const db = getDb(env.DB);
-    const todoB = await createTodo(db, "user-b", { title: "User B todo" });
+    const todoB = await createTodo({ title: "User B todo" }, { db, userId: "user-b" });
 
     // Act
-    const action = deleteTodo(db, "user-a", todoB.id);
+    const action = deleteTodo(todoB.id, { db, userId: "user-a" });
 
     // Assert
     await expect(action).rejects.toThrow("Todo not found");
@@ -288,7 +284,7 @@ describe("todos.server deleteTodo", () => {
     const db = getDb(env.DB);
 
     // Act
-    const action = deleteTodo(db, "user-a", "non-existent-id");
+    const action = deleteTodo("non-existent-id", { db, userId: "user-a" });
 
     // Assert
     await expect(action).rejects.toThrow("Todo not found");

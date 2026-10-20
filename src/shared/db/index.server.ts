@@ -16,4 +16,5 @@ export {
   toggleTodo,
   updateTodo,
   type Database,
+  type TodoContext,
 } from "./todos.server";

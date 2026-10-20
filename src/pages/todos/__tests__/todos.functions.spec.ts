@@ -1,14 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { ensureSession } from "@/shared/auth/session.server";
-import {
-  createTodo,
-  deleteTodo,
-  getDb,
-  getTodos,
-  toggleTodo,
-  updateTodo,
-} from "@/shared/db/index.server";
+import { createTodo, deleteTodo, getTodos, toggleTodo, updateTodo } from "@/shared/db/index.server";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 
 import {
@@ -54,7 +47,7 @@ describe("todos functions query handlers", () => {
     const result = await getTodosFn();
 
     // Assert
-    expect(getTodos).toHaveBeenCalledWith(getDb(), TEST_SESSION.user.id);
+    expect(getTodos).toHaveBeenCalledWith({ userId: TEST_SESSION.user.id });
     expect(result).toStrictEqual([MOCK_TODO]);
   });
 });
@@ -79,7 +72,7 @@ describe("todos functions create and toggle handlers", () => {
     const result = await createTodoFn({ data: inputData });
 
     // Assert
-    expect(createTodo).toHaveBeenCalledWith(getDb(), TEST_SESSION.user.id, inputData);
+    expect(createTodo).toHaveBeenCalledWith(inputData, { userId: TEST_SESSION.user.id });
     expect(result).toStrictEqual(MOCK_TODO);
   });
 
@@ -94,7 +87,9 @@ describe("todos functions create and toggle handlers", () => {
     const result = await toggleTodoFn({ data: { completed: true, id: MOCK_TODO.id } });
 
     // Assert
-    expect(toggleTodo).toHaveBeenCalledWith(getDb(), TEST_SESSION.user.id, MOCK_TODO.id, true);
+    expect(toggleTodo).toHaveBeenCalledWith(MOCK_TODO.id, true, {
+      userId: TEST_SESSION.user.id,
+    });
     expect(result).toStrictEqual(toggledTodo);
   });
 });
@@ -121,10 +116,14 @@ describe("todos functions update and delete handlers", () => {
     });
 
     // Assert
-    expect(updateTodo).toHaveBeenCalledWith(getDb(), TEST_SESSION.user.id, MOCK_TODO.id, {
-      description: "Updated desc",
-      title: "Updated title",
-    });
+    expect(updateTodo).toHaveBeenCalledWith(
+      MOCK_TODO.id,
+      {
+        description: "Updated desc",
+        title: "Updated title",
+      },
+      { userId: TEST_SESSION.user.id },
+    );
     expect(result).toStrictEqual(updatedTodo);
   });
 
@@ -138,7 +137,7 @@ describe("todos functions update and delete handlers", () => {
     const result = await deleteTodoFn({ data: { id: MOCK_TODO.id } });
 
     // Assert
-    expect(deleteTodo).toHaveBeenCalledWith(getDb(), TEST_SESSION.user.id, MOCK_TODO.id);
+    expect(deleteTodo).toHaveBeenCalledWith(MOCK_TODO.id, { userId: TEST_SESSION.user.id });
     expect(result).toStrictEqual(MOCK_TODO);
   });
 });

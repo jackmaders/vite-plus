@@ -289,7 +289,6 @@ const lintConfig = defineConfig({
       "vitest/no-hooks": "off",
       "vitest/no-importing-vitest-globals": "off",
       "vitest/prefer-importing-vitest-globals": "error",
-      // Conflicts with vitest/prefer-strict-boolean-matchers which prefers strict toBe(true)/toBe(false)
       "vitest/prefer-to-be-falsy": "off",
       "vitest/prefer-to-be-truthy": "off",
       "vitest/require-test-timeout": "off",
