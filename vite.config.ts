@@ -194,7 +194,10 @@ const lintConfig = defineConfig({
       },
       {
         files: ["src/app/routes/**"],
-        rules: { "react/only-export-components": "off" },
+        rules: {
+          "eslint/sort-keys": "off",
+          "react/only-export-components": "off",
+        },
       },
       {
         files: ["src/shared/ui/shadcn/**"],
@@ -245,6 +248,7 @@ const lintConfig = defineConfig({
       "eslint/func-style": ["error", "declaration"],
       "eslint/no-ternary": "off",
       "eslint/no-use-before-define": "off",
+      "eslint/no-void": ["error", { allowAsStatement: true }],
       "eslint/one-var": ["error", "never"],
       "eslint/sort-imports": "off",
       "import/consistent-type-specifier-style": ["error", "prefer-top-level-if-only-type-imports"],

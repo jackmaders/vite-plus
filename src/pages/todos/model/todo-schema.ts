@@ -21,9 +21,28 @@ const updateTodoInputSchema = z.object({
 
 const deleteTodoInputSchema = z.object({ id: z.string().min(MIN_LENGTH) });
 
+const todoFilterSchema = z.enum(["all", "active", "completed"]);
+
+type TodoFilter = z.infer<typeof todoFilterSchema>;
+
+const todosSearchSchema = z.object({
+  filter: z.preprocess((value) => {
+    if (value === "active" || value === "completed") {
+      return value;
+    }
+    return "all";
+  }, todoFilterSchema.default("all")),
+});
+
+type TodosSearch = z.infer<typeof todosSearchSchema>;
+
 export {
   createTodoInputSchema,
   deleteTodoInputSchema,
+  todoFilterSchema,
+  todosSearchSchema,
   toggleTodoInputSchema,
   updateTodoInputSchema,
+  type TodoFilter,
+  type TodosSearch,
 };

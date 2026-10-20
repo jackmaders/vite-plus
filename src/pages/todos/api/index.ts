@@ -5,3 +5,4 @@ export {
   toggleTodoFn,
   updateTodoFn,
 } from "./todos.functions";
+export { todosQueryOptions } from "./todos-query-options";

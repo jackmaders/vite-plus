@@ -59,11 +59,30 @@ describe("header identity and documentation", () => {
   });
 });
 
-describe("header navigation", () => {
+describe("header page links", () => {
   afterEach(cleanup);
 
-  it("links to both pages and highlights home on the home page", () => {
-    expect.assertions(5);
+  it("provides links to all pages in the navigation", () => {
+    expect.assertions(3);
+
+    // Arrange
+    const { wrapper } = createTanStackRouterWrapper();
+
+    // Act
+    render(<Header />, { wrapper });
+
+    // Assert
+    expect(screen.getByRole("link", { name: "Home" }).getAttribute("href")).toBe("/");
+    expect(screen.getByRole("link", { name: "About" }).getAttribute("href")).toBe("/about");
+    expect(screen.getByRole("link", { name: "Todos" }).getAttribute("href")).toBe("/todos");
+  });
+});
+
+describe("header active state", () => {
+  afterEach(cleanup);
+
+  it("highlights home on the home page", () => {
+    expect.assertions(3);
 
     // Arrange
     const { wrapper } = createTanStackRouterWrapper();
@@ -74,8 +93,6 @@ describe("header navigation", () => {
     const about = screen.getByRole("link", { name: "About" });
 
     // Assert
-    expect(home.getAttribute("href")).toBe("/");
-    expect(about.getAttribute("href")).toBe("/about");
     expect(home.getAttribute("aria-current")).toBe("page");
     expect([...home.classList]).toContain("after:scale-x-100");
     expect([...about.classList]).not.toContain("after:scale-x-100");

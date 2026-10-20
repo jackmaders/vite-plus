@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 
 import { ThemeToggle } from "./theme-toggle";
 
+// eslint-disable-next-line eslint/max-lines-per-function
 export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-(--line) bg-(--header-bg) px-4 backdrop-blur-lg">
@@ -32,6 +33,14 @@ export function Header() {
             inactiveProps={{ className: "text-(--sea-ink-soft) after:scale-x-0" }}
           >
             About
+          </Link>
+          <Link
+            to="/todos"
+            className="relative inline-flex items-center no-underline after:absolute after:-bottom-1.5 after:left-0 after:h-0.5 after:w-full after:origin-left after:bg-linear-to-r after:from-(--lagoon) after:to-mint after:transition-transform after:duration-170 after:ease-in-out hover:text-(--sea-ink) hover:after:scale-x-100 max-sm:after:-bottom-1"
+            activeProps={{ className: "text-(--sea-ink) after:scale-x-100" }}
+            inactiveProps={{ className: "text-(--sea-ink-soft) after:scale-x-0" }}
+          >
+            Todos
           </Link>
           <a
             href="https://tanstack.com/start/latest/docs/framework/react/overview"

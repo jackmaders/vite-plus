@@ -34,6 +34,12 @@ function HeroSection() {
           About This Starter
         </a>
         <a
+          href="/todos"
+          className="rounded-full border border-teal-600/30 bg-teal-500/15 px-5 py-2.5 text-sm font-semibold text-(--lagoon-deep) no-underline transition hover:-translate-y-0.5 hover:bg-teal-500/25"
+        >
+          Todos
+        </a>
+        <a
           href="https://tanstack.com/router"
           target="_blank"
           rel="noopener noreferrer"

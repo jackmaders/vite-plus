@@ -6,6 +6,7 @@ import { getRouter } from "@/app/router";
 
 vi.mock(import("@tanstack/react-router-ssr-query"));
 vi.mock(import("@/shared/auth/auth.server"));
+vi.mock(import("@/shared/db/db.server"));
 
 describe("router route matching", () => {
   it("matches the home page within the root document", () => {
@@ -55,6 +56,21 @@ describe("router auth route matching", () => {
       "__root__",
       "/_authenticated",
       "/_authenticated/profile",
+    ]);
+  });
+
+  it("matches the todos page within authenticated layout", () => {
+    expect.assertions(1);
+
+    // Act
+    const router = getRouter();
+    const matches = router.matchRoutes("/todos");
+
+    // Assert
+    expect(matches.map((match) => match.routeId)).toStrictEqual([
+      "__root__",
+      "/_authenticated",
+      "/_authenticated/todos",
     ]);
   });
 

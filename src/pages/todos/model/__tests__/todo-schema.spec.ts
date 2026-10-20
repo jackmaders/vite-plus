@@ -3,6 +3,8 @@ import { describe, expect, it } from "vite-plus/test";
 import {
   createTodoInputSchema,
   deleteTodoInputSchema,
+  todoFilterSchema,
+  todosSearchSchema,
   toggleTodoInputSchema,
   updateTodoInputSchema,
 } from "../todo-schema";
@@ -206,5 +208,82 @@ describe("delete todo input schema", () => {
 
     // Assert
     expect(parse).toThrow(/too_small/iu);
+  });
+});
+
+describe("todo filter schema", () => {
+  it("parses valid filter values", () => {
+    expect.assertions(3);
+
+    // Arrange
+    const all = "all";
+    const active = "active";
+    const completed = "completed";
+
+    // Act
+    const parsedAll = todoFilterSchema.parse(all);
+    const parsedActive = todoFilterSchema.parse(active);
+    const parsedCompleted = todoFilterSchema.parse(completed);
+
+    // Assert
+    expect(parsedAll).toBe("all");
+    expect(parsedActive).toBe("active");
+    expect(parsedCompleted).toBe("completed");
+  });
+
+  it("throws for invalid filter values", () => {
+    expect.assertions(1);
+
+    // Arrange
+    const invalid = "unknown";
+
+    // Act
+    function parse() {
+      todoFilterSchema.parse(invalid);
+    }
+
+    // Assert
+    expect(parse).toThrow(/invalid_value/iu);
+  });
+});
+
+describe("todos search schema", () => {
+  it("parses valid search filter", () => {
+    expect.assertions(1);
+
+    // Arrange
+    const raw = { filter: "active" };
+
+    // Act
+    const parsed = todosSearchSchema.parse(raw);
+
+    // Assert
+    expect(parsed.filter).toBe("active");
+  });
+
+  it("defaults to all when filter is missing", () => {
+    expect.assertions(1);
+
+    // Arrange
+    const raw = {};
+
+    // Act
+    const parsed = todosSearchSchema.parse(raw);
+
+    // Assert
+    expect(parsed.filter).toBe("all");
+  });
+
+  it("falls back to all on invalid filter", () => {
+    expect.assertions(1);
+
+    // Arrange
+    const raw = { filter: "invalid" };
+
+    // Act
+    const parsed = todosSearchSchema.parse(raw);
+
+    // Assert
+    expect(parsed.filter).toBe("all");
   });
 });
