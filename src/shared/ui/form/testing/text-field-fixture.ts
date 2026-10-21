@@ -22,7 +22,6 @@ function createTextFieldFixture({
   state: { meta = {}, ...state } = {},
   ...overrides
 }: CreateTextFieldFixtureProps = {}) {
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   return {
     handleBlur: vi.fn<Field["handleBlur"]>(),
     handleChange: vi.fn<Field["handleChange"]>(),

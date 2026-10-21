@@ -54,7 +54,6 @@ describe("form component", () => {
     // Assert
     expect(event.defaultPrevented).toBe(true);
     expect(parentOnSubmit).not.toHaveBeenCalled();
-    // oxlint-disable-next-line typescript/unbound-method
     expect(form.handleSubmit).toHaveBeenCalledOnce();
   });
 
@@ -65,7 +64,6 @@ describe("form component", () => {
     const form = useFormContext();
     const error = new Error("submission failed");
     const onError = vi.fn<(err: unknown) => void>();
-    // oxlint-disable-next-line typescript/unbound-method
     vi.mocked(form.handleSubmit).mockRejectedValueOnce(error);
 
     // Act
@@ -81,7 +79,6 @@ describe("form component", () => {
     await waitFor(() => {
       expect(onError).toHaveBeenCalledWith(error);
     });
-    // oxlint-disable-next-line typescript/unbound-method
     expect(form.handleSubmit).toHaveBeenCalledOnce();
   });
 
@@ -90,7 +87,6 @@ describe("form component", () => {
 
     // Arrange
     const form = useFormContext();
-    // oxlint-disable-next-line typescript/unbound-method
     vi.mocked(form.handleSubmit).mockRejectedValueOnce(new Error("Internal details"));
 
     // Act
@@ -113,7 +109,6 @@ describe("form component", () => {
 
     // Arrange
     const form = useFormContext();
-    // oxlint-disable-next-line typescript/unbound-method
     vi.mocked(form.handleSubmit).mockRejectedValueOnce(
       new FormSubmissionError("Unable to save your changes."),
     );

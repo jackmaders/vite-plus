@@ -14,7 +14,6 @@ function Form({ onError, ...props }: FormProps) {
     (event: SyntheticEvent<HTMLFormElement>) => {
       event.preventDefault();
       event.stopPropagation();
-      // eslint-disable-next-line eslint/no-void
       void (async () => {
         try {
           await form.handleSubmit();

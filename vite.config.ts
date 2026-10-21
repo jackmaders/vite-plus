@@ -26,6 +26,7 @@ const lintConfig = defineConfig({
       ".agents/**",
       "drizzle/**",
       "src/app/routeTree.gen.ts",
+      "src/shared/ui/shadcn/**",
       "worker-configuration.d.ts",
     ],
     jsPlugins: [
@@ -45,7 +46,12 @@ const lintConfig = defineConfig({
     overrides: [
       { env: { browser: true }, files: ["src/**"] },
       {
-        files: ["src/**/*.{test,spec}.{ts,tsx}", "tests/vitest/**", "**/__mocks__/**"],
+        files: [
+          "src/**/*.{test,spec}.{ts,tsx}",
+          "tests/vitest/**",
+          "**/__mocks__/**",
+          "src/**/testing/**",
+        ],
         rules: {
           "eslint/max-lines": "off",
           "eslint/max-lines-per-function": "off",
@@ -84,6 +90,7 @@ const lintConfig = defineConfig({
           "testing-library/prefer-user-event-setup": "error",
           "testing-library/render-result-naming-convention": "error",
           "typescript/no-unsafe-type-assertion": "off",
+          "typescript/unbound-method": "off",
           "unicorn/no-null": "off",
           "vitest/prefer-called-times": "off",
           "vitest/require-top-level-describe": "off",
@@ -220,6 +227,7 @@ const lintConfig = defineConfig({
       "eslint/id-length": ["error", { exceptions: ["z"] }],
       "eslint/no-ternary": "off",
       "eslint/no-use-before-define": "off",
+      "eslint/no-void": ["error", { allowAsStatement: true }],
       "eslint/one-var": ["error", "never"],
       "eslint/sort-imports": "off",
       "import/consistent-type-specifier-style": ["error", "prefer-top-level-if-only-type-imports"],
@@ -306,6 +314,7 @@ const fmtConfig = defineConfig({
       ".agents/**",
       "drizzle/**",
       "src/app/routeTree.gen.ts",
+      "src/shared/ui/shadcn/**",
       "worker-configuration.d.ts",
     ],
     jsdoc: { descriptionWithDot: true, separateTagGroups: true },
