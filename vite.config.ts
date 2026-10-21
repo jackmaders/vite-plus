@@ -1,69 +1,14 @@
-import { cloudflareTest, readD1Migrations, type D1Migration } from "@cloudflare/vitest-plugin";
+import { cloudflareTest, readD1Migrations } from "@cloudflare/vitest-plugin";
 import { defineConfig, lazyPlugins } from "vite-plus";
 
-function createTestProjects(migrations: D1Migration[]) {
-  return [
-    {
-      test: {
-        environment: "happy-dom",
-        exclude: ["src/**/__tests__/workers/**"],
-        include: ["src/**/__tests__/**/*.spec.{ts,tsx}"],
-        name: "client",
-      },
-    },
-    {
-      plugins: [
-        cloudflareTest({
-          miniflare: {
-            bindings: {
-              TEST_MIGRATIONS: migrations,
-            },
-          },
-          wrangler: { configPath: "wrangler.jsonc" },
-        }),
-      ],
-      test: {
-        include: ["src/**/__tests__/workers/**/*.spec.ts"],
-        name: "workers",
-        setupFiles: ["tests/vitest/setup-workers.ts"],
-      },
-    },
-  ];
-}
-
-export default defineConfig(async ({ mode }) => {
-  const migrations =
-    mode === "test"
-      ? await readD1Migrations({
-          migrationsDir: "drizzle",
-          migrationsPattern: "drizzle/*/migration.sql",
-          projectPath: process.cwd(),
-        })
-      : [];
-
-  return {
-    ...fmtConfig,
-    ...lintConfig,
-    plugins: mode === "test" ? [] : (lazyPlugins(loadPlugins) ?? []),
-    resolve: { tsconfigPaths: true },
-    staged: { "*": "vp fmt" },
-    test: {
-      coverage: {
-        exclude: [
-          "src/app/routeTree.gen.ts",
-          "src/shared/ui/shadcn/**",
-          "src/**/__mocks__/**",
-          "src/shared/db/schema/**",
-        ],
-        include: ["src/**/*.{ts,tsx}"],
-        provider: "v8",
-        thresholds: { 100: true, perFile: true },
-      },
-      globals: false,
-      projects: createTestProjects(migrations),
-    },
-  };
-});
+export default defineConfig(async ({ mode, command }) => ({
+  ...fmtConfig,
+  ...lintConfig,
+  ...(await testConfig({ command, mode })),
+  plugins: mode === "test" ? [] : (lazyPlugins(loadPlugins) ?? []),
+  resolve: { tsconfigPaths: true },
+  staged: { "*": "vp fmt" },
+}));
 
 const lintConfig = defineConfig({
   lint: {
@@ -102,6 +47,8 @@ const lintConfig = defineConfig({
       {
         files: ["src/**/*.{test,spec}.{ts,tsx}", "tests/vitest/**", "**/__mocks__/**"],
         rules: {
+          "eslint/max-lines": "off",
+          "eslint/max-lines-per-function": "off",
           "eslint/no-magic-numbers": "off",
           "import/group-exports": "off",
           "testing-library/await-async-events": "error",
@@ -366,3 +313,52 @@ const fmtConfig = defineConfig({
     sortPackageJson: { sortScripts: true },
   },
 });
+
+const testConfig = defineConfig(async () => ({
+  test: {
+    coverage: {
+      exclude: [
+        "src/app/routeTree.gen.ts",
+        "src/shared/ui/shadcn/**",
+        "src/**/__mocks__/**",
+        "src/shared/db/schema/**",
+      ],
+      include: ["src/**/*.{ts,tsx}"],
+      provider: "v8",
+      thresholds: { 100: true, perFile: true },
+    },
+    globals: false,
+    projects: [
+      {
+        test: {
+          environment: "happy-dom",
+          exclude: ["src/**/__tests__/workers/**"],
+          include: ["src/**/__tests__/**/*.spec.{ts,tsx}"],
+          name: "client",
+        },
+      },
+      {
+        plugins: [
+          cloudflareTest({
+            main: "tests/vitest/worker-entry.ts",
+            miniflare: {
+              bindings: {
+                TEST_MIGRATIONS: await readD1Migrations({
+                  migrationsDir: "drizzle",
+                  migrationsPattern: "drizzle/*/migration.sql",
+                  projectPath: process.cwd(),
+                }),
+              },
+            },
+            wrangler: { configPath: "wrangler.jsonc" },
+          }),
+        ],
+        test: {
+          include: ["src/**/__tests__/workers/**/*.spec.ts"],
+          name: "workers",
+          setupFiles: ["tests/vitest/setup/workers.ts"],
+        },
+      },
+    ],
+  },
+}));

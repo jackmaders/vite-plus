@@ -1,14 +1,26 @@
 import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
-import { describe, expect, it } from "vite-plus/test";
+import { beforeEach, describe, expect, it } from "vite-plus/test";
 
 import { todos } from "@/shared/db";
 import { getDb } from "@/shared/db/index.server";
+import { user } from "@/shared/db/schema";
 import { createEmptyInsertMockDb } from "@test/vitest/fixtures/test-db";
 
 import { createTodo, deleteTodo, getTodos, updateTodo } from "../../todos-operations";
 
 describe("todos.server createTodo creation", () => {
+  beforeEach(async () => {
+    const db = getDb(env.DB);
+    await db
+      .insert(user)
+      .values([
+        { email: "user-a@example.com", id: "user-a", name: "User A" },
+        { email: "user-b@example.com", id: "user-b", name: "User B" },
+      ])
+      .onConflictDoNothing();
+  });
+
   it("creates a new todo with defaults and trimmed title for user", async () => {
     expect.assertions(3);
 
@@ -46,6 +58,17 @@ describe("todos.server createTodo creation", () => {
 });
 
 describe("todos.server createTodo failures", () => {
+  beforeEach(async () => {
+    const db = getDb(env.DB);
+    await db
+      .insert(user)
+      .values([
+        { email: "user-a@example.com", id: "user-a", name: "User A" },
+        { email: "user-b@example.com", id: "user-b", name: "User B" },
+      ])
+      .onConflictDoNothing();
+  });
+
   it("throws an error when insert returning array is empty", async () => {
     expect.assertions(1);
 
@@ -61,6 +84,17 @@ describe("todos.server createTodo failures", () => {
 });
 
 describe("todos.server getTodos", () => {
+  beforeEach(async () => {
+    const db = getDb(env.DB);
+    await db
+      .insert(user)
+      .values([
+        { email: "user-a@example.com", id: "user-a", name: "User A" },
+        { email: "user-b@example.com", id: "user-b", name: "User B" },
+      ])
+      .onConflictDoNothing();
+  });
+
   it("returns todos for user ordered by createdAt descending", async () => {
     expect.assertions(3);
 
@@ -100,6 +134,17 @@ describe("todos.server getTodos", () => {
 });
 
 describe("todos.server updateTodo toggling completed", () => {
+  beforeEach(async () => {
+    const db = getDb(env.DB);
+    await db
+      .insert(user)
+      .values([
+        { email: "user-a@example.com", id: "user-a", name: "User A" },
+        { email: "user-b@example.com", id: "user-b", name: "User B" },
+      ])
+      .onConflictDoNothing();
+  });
+
   it("toggles the completed status of an existing todo", async () => {
     expect.assertions(2);
 
@@ -117,6 +162,17 @@ describe("todos.server updateTodo toggling completed", () => {
 });
 
 describe("todos.server updateTodo", () => {
+  beforeEach(async () => {
+    const db = getDb(env.DB);
+    await db
+      .insert(user)
+      .values([
+        { email: "user-a@example.com", id: "user-a", name: "User A" },
+        { email: "user-b@example.com", id: "user-b", name: "User B" },
+      ])
+      .onConflictDoNothing();
+  });
+
   it("updates title and description of an existing todo", async () => {
     expect.assertions(2);
 
@@ -147,6 +203,17 @@ describe("todos.server updateTodo", () => {
 });
 
 describe("todos.server updateTodo error cases", () => {
+  beforeEach(async () => {
+    const db = getDb(env.DB);
+    await db
+      .insert(user)
+      .values([
+        { email: "user-a@example.com", id: "user-a", name: "User A" },
+        { email: "user-b@example.com", id: "user-b", name: "User B" },
+      ])
+      .onConflictDoNothing();
+  });
+
   it("throws Todo not found when attempting to update another user's todo", async () => {
     expect.assertions(1);
 
@@ -180,6 +247,17 @@ describe("todos.server updateTodo error cases", () => {
 });
 
 describe("todos.server deleteTodo", () => {
+  beforeEach(async () => {
+    const db = getDb(env.DB);
+    await db
+      .insert(user)
+      .values([
+        { email: "user-a@example.com", id: "user-a", name: "User A" },
+        { email: "user-b@example.com", id: "user-b", name: "User B" },
+      ])
+      .onConflictDoNothing();
+  });
+
   it("deletes an existing todo and returns the deleted record", async () => {
     expect.assertions(2);
 
