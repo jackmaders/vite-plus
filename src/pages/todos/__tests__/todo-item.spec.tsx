@@ -4,20 +4,13 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { TodoItem, type TodoItemProps } from "@/pages/todos/ui/todo-item";
 import type { Todo } from "@/shared/db";
+import { TEST_TODO } from "@test/vitest/fixtures/todos";
 
 type DeleteFn = TodoItemProps["onDelete"];
 type ToggleFn = TodoItemProps["onToggle"];
 type UpdateFn = TodoItemProps["onUpdate"];
 
-const mockTodo: Todo = {
-  completed: false,
-  createdAt: new Date(),
-  description: "Test Description",
-  id: "todo-1",
-  title: "Test Todo",
-  updatedAt: new Date(),
-  userId: "user-1",
-};
+const mockTodo = TEST_TODO;
 
 describe("todo item display", () => {
   afterEach(() => {

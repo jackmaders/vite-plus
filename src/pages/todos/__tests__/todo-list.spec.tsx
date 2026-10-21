@@ -2,32 +2,13 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { TodoList, type TodoListProps } from "@/pages/todos/ui/todo-list";
-import type { Todo } from "@/shared/db";
+import { TEST_TODOS } from "@test/vitest/fixtures/todos";
 
 type DeleteFn = TodoListProps["onDelete"];
 type ToggleFn = TodoListProps["onToggle"];
 type UpdateFn = TodoListProps["onUpdate"];
 
-const mockTodos: Todo[] = [
-  {
-    completed: false,
-    createdAt: new Date(),
-    description: "First Description",
-    id: "todo-1",
-    title: "First Todo",
-    updatedAt: new Date(),
-    userId: "user-1",
-  },
-  {
-    completed: true,
-    createdAt: new Date(),
-    description: null,
-    id: "todo-2",
-    title: "Second Todo",
-    updatedAt: new Date(),
-    userId: "user-1",
-  },
-];
+const mockTodos = TEST_TODOS;
 
 describe("todo list empty state with all filter", () => {
   afterEach(() => {

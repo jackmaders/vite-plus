@@ -2,7 +2,7 @@ import { vi } from "vite-plus/test";
 
 import type { Database } from "@/shared/db/index.server";
 
-function createEmptyInsertMockDb(): Database {
+function createMockDb(): Database {
   return {
     insert: vi
       .fn<() => { values: () => { returning: () => Promise<unknown[]> } }>()
@@ -14,4 +14,4 @@ function createEmptyInsertMockDb(): Database {
   } as unknown as Database;
 }
 
-export { createEmptyInsertMockDb };
+export { createMockDb, createMockDb as createEmptyInsertMockDb };

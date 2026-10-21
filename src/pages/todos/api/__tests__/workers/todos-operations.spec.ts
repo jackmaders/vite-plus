@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it } from "vite-plus/test";
 import { todos } from "@/shared/db";
 import { getDb } from "@/shared/db/index.server";
 import { user } from "@/shared/db/schema";
-import { createEmptyInsertMockDb } from "@test/vitest/fixtures/test-db";
+import { createEmptyInsertMockDb } from "@test/vitest/fixtures/db";
 
 import { createTodo, deleteTodo, getTodos, updateTodo } from "../../todos-operations";
 

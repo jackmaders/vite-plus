@@ -48,9 +48,9 @@ const lintConfig = defineConfig({
       {
         files: [
           "src/**/*.{test,spec}.{ts,tsx}",
+          "src/**/__tests__/**",
           "tests/vitest/**",
           "**/__mocks__/**",
-          "src/**/testing/**",
         ],
         rules: {
           "eslint/max-lines": "off",

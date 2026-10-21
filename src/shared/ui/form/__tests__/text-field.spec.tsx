@@ -3,7 +3,8 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { createTextFieldFixture } from "../testing/text-field-fixture";
+import { createTextFieldFixture } from "@test/vitest/fixtures/form";
+
 import { TextField } from "../text-field";
 
 vi.mock(import("@tanstack/react-form"));

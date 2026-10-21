@@ -4,19 +4,15 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { TodoItemEdit, type TodoItemEditProps } from "@/pages/todos/ui/todo-item-edit";
 import type { Todo } from "@/shared/db";
+import { createTodoFixture } from "@test/vitest/fixtures/todos";
 
 type CancelFn = TodoItemEditProps["onCancel"];
 type SaveFn = TodoItemEditProps["onSave"];
 
-const mockTodo: Todo = {
-  completed: false,
-  createdAt: new Date(),
+const mockTodo = createTodoFixture({
   description: "Initial Description",
-  id: "todo-1",
   title: "Initial Title",
-  updatedAt: new Date(),
-  userId: "user-1",
-};
+});
 
 describe("todo item edit rendering and input handling", () => {
   afterEach(() => {

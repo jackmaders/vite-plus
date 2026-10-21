@@ -1,6 +1,7 @@
-import { createTodoInputSchema } from "@/pages/todos/model/todo-schema";
 import { useAppForm } from "@/shared/ui/form";
 import { Card } from "@/shared/ui/shadcn/card";
+
+import { createTodoInputSchema } from "../model/todo-schema";
 
 interface TodoFormProps {
   isCreating?: boolean;

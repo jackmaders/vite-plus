@@ -4,7 +4,7 @@ import type { useFieldContext } from "@/shared/ui/form/form-context";
 
 type Field = ReturnType<typeof useFieldContext<string>>;
 
-interface CreateTextFieldFixtureProps {
+interface CreateFormFieldFixtureProps {
   handleBlur?: Field["handleBlur"];
   handleChange?: Field["handleChange"];
   name?: string;
@@ -18,10 +18,10 @@ interface CreateTextFieldFixtureProps {
   };
 }
 
-function createTextFieldFixture({
+function createFormFieldFixture({
   state: { meta = {}, ...state } = {},
   ...overrides
-}: CreateTextFieldFixtureProps = {}) {
+}: CreateFormFieldFixtureProps = {}) {
   return {
     handleBlur: vi.fn<Field["handleBlur"]>(),
     handleChange: vi.fn<Field["handleChange"]>(),
@@ -35,5 +35,5 @@ function createTextFieldFixture({
   } as unknown as Field;
 }
 
-export { createTextFieldFixture };
-export type { CreateTextFieldFixtureProps };
+export { createFormFieldFixture, createFormFieldFixture as createTextFieldFixture };
+export type { CreateFormFieldFixtureProps };
