@@ -7,7 +7,6 @@ const Route = createFileRoute("/_authenticated")({
     const session = await getSessionFn();
 
     if (!session) {
-      // oxlint-disable-next-line typescript/only-throw-error
       throw redirect({ to: "/" });
     }
 

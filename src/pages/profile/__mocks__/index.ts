@@ -1,1 +1,1 @@
-export { ProfilePage } from "./profile-page";
+export { ProfilePage } from "../ui/__mocks__/profile-page";

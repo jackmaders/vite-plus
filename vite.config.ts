@@ -68,6 +68,7 @@ const lintConfig = defineConfig({
           "testing-library/no-await-sync-events": "error",
           "testing-library/no-await-sync-queries": "error",
           "testing-library/no-container": "error",
+
           "testing-library/no-debugging-utils": "error",
           "testing-library/no-dom-import": "error",
           "testing-library/no-global-regexp-flag-in-query": "error",
@@ -264,6 +265,7 @@ const lintConfig = defineConfig({
       "typescript/consistent-type-imports": ["error", { fixStyle: "inline-type-imports" }],
       "typescript/explicit-function-return-type": "off",
       "typescript/explicit-module-boundary-types": "off",
+      "typescript/only-throw-error": ["error", { allow: [{ from: "file", name: "Redirect" }] }],
       "typescript/prefer-readonly-parameter-types": "off",
       "typescript/return-await": ["error", "always"],
       "unicorn/prefer-global-this": "off",
