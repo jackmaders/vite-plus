@@ -1,16 +1,30 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { TodoList, type TodoListProps } from "@/pages/todos/ui/todo-list";
+import { useDeleteTodo } from "@/pages/todos/api/use-delete-todo";
+import { useUpdateTodo } from "@/pages/todos/api/use-update-todo";
+import { TodoList } from "@/pages/todos/ui/todo-list";
 import { TEST_TODOS } from "@test/vitest/fixtures/todos";
 
-type DeleteFn = TodoListProps["onDelete"];
-type ToggleFn = TodoListProps["onToggle"];
-type UpdateFn = TodoListProps["onUpdate"];
+vi.mock(import("@/shared/auth/auth.server"));
+vi.mock(import("@/shared/db/db.server"));
+vi.mock(import("@/pages/todos/api/use-delete-todo"));
+vi.mock(import("@/pages/todos/api/use-update-todo"));
 
 const mockTodos = TEST_TODOS;
 
 describe("todo list empty state", () => {
+  beforeEach(() => {
+    vi.mocked(useDeleteTodo).mockReturnValue({
+      isPending: false,
+      mutate: vi.fn<() => void>(),
+    } as never);
+    vi.mocked(useUpdateTodo).mockReturnValue({
+      isPending: false,
+      mutate: vi.fn<() => void>(),
+    } as never);
+  });
+
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
@@ -19,21 +33,8 @@ describe("todo list empty state", () => {
   it("renders empty state message when todos is empty", () => {
     expect.assertions(1);
 
-    // Arrange
-    const handleDelete = vi.fn<DeleteFn>();
-    const handleToggle = vi.fn<ToggleFn>();
-    const handleUpdate = vi.fn<UpdateFn>();
-
-    // Act
-    render(
-      <TodoList
-        filter="all"
-        onDelete={handleDelete}
-        onToggle={handleToggle}
-        onUpdate={handleUpdate}
-        todos={[]}
-      />,
-    );
+    // Arrange & Act
+    render(<TodoList filter="all" todos={[]} />);
 
     // Assert
     expect(screen.getByText("No todos found")).toBeDefined();
@@ -41,6 +42,17 @@ describe("todo list empty state", () => {
 });
 
 describe("todo list items rendering", () => {
+  beforeEach(() => {
+    vi.mocked(useDeleteTodo).mockReturnValue({
+      isPending: false,
+      mutate: vi.fn<() => void>(),
+    } as never);
+    vi.mocked(useUpdateTodo).mockReturnValue({
+      isPending: false,
+      mutate: vi.fn<() => void>(),
+    } as never);
+  });
+
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
@@ -49,21 +61,8 @@ describe("todo list items rendering", () => {
   it("renders list of todos", () => {
     expect.assertions(2);
 
-    // Arrange
-    const handleDelete = vi.fn<DeleteFn>();
-    const handleToggle = vi.fn<ToggleFn>();
-    const handleUpdate = vi.fn<UpdateFn>();
-
-    // Act
-    render(
-      <TodoList
-        filter="all"
-        onDelete={handleDelete}
-        onToggle={handleToggle}
-        onUpdate={handleUpdate}
-        todos={mockTodos}
-      />,
-    );
+    // Arrange & Act
+    render(<TodoList filter="all" todos={mockTodos} />);
 
     // Assert
     expect(screen.getByText("First Todo")).toBeDefined();

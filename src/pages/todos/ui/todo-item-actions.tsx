@@ -13,10 +13,10 @@ interface TodoItemActionsProps extends ComponentProps<"div"> {
 function TodoItemActions({ todo, ...props }: TodoItemActionsProps) {
   return (
     <div className="flex items-center gap-1" {...props}>
-      <UpdateTodoDialog todo={todo}>
+      <UpdateTodoDialog aria-label="Edit todo" todo={todo}>
         <Pencil />
       </UpdateTodoDialog>
-      <DeleteTodoDialog todo={todo}>
+      <DeleteTodoDialog aria-label="Delete todo" todo={todo}>
         <Trash2 />
       </DeleteTodoDialog>
     </div>
@@ -24,3 +24,4 @@ function TodoItemActions({ todo, ...props }: TodoItemActionsProps) {
 }
 
 export { TodoItemActions };
+export type { TodoItemActionsProps };

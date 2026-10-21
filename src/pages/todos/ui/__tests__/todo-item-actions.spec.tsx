@@ -1,84 +1,72 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { TodoItemActions, type TodoItemActionsProps } from "@/pages/todos/ui/todo-item-actions";
+import { useDeleteTodo } from "@/pages/todos/api/use-delete-todo";
+import { useUpdateTodo } from "@/pages/todos/api/use-update-todo";
+import { TodoItemActions } from "@/pages/todos/ui/todo-item-actions";
+import { TEST_TODO } from "@test/vitest/fixtures/todos";
 
-type DeleteFn = TodoItemActionsProps["onDelete"];
-type EditFn = TodoItemActionsProps["onEdit"];
+vi.mock(import("@/shared/auth/auth.server"));
+vi.mock(import("@/shared/db/db.server"));
+vi.mock(import("@/pages/todos/api/use-delete-todo"));
+vi.mock(import("@/pages/todos/api/use-update-todo"));
 
-describe("todo item actions rendering and states", () => {
+const mockTodo = TEST_TODO;
+
+describe("todo item actions rendering and interactions", () => {
+  beforeEach(() => {
+    vi.mocked(useDeleteTodo).mockReturnValue({
+      isPending: false,
+      mutate: vi.fn<() => void>(),
+    } as never);
+    vi.mocked(useUpdateTodo).mockReturnValue({
+      isPending: false,
+      mutate: vi.fn<() => void>(),
+    } as never);
+  });
+
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
   });
 
-  it("renders edit and delete buttons", () => {
+  it("renders update and delete action triggers", () => {
     expect.assertions(2);
 
-    // Arrange
-    const handleDelete = vi.fn<DeleteFn>();
-    const handleEdit = vi.fn<EditFn>();
-
-    // Act
-    render(<TodoItemActions onDelete={handleDelete} onEdit={handleEdit} />);
+    // Arrange & Act
+    render(<TodoItemActions todo={mockTodo} />);
 
     // Assert
-    expect(screen.getByRole("button", { name: /edit todo/iu })).toBeDefined();
-    expect(screen.getByRole("button", { name: /delete todo/iu })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Edit todo" })).toBeDefined();
+    expect(screen.getByRole("button", { name: "Delete todo" })).toBeDefined();
   });
 
-  it("disables edit and delete buttons when isUpdating is true", () => {
-    expect.assertions(2);
-
-    // Arrange
-    const handleDelete = vi.fn<DeleteFn>();
-    const handleEdit = vi.fn<EditFn>();
-
-    // Act
-    render(<TodoItemActions isUpdating onDelete={handleDelete} onEdit={handleEdit} />);
-
-    // Assert
-    expect(screen.getByRole("button", { name: /edit todo/iu }).hasAttribute("disabled")).toBe(true);
-    expect(screen.getByRole("button", { name: /delete todo/iu }).hasAttribute("disabled")).toBe(
-      true,
-    );
-  });
-});
-
-describe("todo item actions interactions", () => {
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
-  });
-
-  it("calls onEdit when edit button is clicked", async () => {
+  it("opens delete dialog when delete trigger is clicked", async () => {
     expect.assertions(1);
 
     // Arrange
     const user = userEvent.setup();
-    const handleEdit = vi.fn<EditFn>();
-    render(<TodoItemActions onDelete={vi.fn<DeleteFn>()} onEdit={handleEdit} />);
+    render(<TodoItemActions todo={mockTodo} />);
 
     // Act
-    await user.click(screen.getByRole("button", { name: /edit todo/iu }));
+    await user.click(screen.getByRole("button", { name: "Delete todo" }));
 
     // Assert
-    expect(handleEdit).toHaveBeenCalledOnce();
+    expect(screen.getByRole("heading", { name: /delete todo item\?/iu })).toBeDefined();
   });
 
-  it("calls onDelete when delete button is clicked", async () => {
+  it("opens update dialog when update trigger is clicked", async () => {
     expect.assertions(1);
 
     // Arrange
     const user = userEvent.setup();
-    const handleDelete = vi.fn<DeleteFn>();
-    render(<TodoItemActions onDelete={handleDelete} onEdit={vi.fn<EditFn>()} />);
+    render(<TodoItemActions todo={mockTodo} />);
 
     // Act
-    await user.click(screen.getByRole("button", { name: /delete todo/iu }));
+    await user.click(screen.getByRole("button", { name: "Edit todo" }));
 
     // Assert
-    expect(handleDelete).toHaveBeenCalledOnce();
+    expect(screen.getByRole("heading", { name: /update todo item\?/iu })).toBeDefined();
   });
 });

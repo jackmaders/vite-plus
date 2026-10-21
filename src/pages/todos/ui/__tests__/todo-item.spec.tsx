@@ -1,18 +1,31 @@
 import { cleanup, render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { TodoItem, type TodoItemProps } from "@/pages/todos/ui/todo-item";
+import { useDeleteTodo } from "@/pages/todos/api/use-delete-todo";
+import { useUpdateTodo } from "@/pages/todos/api/use-update-todo";
+import { TodoItem } from "@/pages/todos/ui/todo-item";
 import type { Todo } from "@/shared/db";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
 
-type DeleteFn = TodoItemProps["onDelete"];
-type ToggleFn = TodoItemProps["onToggle"];
-type UpdateFn = TodoItemProps["onUpdate"];
+vi.mock(import("@/shared/auth/auth.server"));
+vi.mock(import("@/shared/db/db.server"));
+vi.mock(import("@/pages/todos/api/use-delete-todo"));
+vi.mock(import("@/pages/todos/api/use-update-todo"));
 
 const mockTodo = TEST_TODO;
 
 describe("todo item display", () => {
+  beforeEach(() => {
+    vi.mocked(useDeleteTodo).mockReturnValue({
+      isPending: false,
+      mutate: vi.fn<() => void>(),
+    } as never);
+    vi.mocked(useUpdateTodo).mockReturnValue({
+      isPending: false,
+      mutate: vi.fn<() => void>(),
+    } as never);
+  });
+
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
@@ -21,18 +34,8 @@ describe("todo item display", () => {
   it("renders todo title, description, and pending status", () => {
     expect.assertions(3);
 
-    // Arrange
-    const handleUpdate = vi.fn<UpdateFn>();
-
-    // Act
-    render(
-      <TodoItem
-        onDelete={vi.fn<DeleteFn>()}
-        onToggle={vi.fn<ToggleFn>()}
-        onUpdate={handleUpdate}
-        todo={mockTodo}
-      />,
-    );
+    // Arrange & Act
+    render(<TodoItem todo={mockTodo} />);
 
     // Assert
     expect(screen.getByText("Test Todo")).toBeDefined();
@@ -47,237 +50,20 @@ describe("todo item display", () => {
     const completedTodo: Todo = { ...mockTodo, completed: true };
 
     // Act
-    render(
-      <TodoItem
-        onDelete={vi.fn<DeleteFn>()}
-        onToggle={vi.fn<ToggleFn>()}
-        onUpdate={vi.fn<UpdateFn>()}
-        todo={completedTodo}
-      />,
-    );
+    render(<TodoItem todo={completedTodo} />);
 
     // Assert
     expect(screen.getByText("Test Todo").className).toContain("line-through");
     expect(screen.getByText("Done")).toBeDefined();
   });
-});
 
-describe("todo item optional fields and states", () => {
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
-  });
-
-  it("does not render description paragraph when description is null", () => {
+  it("renders custom className on Card container", () => {
     expect.assertions(1);
 
-    // Arrange
-    const todoWithoutDescription: Todo = { ...mockTodo, description: null };
-    const handleDelete = vi.fn<DeleteFn>();
-    const handleToggle = vi.fn<ToggleFn>();
-    const handleUpdate = vi.fn<UpdateFn>();
-
-    // Act
-    render(
-      <TodoItem
-        onDelete={handleDelete}
-        onToggle={handleToggle}
-        onUpdate={handleUpdate}
-        todo={todoWithoutDescription}
-      />,
-    );
+    // Arrange & Act
+    render(<TodoItem aria-label="Todo item" className="opacity-50" todo={mockTodo} />);
 
     // Assert
-    expect(screen.queryByText("Test Description")).toBeNull();
-  });
-});
-
-describe("todo item interactions", () => {
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
-  });
-
-  it("calls onToggle with correct parameters when checkbox is clicked", async () => {
-    expect.assertions(1);
-
-    // Arrange
-    const user = userEvent.setup();
-    const handleToggle = vi.fn<ToggleFn>();
-    render(
-      <TodoItem
-        onDelete={vi.fn<DeleteFn>()}
-        onToggle={handleToggle}
-        onUpdate={vi.fn<UpdateFn>()}
-        todo={mockTodo}
-      />,
-    );
-
-    // Act
-    await user.click(screen.getByRole("checkbox", { name: /toggle test todo/iu }));
-
-    // Assert
-    expect(handleToggle).toHaveBeenCalledWith("todo-1", true);
-  });
-
-  it("calls onDelete with todo id when delete button is clicked", async () => {
-    expect.assertions(1);
-
-    // Arrange
-    const user = userEvent.setup();
-    const handleDelete = vi.fn<DeleteFn>();
-    render(
-      <TodoItem
-        onDelete={handleDelete}
-        onToggle={vi.fn<ToggleFn>()}
-        onUpdate={vi.fn<UpdateFn>()}
-        todo={mockTodo}
-      />,
-    );
-
-    // Act
-    await user.click(screen.getByRole("button", { name: /delete todo/iu }));
-
-    // Assert
-    expect(handleDelete).toHaveBeenCalledWith("todo-1");
-  });
-});
-
-describe("todo item saving", () => {
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
-  });
-
-  it("edits title and saves updates", async () => {
-    expect.assertions(2);
-
-    // Arrange
-    const user = userEvent.setup();
-    const handleUpdate = vi.fn<UpdateFn>();
-    render(
-      <TodoItem
-        onDelete={vi.fn<DeleteFn>()}
-        onToggle={vi.fn<ToggleFn>()}
-        onUpdate={handleUpdate}
-        todo={mockTodo}
-      />,
-    );
-
-    // Act
-    await user.click(screen.getByRole("button", { name: /edit todo/iu }));
-    await user.type(screen.getByPlaceholderText("Title"), " Extra");
-    await user.click(screen.getByRole("button", { name: /save/iu }));
-
-    // Assert
-    expect(handleUpdate).toHaveBeenCalledWith("todo-1", {
-      description: "Test Description",
-      title: "Test Todo Extra",
-    });
-    expect(screen.queryByPlaceholderText("Title")).toBeNull();
-  });
-
-  it("omits description when cleared to whitespace on save", async () => {
-    expect.assertions(1);
-
-    // Arrange
-    const user = userEvent.setup();
-    const handleUpdate = vi.fn<UpdateFn>();
-    render(
-      <TodoItem
-        onDelete={vi.fn<DeleteFn>()}
-        onToggle={vi.fn<ToggleFn>()}
-        onUpdate={handleUpdate}
-        todo={mockTodo}
-      />,
-    );
-
-    // Act
-    await user.click(screen.getByRole("button", { name: /edit todo/iu }));
-    await user.clear(screen.getByPlaceholderText("Description"));
-    await user.click(screen.getByRole("button", { name: /save/iu }));
-
-    // Assert
-    expect(handleUpdate).toHaveBeenCalledWith("todo-1", {
-      title: "Test Todo",
-    });
-  });
-});
-
-describe("todo item edit controls", () => {
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
-  });
-
-  it("disables save button when title is cleared to whitespace", async () => {
-    expect.assertions(1);
-
-    // Arrange
-    const user = userEvent.setup();
-    render(
-      <TodoItem
-        onDelete={vi.fn<DeleteFn>()}
-        onToggle={vi.fn<ToggleFn>()}
-        onUpdate={vi.fn<UpdateFn>()}
-        todo={mockTodo}
-      />,
-    );
-
-    // Act
-    await user.click(screen.getByRole("button", { name: /edit todo/iu }));
-    await user.clear(screen.getByPlaceholderText("Title"));
-
-    // Assert
-    expect(screen.getByRole("button", { name: /save/iu }).hasAttribute("disabled")).toBe(true);
-  });
-
-  it("cancels edit mode without calling onUpdate when cancel button is clicked", async () => {
-    expect.assertions(2);
-
-    // Arrange
-    const user = userEvent.setup();
-    const handleUpdate = vi.fn<UpdateFn>();
-    render(
-      <TodoItem
-        onDelete={vi.fn<DeleteFn>()}
-        onToggle={vi.fn<ToggleFn>()}
-        onUpdate={handleUpdate}
-        todo={mockTodo}
-      />,
-    );
-
-    // Act
-    await user.click(screen.getByRole("button", { name: /edit todo/iu }));
-    await user.click(screen.getByRole("button", { name: /cancel/iu }));
-
-    // Assert
-    expect(handleUpdate).not.toHaveBeenCalled();
-    expect(screen.queryByPlaceholderText("Title")).toBeNull();
-  });
-
-  it("resets discarded edits to current todo values when cancelled and reopened", async () => {
-    expect.assertions(2);
-
-    // Arrange
-    const user = userEvent.setup();
-    render(
-      <TodoItem
-        onDelete={vi.fn<DeleteFn>()}
-        onToggle={vi.fn<ToggleFn>()}
-        onUpdate={vi.fn<UpdateFn>()}
-        todo={mockTodo}
-      />,
-    );
-
-    // Act
-    await user.click(screen.getByRole("button", { name: /edit todo/iu }));
-    await user.type(screen.getByPlaceholderText("Title"), " Changed");
-    await user.click(screen.getByRole("button", { name: /cancel/iu }));
-    await user.click(screen.getByRole("button", { name: /edit todo/iu }));
-
-    // Assert
-    expect(screen.getByPlaceholderText("Title").getAttribute("value")).toBe("Test Todo");
-    expect(screen.queryByText("Test Todo Changed")).toBeNull();
+    expect(screen.getByLabelText("Todo item").className).toContain("opacity-50");
   });
 });
