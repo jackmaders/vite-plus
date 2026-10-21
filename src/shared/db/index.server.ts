@@ -1,9 +1,2 @@
-export { getDb } from "./db.server";
-export {
-  insertTodoSchema,
-  selectTodoSchema,
-  todos,
-  updateTodoSchema,
-  type NewTodo,
-  type Todo,
-} from "./schema";
+export { getDb, type Database, type DbContext } from "./db.server";
+export { todos, type Todo } from "./schema";

@@ -1,43 +1,13 @@
-import { cloudflareTest } from "@cloudflare/vitest-plugin";
+import { cloudflareTest, readD1Migrations } from "@cloudflare/vitest-plugin";
 import { defineConfig, lazyPlugins } from "vite-plus";
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig(async ({ mode, command }) => ({
   ...fmtConfig,
   ...lintConfig,
+  ...(await testConfig({ command, mode })),
   plugins: mode === "test" ? [] : (lazyPlugins(loadPlugins) ?? []),
   resolve: { tsconfigPaths: true },
   staged: { "*": "vp fmt" },
-  test: {
-    coverage: {
-      exclude: [
-        "src/app/routeTree.gen.ts",
-        "src/shared/ui/shadcn/**",
-        "src/**/__mocks__/**",
-        "src/shared/db/schema/**",
-      ],
-      include: ["src/**/*.{ts,tsx}"],
-      provider: "v8",
-      thresholds: { 100: true, perFile: true },
-    },
-    globals: false,
-    projects: [
-      {
-        test: {
-          environment: "happy-dom",
-          exclude: ["src/**/__tests__/workers/**"],
-          include: ["src/**/__tests__/**/*.spec.{ts,tsx}"],
-          name: "client",
-        },
-      },
-      {
-        plugins: [cloudflareTest({ wrangler: { configPath: "wrangler.jsonc" } })],
-        test: {
-          include: ["src/**/__tests__/workers/**/*.spec.ts"],
-          name: "workers",
-        },
-      },
-    ],
-  },
 }));
 
 const lintConfig = defineConfig({
@@ -77,6 +47,8 @@ const lintConfig = defineConfig({
       {
         files: ["src/**/*.{test,spec}.{ts,tsx}", "tests/vitest/**", "**/__mocks__/**"],
         rules: {
+          "eslint/max-lines": "off",
+          "eslint/max-lines-per-function": "off",
           "eslint/no-magic-numbers": "off",
           "import/group-exports": "off",
           "testing-library/await-async-events": "error",
@@ -113,6 +85,7 @@ const lintConfig = defineConfig({
           "testing-library/render-result-naming-convention": "error",
           "typescript/no-unsafe-type-assertion": "off",
           "unicorn/no-null": "off",
+          "vitest/require-top-level-describe": "off",
         },
       },
       {
@@ -243,6 +216,7 @@ const lintConfig = defineConfig({
       "@tanstack/router/create-route-property-order": "error",
       "@tanstack/router/route-param-names": "error",
       "eslint/func-style": ["error", "declaration"],
+      "eslint/id-length": ["error", { exceptions: ["z"] }],
       "eslint/no-ternary": "off",
       "eslint/no-use-before-define": "off",
       "eslint/one-var": ["error", "never"],
@@ -252,6 +226,7 @@ const lintConfig = defineConfig({
       "import/no-default-export": "error",
       "import/no-duplicates": ["error", { preferInline: true }],
       "import/no-named-export": "off",
+      "import/no-namespace": ["error", { ignore: ["zod"] }],
       "import/no-relative-parent-imports": "off",
       "import/prefer-default-export": "off",
       "oxc/no-async-await": "off",
@@ -280,6 +255,7 @@ const lintConfig = defineConfig({
       "typescript/explicit-function-return-type": "off",
       "typescript/explicit-module-boundary-types": "off",
       "typescript/prefer-readonly-parameter-types": "off",
+      "typescript/return-await": ["error", "always"],
       "unicorn/prefer-global-this": "off",
       "vite-plus/prefer-vite-plus-imports": "error",
       "vitest/consistent-test-filename": [
@@ -289,6 +265,8 @@ const lintConfig = defineConfig({
       "vitest/no-hooks": "off",
       "vitest/no-importing-vitest-globals": "off",
       "vitest/prefer-importing-vitest-globals": "error",
+      "vitest/prefer-to-be-falsy": "off",
+      "vitest/prefer-to-be-truthy": "off",
       "vitest/require-test-timeout": "off",
     },
     settings: { tailwindcss: { cssConfigPath: "./src/app/styles/styles.css" } },
@@ -335,3 +313,52 @@ const fmtConfig = defineConfig({
     sortPackageJson: { sortScripts: true },
   },
 });
+
+const testConfig = defineConfig(async () => ({
+  test: {
+    coverage: {
+      exclude: [
+        "src/app/routeTree.gen.ts",
+        "src/shared/ui/shadcn/**",
+        "src/**/__mocks__/**",
+        "src/shared/db/schema/**",
+      ],
+      include: ["src/**/*.{ts,tsx}"],
+      provider: "v8",
+      thresholds: { 100: true, perFile: true },
+    },
+    globals: false,
+    projects: [
+      {
+        test: {
+          environment: "happy-dom",
+          exclude: ["src/**/__tests__/workers/**"],
+          include: ["src/**/__tests__/**/*.spec.{ts,tsx}"],
+          name: "client",
+        },
+      },
+      {
+        plugins: [
+          cloudflareTest({
+            main: "tests/vitest/worker-entry.ts",
+            miniflare: {
+              bindings: {
+                TEST_MIGRATIONS: await readD1Migrations({
+                  migrationsDir: "drizzle",
+                  migrationsPattern: "drizzle/*/migration.sql",
+                  projectPath: process.cwd(),
+                }),
+              },
+            },
+            wrangler: { configPath: "wrangler.jsonc" },
+          }),
+        ],
+        test: {
+          include: ["src/**/__tests__/workers/**/*.spec.ts"],
+          name: "workers",
+          setupFiles: ["tests/vitest/setup/workers.ts"],
+        },
+      },
+    ],
+  },
+}));

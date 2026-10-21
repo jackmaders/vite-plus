@@ -9,6 +9,6 @@
   ],
   "compilerOptions": {
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
-    "types": ["vite-plus/client"]
+    "types": ["vite-plus/client", "@cloudflare/vitest-plugin/types"]
   }
 }
