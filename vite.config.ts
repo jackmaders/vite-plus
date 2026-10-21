@@ -314,7 +314,6 @@ const fmtConfig = defineConfig({
       ".agents/**",
       "drizzle/**",
       "src/app/routeTree.gen.ts",
-      "src/shared/ui/shadcn/**",
       "worker-configuration.d.ts",
     ],
     jsdoc: { descriptionWithDot: true, separateTagGroups: true },
