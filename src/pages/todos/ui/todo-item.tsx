@@ -39,26 +39,26 @@ function TodoItem({ isUpdating = false, onDelete, onToggle, onUpdate, todo }: To
     onToggle(todo.id, checked);
   }
 
-  if (isEditing) {
-    return (
-      <TodoItemEdit
-        isUpdating={isUpdating}
-        onCancel={handleCancelEditing}
-        onSave={handleSave}
-        todo={todo}
-      />
-    );
-  }
-
   return (
-    <Card className="flex items-center justify-between p-4">
-      <TodoItemSummary isUpdating={isUpdating} onToggle={handleToggle} todo={todo} />
-      <TodoItemActions
-        isUpdating={isUpdating}
-        onDelete={handleDelete}
-        onEdit={handleStartEditing}
-      />
-    </Card>
+    <>
+      <Card className="flex items-center justify-between p-4">
+        <TodoItemSummary isUpdating={isUpdating} onToggle={handleToggle} todo={todo} />
+        <TodoItemActions
+          isUpdating={isUpdating}
+          onDelete={handleDelete}
+          onEdit={handleStartEditing}
+        />
+      </Card>
+      {isEditing && (
+        <TodoItemEdit
+          isUpdating={isUpdating}
+          onCancel={handleCancelEditing}
+          onSave={handleSave}
+          open={isEditing}
+          todo={todo}
+        />
+      )}
+    </>
   );
 }
 

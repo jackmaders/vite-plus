@@ -179,3 +179,55 @@ describe("todo item edit cancel and disabled states", () => {
     expect(screen.getByRole("button", { name: /save/iu }).hasAttribute("disabled")).toBe(true);
   });
 });
+
+describe("todo item edit dialog controls", () => {
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
+  it("renders dialog title and description when open", () => {
+    expect.assertions(2);
+
+    // Arrange & Act
+    render(
+      <TodoItemEdit onCancel={vi.fn<CancelFn>()} onSave={vi.fn<SaveFn>()} open todo={mockTodo} />,
+    );
+
+    // Assert
+    expect(screen.getByRole("heading", { name: /edit todo/iu })).toBeDefined();
+    expect(screen.getByText("Update the title and description of your todo item.")).toBeDefined();
+  });
+
+  it("calls onCancel when close button is clicked", async () => {
+    expect.assertions(1);
+
+    // Arrange
+    const user = userEvent.setup();
+    const handleCancel = vi.fn<CancelFn>();
+    render(<TodoItemEdit onCancel={handleCancel} onSave={vi.fn<SaveFn>()} open todo={mockTodo} />);
+
+    // Act
+    await user.click(screen.getByRole("button", { name: /close/iu }));
+
+    // Assert
+    expect(handleCancel).toHaveBeenCalledWith();
+  });
+
+  it("does not render dialog content when open is false", () => {
+    expect.assertions(1);
+
+    // Arrange & Act
+    render(
+      <TodoItemEdit
+        onCancel={vi.fn<CancelFn>()}
+        onSave={vi.fn<SaveFn>()}
+        open={false}
+        todo={mockTodo}
+      />,
+    );
+
+    // Assert
+    expect(screen.queryByPlaceholderText("Title")).toBeNull();
+  });
+});
