@@ -1,5 +1,5 @@
 import { Badge } from "@/shared/ui/shadcn/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/shadcn/tabs";
+import { Button } from "@/shared/ui/shadcn/button";
 
 type TodoFilter = "active" | "all" | "completed";
 
@@ -9,24 +9,29 @@ interface TodoFiltersProps {
   onFilterChange: (filter: TodoFilter) => void;
 }
 
-const FILTER_TABS: readonly TodoFilter[] = ["all", "active", "completed"];
+const FILTERS: readonly TodoFilter[] = ["all", "active", "completed"];
 
 function TodoFilters({ counts, filter, onFilterChange }: TodoFiltersProps) {
-  function handleValueChange(value: TodoFilter) {
-    onFilterChange(value);
-  }
-
   return (
-    <Tabs<TodoFilter> onValueChange={handleValueChange} value={filter}>
-      <TabsList>
-        {FILTER_TABS.map((tab) => (
-          <TabsTrigger key={tab} value={tab}>
-            <span className="capitalize">{tab}</span>
-            <Badge variant="secondary">{counts[tab]}</Badge>
-          </TabsTrigger>
-        ))}
-      </TabsList>
-    </Tabs>
+    <nav aria-label="Filter todos" className="flex items-center gap-1.5">
+      {FILTERS.map((item) => {
+        const isActive = filter === item;
+        return (
+          <Button
+            aria-pressed={isActive}
+            key={item}
+            onClick={() => {
+              onFilterChange(item);
+            }}
+            size="sm"
+            variant={isActive ? "secondary" : "ghost"}
+          >
+            <span className="capitalize">{item}</span>
+            <Badge variant={isActive ? "default" : "secondary"}>{counts[item]}</Badge>
+          </Button>
+        );
+      })}
+    </nav>
   );
 }
 
