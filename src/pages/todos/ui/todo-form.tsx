@@ -1,36 +1,10 @@
-import { useForm } from "@tanstack/react-form";
-import type { SyntheticEvent } from "react";
-
-import { Button } from "@/shared/ui/shadcn/button";
+import { createTodoInputSchema } from "@/pages/todos/model/todo-schema";
+import { useAppForm } from "@/shared/ui/form";
 import { Card } from "@/shared/ui/shadcn/card";
-import { Input } from "@/shared/ui/shadcn/input";
 
 interface TodoFormProps {
   isCreating?: boolean;
   onCreate: (input: { description?: string | null; title: string }) => void;
-}
-
-interface FormValues {
-  description: string;
-  title: string;
-}
-
-interface SubmitContext {
-  formApi: { reset: () => void };
-  value: FormValues;
-}
-
-interface SubmitButtonProps {
-  canSubmit: boolean;
-  isCreating: boolean;
-}
-
-function SubmitButton({ canSubmit, isCreating }: SubmitButtonProps) {
-  return (
-    <Button disabled={!canSubmit} type="submit">
-      {isCreating ? "Adding..." : "Add Todo"}
-    </Button>
-  );
 }
 
 function createTodoPayload(title: string, description: string) {
@@ -41,68 +15,48 @@ function createTodoPayload(title: string, description: string) {
     : { description: trimmedDescription, title: trimmedTitle };
 }
 
-function selectCanSubmit(isCreating: boolean) {
-  return (state: { values: FormValues }) => ({
-    canSubmit: state.values.title.trim() !== "" && !isCreating,
-  });
-}
-
-function createSubmitHandler(onCreate: TodoFormProps["onCreate"], isCreating: boolean) {
-  return ({ formApi, value }: SubmitContext) => {
-    if (value.title.trim() === "" || isCreating) {
-      return;
-    }
-    onCreate(createTodoPayload(value.title, value.description));
-    formApi.reset();
-  };
+function validateTodoInput({ value }: { value: { description: string; title: string } }) {
+  const result = createTodoInputSchema.safeParse(value);
+  return result.success ? "" : "Title is required";
 }
 
 function TodoForm({ isCreating = false, onCreate }: TodoFormProps) {
-  const form = useForm({
+  const form = useAppForm({
     defaultValues: { description: "", title: "" },
-    onSubmit: createSubmitHandler(onCreate, isCreating),
+    onSubmit: ({ value }) => {
+      if (value.title.trim() === "" || isCreating) {
+        return;
+      }
+      onCreate(createTodoPayload(value.title, value.description));
+      form.reset();
+    },
+    validators: {
+      onChange: validateTodoInput,
+      onMount: validateTodoInput,
+    },
   });
-
-  function handleSubmit(event: SyntheticEvent<HTMLFormElement>) {
-    event.preventDefault();
-    event.stopPropagation();
-    // eslint-disable-next-line eslint/no-void
-    void form.handleSubmit();
-  }
 
   return (
     <Card className="p-4">
-      <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
-        <form.Field name="title">
-          {(field) => (
-            <Input
-              disabled={isCreating}
-              name={field.name}
-              onChange={(event) => {
-                field.handleChange(event.target.value);
-              }}
-              placeholder="Title"
-              value={field.state.value}
-            />
-          )}
-        </form.Field>
-        <form.Field name="description">
-          {(field) => (
-            <Input
-              disabled={isCreating}
-              name={field.name}
-              onChange={(event) => {
-                field.handleChange(event.target.value);
-              }}
-              placeholder="Description"
-              value={field.state.value}
-            />
-          )}
-        </form.Field>
-        <form.Subscribe selector={selectCanSubmit(isCreating)}>
-          {(state) => <SubmitButton canSubmit={state.canSubmit} isCreating={isCreating} />}
-        </form.Subscribe>
-      </form>
+      <form.AppForm>
+        <form.Form className="flex flex-col gap-3">
+          <form.AppField name="title">
+            {(field) => <field.TextField disabled={isCreating} label="Title" placeholder="Title" />}
+          </form.AppField>
+          <form.AppField name="description">
+            {(field) => (
+              <field.TextField
+                disabled={isCreating}
+                label="Description"
+                placeholder="Description"
+              />
+            )}
+          </form.AppField>
+          <form.SubmitButton disabled={isCreating}>
+            {isCreating ? "Adding..." : "Add Todo"}
+          </form.SubmitButton>
+        </form.Form>
+      </form.AppForm>
     </Card>
   );
 }

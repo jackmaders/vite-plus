@@ -85,6 +85,7 @@ const lintConfig = defineConfig({
           "testing-library/render-result-naming-convention": "error",
           "typescript/no-unsafe-type-assertion": "off",
           "unicorn/no-null": "off",
+          "vitest/prefer-called-times": "off",
           "vitest/require-top-level-describe": "off",
         },
       },

@@ -1,0 +1,35 @@
+import type { ComponentProps } from "react";
+
+import { Button } from "@/shared/ui/shadcn/button";
+
+import { useFormContext } from "./form-context";
+
+function selectSubmitState(state: { canSubmit: boolean; isSubmitting: boolean }) {
+  return [state.canSubmit, state.isSubmitting] as const;
+}
+
+function SubmitButton({
+  children,
+  disabled,
+  type = "submit",
+  ...props
+}: ComponentProps<typeof Button>) {
+  const form = useFormContext();
+
+  return (
+    <form.Subscribe selector={selectSubmitState}>
+      {([canSubmit, isSubmitting]) => (
+        <Button
+          {...props}
+          aria-busy={isSubmitting}
+          disabled={Boolean(disabled) || !canSubmit || isSubmitting}
+          type={type}
+        >
+          {isSubmitting ? "Please wait…" : children}
+        </Button>
+      )}
+    </form.Subscribe>
+  );
+}
+
+export { SubmitButton };
