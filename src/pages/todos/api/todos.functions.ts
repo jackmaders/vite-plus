@@ -5,10 +5,9 @@ import { authMiddleware } from "@/shared/auth/index.server";
 import {
   createTodoInputSchema,
   deleteTodoInputSchema,
-  toggleTodoInputSchema,
   updateTodoInputSchema,
 } from "../model/todo-schema";
-import { createTodo, deleteTodo, getTodos, toggleTodo, updateTodo } from "./todos.server";
+import { createTodo, deleteTodo, getTodos, updateTodo } from "./todos-operations";
 
 const getTodosFn = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
@@ -21,33 +20,18 @@ const createTodoFn = createServerFn({ method: "POST" })
     async ({ context, data }) => await createTodo(data, { userId: context.session.user.id }),
   );
 
-const toggleTodoFn = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
-  .validator(toggleTodoInputSchema)
-  .handler(
-    async ({ context, data }) =>
-      await toggleTodo(data.id, data.completed, {
-        userId: context.session.user.id,
-      }),
-  );
 const updateTodoFn = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator(updateTodoInputSchema)
   .handler(
-    async ({ context, data: { id, ...input } }) =>
-      await updateTodo(id, input, {
-        userId: context.session.user.id,
-      }),
+    async ({ context, data }) => await updateTodo(data, { userId: context.session.user.id }),
   );
 
 const deleteTodoFn = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
   .validator(deleteTodoInputSchema)
   .handler(
-    async ({ context, data }) =>
-      await deleteTodo(data.id, {
-        userId: context.session.user.id,
-      }),
+    async ({ context, data }) => await deleteTodo(data.id, { userId: context.session.user.id }),
   );
 
-export { createTodoFn, deleteTodoFn, getTodosFn, toggleTodoFn, updateTodoFn };
+export { createTodoFn, deleteTodoFn, getTodosFn, updateTodoFn };

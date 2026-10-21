@@ -3,7 +3,6 @@ import { describe, expect, it } from "vite-plus/test";
 import {
   createTodoInputSchema,
   deleteTodoInputSchema,
-  toggleTodoInputSchema,
   updateTodoInputSchema,
 } from "../todo-schema";
 
@@ -69,58 +68,17 @@ describe("create todo input schema invalid inputs", () => {
   });
 });
 
-describe("toggle todo input schema", () => {
-  it("parses valid toggle input", () => {
-    expect.assertions(2);
-
-    // Arrange
-    const rawInput = { completed: true, id: "todo-1" };
-
-    // Act
-    const parsed = toggleTodoInputSchema.parse(rawInput);
-
-    // Assert
-    expect(parsed.id).toBe("todo-1");
-    expect(parsed.completed).toBe(true);
-  });
-
-  it("throws when id is empty", () => {
-    expect.assertions(1);
-
-    // Arrange
-    const invalidInput = { completed: true, id: "" };
-
-    // Act
-    function parse() {
-      toggleTodoInputSchema.parse(invalidInput);
-    }
-
-    // Assert
-    expect(parse).toThrow(/too_small/iu);
-  });
-
-  it("throws when completed is invalid", () => {
-    expect.assertions(1);
-
-    // Arrange
-    const invalidInput = { completed: "yes", id: "todo-1" };
-
-    // Act
-    function parse() {
-      toggleTodoInputSchema.parse(invalidInput);
-    }
-
-    // Assert
-    expect(parse).toThrow(/invalid_type/iu);
-  });
-});
-
 describe("update todo input schema valid inputs", () => {
   it("parses valid update input with all fields provided", () => {
-    expect.assertions(3);
+    expect.assertions(4);
 
     // Arrange
-    const rawInput = { description: "New desc", id: "todo-1", title: "  New title  " };
+    const rawInput = {
+      completed: true,
+      description: "New desc",
+      id: "todo-1",
+      title: "  New title  ",
+    };
 
     // Act
     const parsed = updateTodoInputSchema.parse(rawInput);
@@ -129,10 +87,11 @@ describe("update todo input schema valid inputs", () => {
     expect(parsed.id).toBe("todo-1");
     expect(parsed.title).toBe("New title");
     expect(parsed.description).toBe("New desc");
+    expect(parsed.completed).toBe(true);
   });
 
   it("parses valid update input with only id", () => {
-    expect.assertions(3);
+    expect.assertions(4);
 
     // Arrange
     const rawInput = { id: "todo-1" };
@@ -144,6 +103,23 @@ describe("update todo input schema valid inputs", () => {
     expect(parsed.id).toBe("todo-1");
     expect(parsed.title).toBeUndefined();
     expect(parsed.description).toBeUndefined();
+    expect(parsed.completed).toBeUndefined();
+  });
+});
+
+describe("update todo input schema toggle completed", () => {
+  it("parses valid toggle update input", () => {
+    expect.assertions(2);
+
+    // Arrange
+    const rawInput = { completed: true, id: "todo-1" };
+
+    // Act
+    const parsed = updateTodoInputSchema.parse(rawInput);
+
+    // Assert
+    expect(parsed.id).toBe("todo-1");
+    expect(parsed.completed).toBe(true);
   });
 });
 
@@ -176,6 +152,21 @@ describe("update todo input schema invalid inputs", () => {
 
     // Assert
     expect(parse).toThrow(/too_small/iu);
+  });
+
+  it("throws when completed is invalid", () => {
+    expect.assertions(1);
+
+    // Arrange
+    const invalidInput = { completed: "yes", id: "todo-1" };
+
+    // Act
+    function parse() {
+      updateTodoInputSchema.parse(invalidInput);
+    }
+
+    // Assert
+    expect(parse).toThrow(/invalid_type/iu);
   });
 });
 

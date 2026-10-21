@@ -1,21 +1,15 @@
+import type * as z from "zod";
+
 import { insertTodoSchema, selectTodoSchema, updateTodoSchema } from "@/shared/db";
 
 const createTodoInputSchema = insertTodoSchema.pick({ description: true, title: true });
+type CreateTodoInput = z.infer<typeof createTodoInputSchema>;
 
-const toggleTodoInputSchema = selectTodoSchema.pick({
-  completed: true,
-  id: true,
-});
-
-const updateTodoInputSchema = updateTodoSchema.pick({ description: true, title: true }).extend({
-  id: selectTodoSchema.shape.id,
-});
+const updateTodoInputSchema = updateTodoSchema;
+type UpdateTodoInput = z.infer<typeof updateTodoInputSchema>;
 
 const deleteTodoInputSchema = selectTodoSchema.pick({ id: true });
+type DeleteTodoInput = z.infer<typeof deleteTodoInputSchema>;
 
-export {
-  createTodoInputSchema,
-  deleteTodoInputSchema,
-  toggleTodoInputSchema,
-  updateTodoInputSchema,
-};
+export { createTodoInputSchema, deleteTodoInputSchema, updateTodoInputSchema };
+export type { CreateTodoInput, DeleteTodoInput, UpdateTodoInput };

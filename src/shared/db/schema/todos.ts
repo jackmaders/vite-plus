@@ -1,9 +1,8 @@
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema, createUpdateSchema } from "drizzle-orm/zod";
+import type * as z from "zod";
 
 import { user } from "./auth";
-
-const MIN_LENGTH = 1;
 
 const todos = sqliteTable(
   "todos",
@@ -16,7 +15,7 @@ const todos = sqliteTable(
     id: text("id")
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    title: text("title").notNull(),
+    title: text("title", { length: 256 }).notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp" })
       .notNull()
       .$defaultFn(() => new Date())
@@ -28,49 +27,29 @@ const todos = sqliteTable(
   (table) => [index("todos_user_id_idx").on(table.userId)],
 );
 
+const TITLE_MIN_LENGTH = 1;
+const ID_MIN_LENGTH = 1;
+
+const refinements = {
+  description: (schema: z.ZodString) => schema.trim().nullable().optional(),
+  id: (schema: z.ZodString) => schema.trim().min(ID_MIN_LENGTH),
+  title: (schema: z.ZodString) => schema.trim().min(TITLE_MIN_LENGTH, "Title is required"),
+};
+
+const selectTodoSchema = createSelectSchema(todos, refinements);
+
+const insertTodoSchema = createInsertSchema(todos, refinements).omit({
+  createdAt: true,
+  id: true,
+  updatedAt: true,
+  userId: true,
+});
+
+const updateTodoSchema = createUpdateSchema(todos, refinements)
+  .extend({ id: selectTodoSchema.shape.id })
+  .omit({ createdAt: true, updatedAt: true, userId: true });
+
 type Todo = typeof todos.$inferSelect;
-type NewTodo = typeof todos.$inferInsert;
 
-type CreateTodoInput = Pick<NewTodo, "title"> & {
-  description?: string | null | undefined;
-};
-
-interface UpdateTodoInput {
-  description?: string | null | undefined;
-  title?: string | undefined;
-}
-
-const selectTodoSchema = createSelectSchema(todos, {
-  id: (schema) => schema.min(MIN_LENGTH),
-});
-
-const insertTodoSchema = createInsertSchema(todos, {
-  description: (schema) => schema.nullable().optional(),
-  title: (schema) => schema.trim().min(MIN_LENGTH, "Title is required"),
-}).omit({
-  createdAt: true,
-  id: true,
-  updatedAt: true,
-  userId: true,
-});
-
-const updateTodoSchema = createUpdateSchema(todos, {
-  description: (schema) => schema.nullable().optional(),
-  title: (schema) => schema.trim().min(MIN_LENGTH).optional(),
-}).omit({
-  createdAt: true,
-  id: true,
-  updatedAt: true,
-  userId: true,
-});
-
-export {
-  insertTodoSchema,
-  selectTodoSchema,
-  todos,
-  updateTodoSchema,
-  type CreateTodoInput,
-  type NewTodo,
-  type Todo,
-  type UpdateTodoInput,
-};
+export { insertTodoSchema, selectTodoSchema, todos, updateTodoSchema };
+export type { Todo };

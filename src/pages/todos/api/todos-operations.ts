@@ -1,7 +1,9 @@
 import { and, desc, eq } from "drizzle-orm";
 
-import { todos, type CreateTodoInput, type UpdateTodoInput } from "@/shared/db";
+import { todos } from "@/shared/db";
 import { getDb, type DbContext } from "@/shared/db/index.server";
+
+import type { CreateTodoInput, UpdateTodoInput } from "../model/todo-schema";
 
 interface TodoContext extends DbContext {
   userId: string;
@@ -31,21 +33,8 @@ async function createTodo(input: CreateTodoInput, { db = getDb(), userId }: Todo
   return created;
 }
 
-async function toggleTodo(id: string, completed: boolean, { db = getDb(), userId }: TodoContext) {
-  const [updated] = await db
-    .update(todos)
-    .set({ completed })
-    .where(and(eq(todos.id, id), eq(todos.userId, userId)))
-    .returning();
-  if (!updated) {
-    throw new Error("Todo not found");
-  }
-  return updated;
-}
-
 async function updateTodo(
-  id: string,
-  input: UpdateTodoInput,
+  { id, ...input }: UpdateTodoInput,
   { db = getDb(), userId }: TodoContext,
 ) {
   const [updated] = await db
@@ -70,4 +59,4 @@ async function deleteTodo(id: string, { db = getDb(), userId }: TodoContext) {
   return deleted;
 }
 
-export { createTodo, deleteTodo, getTodos, toggleTodo, updateTodo, type TodoContext };
+export { createTodo, deleteTodo, getTodos, updateTodo, type TodoContext };

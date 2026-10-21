@@ -6,7 +6,7 @@ import { todos } from "@/shared/db";
 import { getDb } from "@/shared/db/index.server";
 import { createEmptyInsertMockDb, resetTestDb, setupTestDb } from "@test/vitest/fixtures/test-db";
 
-import { createTodo, deleteTodo, getTodos, toggleTodo, updateTodo } from "../../todos.server";
+import { createTodo, deleteTodo, getTodos, updateTodo } from "../../todos-operations";
 
 describe("todos.server createTodo creation", () => {
   beforeAll(setupTestDb);
@@ -108,7 +108,7 @@ describe("todos.server getTodos", () => {
   });
 });
 
-describe("todos.server toggleTodo", () => {
+describe("todos.server updateTodo toggling completed", () => {
   beforeAll(setupTestDb);
   beforeEach(resetTestDb);
 
@@ -120,38 +120,11 @@ describe("todos.server toggleTodo", () => {
     const created = await createTodo({ title: "Toggle test" }, { db, userId: "user-a" });
 
     // Act
-    const toggled = await toggleTodo(created.id, true, { db, userId: "user-a" });
+    const toggled = await updateTodo({ completed: true, id: created.id }, { db, userId: "user-a" });
 
     // Assert
     expect(toggled.id).toBe(created.id);
     expect(toggled.completed).toBe(true);
-  });
-
-  it("throws Todo not found when attempting to toggle another user's todo", async () => {
-    expect.assertions(1);
-
-    // Arrange
-    const db = getDb(env.DB);
-    const todoB = await createTodo({ title: "User B todo" }, { db, userId: "user-b" });
-
-    // Act
-    const action = toggleTodo(todoB.id, true, { db, userId: "user-a" });
-
-    // Assert
-    await expect(action).rejects.toThrow("Todo not found");
-  });
-
-  it("throws Todo not found when attempting to toggle a nonexistent todo", async () => {
-    expect.assertions(1);
-
-    // Arrange
-    const db = getDb(env.DB);
-
-    // Act
-    const action = toggleTodo("non-existent-id", true, { db, userId: "user-a" });
-
-    // Assert
-    await expect(action).rejects.toThrow("Todo not found");
   });
 });
 
@@ -174,9 +147,9 @@ describe("todos.server updateTodo", () => {
 
     // Act
     const updated = await updateTodo(
-      created.id,
       {
         description: "Updated description",
+        id: created.id,
         title: "Updated title",
       },
       { db, userId: "user-a" },
@@ -200,7 +173,10 @@ describe("todos.server updateTodo error cases", () => {
     const todoB = await createTodo({ title: "User B todo" }, { db, userId: "user-b" });
 
     // Act
-    const action = updateTodo(todoB.id, { title: "Unauthorized update" }, { db, userId: "user-a" });
+    const action = updateTodo(
+      { id: todoB.id, title: "Unauthorized update" },
+      { db, userId: "user-a" },
+    );
 
     // Assert
     await expect(action).rejects.toThrow("Todo not found");
@@ -214,8 +190,7 @@ describe("todos.server updateTodo error cases", () => {
 
     // Act
     const action = updateTodo(
-      "non-existent-id",
-      { title: "Non-existent update" },
+      { id: "non-existent-id", title: "Non-existent update" },
       { db, userId: "user-a" },
     );
 

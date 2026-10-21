@@ -3,19 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { ensureSession } from "@/shared/auth/session.server";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 
-import {
-  createTodoFn,
-  deleteTodoFn,
-  getTodosFn,
-  toggleTodoFn,
-  updateTodoFn,
-} from "../api/todos.functions";
-import { createTodo, deleteTodo, getTodos, toggleTodo, updateTodo } from "../api/todos.server";
+import { createTodo, deleteTodo, getTodos, updateTodo } from "../api/todos-operations";
+import { createTodoFn, deleteTodoFn, getTodosFn, updateTodoFn } from "../api/todos.functions";
 
 vi.mock(import("@tanstack/react-start"));
 vi.mock(import("@/shared/auth/auth.server"));
 vi.mock(import("@/shared/auth/session.server"));
-vi.mock(import("../api/todos.server"));
+vi.mock(import("../api/todos-operations"));
 vi.mock(import("@/shared/db/db.server"));
 
 const MOCK_TODO = {
@@ -28,7 +22,7 @@ const MOCK_TODO = {
   userId: TEST_SESSION.user.id,
 };
 
-describe("todos functions query handlers", () => {
+describe("todos functions getTodosFn", () => {
   beforeEach(() => {
     vi.mocked(ensureSession).mockResolvedValue(TEST_SESSION);
   });
@@ -37,7 +31,7 @@ describe("todos functions query handlers", () => {
     vi.clearAllMocks();
   });
 
-  it("getTodosFn queries todos for session user and returns result", async () => {
+  it("getTodosFn returns todos array for authenticated user", async () => {
     expect.assertions(2);
 
     // Arrange
@@ -52,7 +46,7 @@ describe("todos functions query handlers", () => {
   });
 });
 
-describe("todos functions create and toggle handlers", () => {
+describe("todos functions createTodoFn", () => {
   beforeEach(() => {
     vi.mocked(ensureSession).mockResolvedValue(TEST_SESSION);
   });
@@ -61,11 +55,11 @@ describe("todos functions create and toggle handlers", () => {
     vi.clearAllMocks();
   });
 
-  it("createTodoFn creates a todo using validated input", async () => {
+  it("createTodoFn creates todo using validated input", async () => {
     expect.assertions(2);
 
     // Arrange
-    const inputData = { description: "Test desc", title: "Test title" };
+    const inputData = { description: "Test desc", title: "Test todo" };
     vi.mocked(createTodo).mockResolvedValueOnce(MOCK_TODO);
 
     // Act
@@ -75,26 +69,9 @@ describe("todos functions create and toggle handlers", () => {
     expect(createTodo).toHaveBeenCalledWith(inputData, { userId: TEST_SESSION.user.id });
     expect(result).toStrictEqual(MOCK_TODO);
   });
-
-  it("toggleTodoFn toggles completed using validated parameters", async () => {
-    expect.assertions(2);
-
-    // Arrange
-    const toggledTodo = { ...MOCK_TODO, completed: true };
-    vi.mocked(toggleTodo).mockResolvedValueOnce(toggledTodo);
-
-    // Act
-    const result = await toggleTodoFn({ data: { completed: true, id: MOCK_TODO.id } });
-
-    // Assert
-    expect(toggleTodo).toHaveBeenCalledWith(MOCK_TODO.id, true, {
-      userId: TEST_SESSION.user.id,
-    });
-    expect(result).toStrictEqual(toggledTodo);
-  });
 });
 
-describe("todos functions update and delete handlers", () => {
+describe("todos functions updateTodoFn fields", () => {
   beforeEach(() => {
     vi.mocked(ensureSession).mockResolvedValue(TEST_SESSION);
   });
@@ -117,14 +94,57 @@ describe("todos functions update and delete handlers", () => {
 
     // Assert
     expect(updateTodo).toHaveBeenCalledWith(
-      MOCK_TODO.id,
       {
         description: "Updated desc",
+        id: MOCK_TODO.id,
         title: "Updated title",
       },
       { userId: TEST_SESSION.user.id },
     );
     expect(result).toStrictEqual(updatedTodo);
+  });
+});
+
+describe("todos functions updateTodoFn completed toggle", () => {
+  beforeEach(() => {
+    vi.mocked(ensureSession).mockResolvedValue(TEST_SESSION);
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("updateTodoFn updates completed status when toggled", async () => {
+    expect.assertions(2);
+
+    // Arrange
+    const toggledTodo = { ...MOCK_TODO, completed: true };
+    vi.mocked(updateTodo).mockResolvedValueOnce(toggledTodo);
+
+    // Act
+    const result = await updateTodoFn({
+      data: { completed: true, id: MOCK_TODO.id },
+    });
+
+    // Assert
+    expect(updateTodo).toHaveBeenCalledWith(
+      {
+        completed: true,
+        id: MOCK_TODO.id,
+      },
+      { userId: TEST_SESSION.user.id },
+    );
+    expect(result).toStrictEqual(toggledTodo);
+  });
+});
+
+describe("todos functions deleteTodoFn", () => {
+  beforeEach(() => {
+    vi.mocked(ensureSession).mockResolvedValue(TEST_SESSION);
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
   });
 
   it("deleteTodoFn deletes todo using validated id", async () => {
@@ -144,7 +164,7 @@ describe("todos functions update and delete handlers", () => {
 
 describe("todos api index barrel", () => {
   it("api index barrel exports all server functions", async () => {
-    expect.assertions(5);
+    expect.assertions(4);
 
     // Arrange
     const api = await import("../api/index");
@@ -152,7 +172,6 @@ describe("todos api index barrel", () => {
     // Assert
     expect(api.getTodosFn).toBeDefined();
     expect(api.createTodoFn).toBeDefined();
-    expect(api.toggleTodoFn).toBeDefined();
     expect(api.updateTodoFn).toBeDefined();
     expect(api.deleteTodoFn).toBeDefined();
   });

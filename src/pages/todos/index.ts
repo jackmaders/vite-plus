@@ -1,1 +1,1 @@
-export { createTodoFn, deleteTodoFn, getTodosFn, toggleTodoFn, updateTodoFn } from "./api";
+export { createTodoFn, deleteTodoFn, getTodosFn, updateTodoFn } from "./api";
