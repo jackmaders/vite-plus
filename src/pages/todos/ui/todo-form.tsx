@@ -1,7 +1,7 @@
 import { useAppForm, type FormProps } from "@/shared/ui/form";
 import { Card } from "@/shared/ui/shadcn/card";
 
-import { useCreateTodo } from "../api";
+import { useCreateTodo } from "../api/use-create-todo";
 import { createTodoInputSchema, type CreateTodoInput } from "../model/todo-schema";
 
 type TodoFormProps = FormProps;

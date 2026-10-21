@@ -2,12 +2,12 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { useCreateTodo } from "@/pages/todos/api";
+import { useCreateTodo } from "@/pages/todos/api/use-create-todo";
 import { TodoForm } from "@/pages/todos/ui/todo-form";
 
 vi.mock(import("@/shared/auth/auth.server"));
 vi.mock(import("@/shared/db/db.server"));
-vi.mock(import("@/pages/todos/api"));
+vi.mock(import("@/pages/todos/api/use-create-todo"));
 
 const mockCreateTodo = vi.fn<() => void>();
 
