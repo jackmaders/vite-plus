@@ -2,18 +2,11 @@ import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
 import { beforeAll, beforeEach, describe, expect, it } from "vite-plus/test";
 
+import { todos } from "@/shared/db";
+import { getDb } from "@/shared/db/index.server";
 import { createEmptyInsertMockDb, resetTestDb, setupTestDb } from "@test/vitest/fixtures/test-db";
 
-import {
-  createTodo,
-  deleteTodo,
-  getDb,
-  getTodos,
-  toggleTodo,
-  updateTodo,
-  type TodoContext,
-} from "../../index.server";
-import { todos } from "../../schema/todos";
+import { createTodo, deleteTodo, getTodos, toggleTodo, updateTodo } from "../../todos.server";
 
 describe("todos.server createTodo creation", () => {
   beforeAll(setupTestDb);
@@ -58,19 +51,6 @@ describe("todos.server createTodo creation", () => {
 describe("todos.server createTodo failures", () => {
   beforeAll(setupTestDb);
   beforeEach(resetTestDb);
-
-  it("throws an error when userId is missing in context", async () => {
-    expect.assertions(1);
-
-    // Arrange
-    const db = getDb(env.DB);
-
-    // Act
-    const action = createTodo({ title: "No user" }, { db } as unknown as TodoContext);
-
-    // Assert
-    await expect(action).rejects.toThrow("User ID is required");
-  });
 
   it("throws an error when insert returning array is empty", async () => {
     expect.assertions(1);

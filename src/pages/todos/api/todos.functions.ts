@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 
 import { authMiddleware } from "@/shared/auth/index.server";
-import { createTodo, deleteTodo, getTodos, toggleTodo, updateTodo } from "@/shared/db/index.server";
 
 import {
   createTodoInputSchema,
@@ -9,6 +8,7 @@ import {
   toggleTodoInputSchema,
   updateTodoInputSchema,
 } from "../model/todo-schema";
+import { createTodo, deleteTodo, getTodos, toggleTodo, updateTodo } from "./todos.server";
 
 const getTodosFn = createServerFn({ method: "GET" })
   .middleware([authMiddleware])

@@ -1,4 +1,4 @@
-export { getDb } from "./db.server";
+export { getDb, type Database, type DbContext } from "./db.server";
 export {
   insertTodoSchema,
   selectTodoSchema,
@@ -9,12 +9,3 @@ export {
   type Todo,
   type UpdateTodoInput,
 } from "./schema";
-export {
-  createTodo,
-  deleteTodo,
-  getTodos,
-  toggleTodo,
-  updateTodo,
-  type Database,
-  type TodoContext,
-} from "./todos.server";

@@ -1,25 +1,17 @@
-import { z } from "zod";
+import { insertTodoSchema, selectTodoSchema, updateTodoSchema } from "@/shared/db";
 
-import { insertTodoSchema } from "@/shared/db";
+const createTodoInputSchema = insertTodoSchema.pick({ description: true, title: true });
 
-const MIN_LENGTH = 1;
-
-const createTodoInputSchema = insertTodoSchema.pick({ description: true, title: true }).extend({
-  title: z.string().trim().min(MIN_LENGTH, "Title is required"),
+const toggleTodoInputSchema = selectTodoSchema.pick({
+  completed: true,
+  id: true,
 });
 
-const toggleTodoInputSchema = z.object({
-  completed: z.boolean(),
-  id: z.string().min(MIN_LENGTH),
+const updateTodoInputSchema = updateTodoSchema.pick({ description: true, title: true }).extend({
+  id: selectTodoSchema.shape.id,
 });
 
-const updateTodoInputSchema = z.object({
-  description: z.string().nullable().optional(),
-  id: z.string().min(MIN_LENGTH),
-  title: z.string().trim().min(MIN_LENGTH).optional(),
-});
-
-const deleteTodoInputSchema = z.object({ id: z.string().min(MIN_LENGTH) });
+const deleteTodoInputSchema = selectTodoSchema.pick({ id: true });
 
 export {
   createTodoInputSchema,

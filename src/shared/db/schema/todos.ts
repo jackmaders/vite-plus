@@ -1,7 +1,9 @@
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-orm/zod";
+import { createInsertSchema, createSelectSchema, createUpdateSchema } from "drizzle-orm/zod";
 
 import { user } from "./auth";
+
+const MIN_LENGTH = 1;
 
 const todos = sqliteTable(
   "todos",
@@ -38,14 +40,29 @@ interface UpdateTodoInput {
   title?: string | undefined;
 }
 
-const selectTodoSchema = createSelectSchema(todos);
-const insertTodoSchema = createInsertSchema(todos).omit({
+const selectTodoSchema = createSelectSchema(todos, {
+  id: (schema) => schema.min(MIN_LENGTH),
+});
+
+const insertTodoSchema = createInsertSchema(todos, {
+  description: (schema) => schema.nullable().optional(),
+  title: (schema) => schema.trim().min(MIN_LENGTH, "Title is required"),
+}).omit({
   createdAt: true,
   id: true,
   updatedAt: true,
   userId: true,
 });
-const updateTodoSchema = insertTodoSchema.partial();
+
+const updateTodoSchema = createUpdateSchema(todos, {
+  description: (schema) => schema.nullable().optional(),
+  title: (schema) => schema.trim().min(MIN_LENGTH).optional(),
+}).omit({
+  createdAt: true,
+  id: true,
+  updatedAt: true,
+  userId: true,
+});
 
 export {
   insertTodoSchema,

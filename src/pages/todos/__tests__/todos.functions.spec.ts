@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { ensureSession } from "@/shared/auth/session.server";
-import { createTodo, deleteTodo, getTodos, toggleTodo, updateTodo } from "@/shared/db/index.server";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 
 import {
@@ -11,11 +10,12 @@ import {
   toggleTodoFn,
   updateTodoFn,
 } from "../api/todos.functions";
+import { createTodo, deleteTodo, getTodos, toggleTodo, updateTodo } from "../api/todos.server";
 
 vi.mock(import("@tanstack/react-start"));
 vi.mock(import("@/shared/auth/auth.server"));
 vi.mock(import("@/shared/auth/session.server"));
-vi.mock(import("@/shared/db/index.server"));
+vi.mock(import("../api/todos.server"));
 vi.mock(import("@/shared/db/db.server"));
 
 const MOCK_TODO = {

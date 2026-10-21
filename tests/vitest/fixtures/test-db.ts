@@ -1,10 +1,9 @@
 import { env } from "cloudflare:workers";
 import { vi } from "vite-plus/test";
 
-import { getDb } from "@/shared/db/db.server";
+import { getDb, type Database } from "@/shared/db/index.server";
 import { user } from "@/shared/db/schema/auth";
 import { todos } from "@/shared/db/schema/todos";
-import type { Database } from "@/shared/db/todos.server";
 
 const migrationFiles = import.meta.glob<string>("../../../drizzle/*/migration.sql", {
   eager: true,
