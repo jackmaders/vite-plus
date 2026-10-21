@@ -22,15 +22,15 @@ const MOCK_TODO = {
   userId: TEST_SESSION.user.id,
 };
 
+beforeEach(() => {
+  vi.mocked(ensureSession).mockResolvedValue(TEST_SESSION);
+});
+
+afterEach(() => {
+  vi.clearAllMocks();
+});
+
 describe("todos functions getTodosFn", () => {
-  beforeEach(() => {
-    vi.mocked(ensureSession).mockResolvedValue(TEST_SESSION);
-  });
-
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("getTodosFn returns todos array for authenticated user", async () => {
     expect.assertions(2);
 
@@ -47,14 +47,6 @@ describe("todos functions getTodosFn", () => {
 });
 
 describe("todos functions createTodoFn", () => {
-  beforeEach(() => {
-    vi.mocked(ensureSession).mockResolvedValue(TEST_SESSION);
-  });
-
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("createTodoFn creates todo using validated input", async () => {
     expect.assertions(2);
 
@@ -72,14 +64,6 @@ describe("todos functions createTodoFn", () => {
 });
 
 describe("todos functions updateTodoFn fields", () => {
-  beforeEach(() => {
-    vi.mocked(ensureSession).mockResolvedValue(TEST_SESSION);
-  });
-
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("updateTodoFn updates todo using validated input", async () => {
     expect.assertions(2);
 
@@ -109,14 +93,6 @@ describe("todos functions updateTodoFn fields", () => {
 });
 
 describe("todos functions updateTodoFn completed toggle", () => {
-  beforeEach(() => {
-    vi.mocked(ensureSession).mockResolvedValue(TEST_SESSION);
-  });
-
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("updateTodoFn updates completed status when toggled", async () => {
     expect.assertions(2);
 
@@ -145,14 +121,6 @@ describe("todos functions updateTodoFn completed toggle", () => {
 });
 
 describe("todos functions deleteTodoFn", () => {
-  beforeEach(() => {
-    vi.mocked(ensureSession).mockResolvedValue(TEST_SESSION);
-  });
-
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("deleteTodoFn deletes todo using validated id", async () => {
     expect.assertions(2);
 
@@ -172,7 +140,7 @@ describe("todos api index barrel", () => {
   it("api index barrel exports all server functions", async () => {
     expect.assertions(4);
 
-    // Arrange
+    // Act
     const api = await import("../api/index");
 
     // Assert

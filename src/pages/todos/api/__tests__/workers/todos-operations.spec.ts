@@ -9,18 +9,18 @@ import { createEmptyInsertMockDb } from "@test/vitest/fixtures/test-db";
 
 import { createTodo, deleteTodo, getTodos, updateTodo } from "../../todos-operations";
 
-describe("todos.server createTodo creation", () => {
-  beforeEach(async () => {
-    const db = getDb(env.DB);
-    await db
-      .insert(user)
-      .values([
-        { email: "user-a@example.com", id: "user-a", name: "User A" },
-        { email: "user-b@example.com", id: "user-b", name: "User B" },
-      ])
-      .onConflictDoNothing();
-  });
+beforeEach(async () => {
+  const db = getDb(env.DB);
+  await db
+    .insert(user)
+    .values([
+      { email: "user-a@example.com", id: "user-a", name: "User A" },
+      { email: "user-b@example.com", id: "user-b", name: "User B" },
+    ])
+    .onConflictDoNothing();
+});
 
+describe("todos-operations createTodo creation", () => {
   it("creates a new todo with defaults and trimmed title for user", async () => {
     expect.assertions(3);
 
@@ -57,18 +57,7 @@ describe("todos.server createTodo creation", () => {
   });
 });
 
-describe("todos.server createTodo failures", () => {
-  beforeEach(async () => {
-    const db = getDb(env.DB);
-    await db
-      .insert(user)
-      .values([
-        { email: "user-a@example.com", id: "user-a", name: "User A" },
-        { email: "user-b@example.com", id: "user-b", name: "User B" },
-      ])
-      .onConflictDoNothing();
-  });
-
+describe("todos-operations createTodo failures", () => {
   it("throws an error when insert returning array is empty", async () => {
     expect.assertions(1);
 
@@ -83,18 +72,7 @@ describe("todos.server createTodo failures", () => {
   });
 });
 
-describe("todos.server getTodos", () => {
-  beforeEach(async () => {
-    const db = getDb(env.DB);
-    await db
-      .insert(user)
-      .values([
-        { email: "user-a@example.com", id: "user-a", name: "User A" },
-        { email: "user-b@example.com", id: "user-b", name: "User B" },
-      ])
-      .onConflictDoNothing();
-  });
-
+describe("todos-operations getTodos", () => {
   it("returns todos for user ordered by createdAt descending", async () => {
     expect.assertions(3);
 
@@ -133,18 +111,7 @@ describe("todos.server getTodos", () => {
   });
 });
 
-describe("todos.server updateTodo toggling completed", () => {
-  beforeEach(async () => {
-    const db = getDb(env.DB);
-    await db
-      .insert(user)
-      .values([
-        { email: "user-a@example.com", id: "user-a", name: "User A" },
-        { email: "user-b@example.com", id: "user-b", name: "User B" },
-      ])
-      .onConflictDoNothing();
-  });
-
+describe("todos-operations updateTodo toggling completed", () => {
   it("toggles the completed status of an existing todo", async () => {
     expect.assertions(2);
 
@@ -161,18 +128,7 @@ describe("todos.server updateTodo toggling completed", () => {
   });
 });
 
-describe("todos.server updateTodo", () => {
-  beforeEach(async () => {
-    const db = getDb(env.DB);
-    await db
-      .insert(user)
-      .values([
-        { email: "user-a@example.com", id: "user-a", name: "User A" },
-        { email: "user-b@example.com", id: "user-b", name: "User B" },
-      ])
-      .onConflictDoNothing();
-  });
-
+describe("todos-operations updateTodo", () => {
   it("updates title and description of an existing todo", async () => {
     expect.assertions(2);
 
@@ -202,18 +158,7 @@ describe("todos.server updateTodo", () => {
   });
 });
 
-describe("todos.server updateTodo error cases", () => {
-  beforeEach(async () => {
-    const db = getDb(env.DB);
-    await db
-      .insert(user)
-      .values([
-        { email: "user-a@example.com", id: "user-a", name: "User A" },
-        { email: "user-b@example.com", id: "user-b", name: "User B" },
-      ])
-      .onConflictDoNothing();
-  });
-
+describe("todos-operations updateTodo error cases", () => {
   it("throws Todo not found when attempting to update another user's todo", async () => {
     expect.assertions(1);
 
@@ -246,20 +191,9 @@ describe("todos.server updateTodo error cases", () => {
   });
 });
 
-describe("todos.server deleteTodo", () => {
-  beforeEach(async () => {
-    const db = getDb(env.DB);
-    await db
-      .insert(user)
-      .values([
-        { email: "user-a@example.com", id: "user-a", name: "User A" },
-        { email: "user-b@example.com", id: "user-b", name: "User B" },
-      ])
-      .onConflictDoNothing();
-  });
-
+describe("todos-operations deleteTodo", () => {
   it("deletes an existing todo and returns the deleted record", async () => {
-    expect.assertions(2);
+    expect.assertions(1);
 
     // Arrange
     const db = getDb(env.DB);
@@ -267,10 +201,23 @@ describe("todos.server deleteTodo", () => {
 
     // Act
     const deleted = await deleteTodo(created.id, { db, userId: "user-a" });
-    const remaining = await getTodos({ db, userId: "user-a" });
 
     // Assert
     expect(deleted.id).toBe(created.id);
+  });
+
+  it("removes the deleted record from the database", async () => {
+    expect.assertions(1);
+
+    // Arrange
+    const db = getDb(env.DB);
+    const created = await createTodo({ title: "To be deleted" }, { db, userId: "user-a" });
+
+    // Act
+    await deleteTodo(created.id, { db, userId: "user-a" });
+    const remaining = await db.select().from(todos).where(eq(todos.id, created.id));
+
+    // Assert
     expect(remaining).toHaveLength(0);
   });
 
