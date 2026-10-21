@@ -3,7 +3,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { todos } from "@/shared/db";
 import { getDb, type DbContext } from "@/shared/db/index.server";
 
-import type { CreateTodoInput, UpdateTodoData } from "../model/todo-schema";
+import type { CreateTodoInput, UpdateTodoInput } from "../model/todo-schema";
 
 interface TodoContext extends DbContext {
   userId: string;
@@ -35,7 +35,7 @@ async function createTodo(input: CreateTodoInput, { db = getDb(), userId }: Todo
 
 async function updateTodo(
   id: string,
-  input: UpdateTodoData,
+  input: UpdateTodoInput,
   { db = getDb(), userId }: TodoContext,
 ) {
   const [updated] = await db

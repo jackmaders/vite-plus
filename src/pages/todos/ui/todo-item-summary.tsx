@@ -4,21 +4,22 @@ import type { Todo } from "@/shared/db";
 import { Badge } from "@/shared/ui/shadcn/badge";
 import { Checkbox } from "@/shared/ui/shadcn/checkbox";
 
+import { useUpdateTodo } from "../api/use-update-todo";
+
 interface TodoItemSummaryProps {
-  isUpdating?: boolean;
-  onToggle: (checked: boolean) => void;
   todo: Todo;
 }
 
-function TodoItemSummary({ isUpdating = false, onToggle, todo }: TodoItemSummaryProps) {
+function TodoItemSummary({ todo }: TodoItemSummaryProps) {
+  const { mutate: updateTodo } = useUpdateTodo();
+
   return (
     <div className="flex items-center gap-3">
       <Checkbox
         aria-label={`Toggle ${todo.title}`}
         checked={todo.completed}
-        disabled={isUpdating}
         onCheckedChange={(checked) => {
-          onToggle(checked);
+          updateTodo({ data: { completed: checked }, id: todo.id });
         }}
       />
       <div>

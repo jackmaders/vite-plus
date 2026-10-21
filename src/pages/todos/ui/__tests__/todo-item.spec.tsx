@@ -90,31 +90,6 @@ describe("todo item optional fields and states", () => {
     // Assert
     expect(screen.queryByText("Test Description")).toBeNull();
   });
-
-  it("disables actions when isUpdating", () => {
-    expect.assertions(3);
-
-    // Arrange
-    const handleUpdate = vi.fn<UpdateFn>();
-
-    // Act
-    render(
-      <TodoItem
-        isUpdating
-        onDelete={vi.fn<DeleteFn>()}
-        onToggle={vi.fn<ToggleFn>()}
-        onUpdate={handleUpdate}
-        todo={mockTodo}
-      />,
-    );
-
-    // Assert
-    expect(screen.getByRole("checkbox").getAttribute("aria-disabled")).toBe("true");
-    expect(screen.getByRole("button", { name: /edit todo/iu }).hasAttribute("disabled")).toBe(true);
-    expect(screen.getByRole("button", { name: /delete todo/iu }).hasAttribute("disabled")).toBe(
-      true,
-    );
-  });
 });
 
 describe("todo item interactions", () => {

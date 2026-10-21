@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { useCreateTodo } from "@/pages/todos/api/use-create-todo";
-import { TodoForm } from "@/pages/todos/ui/todo-form";
+import { CreateTodoForm } from "@/pages/todos/ui/create-todo-form";
 
 vi.mock(import("@/shared/auth/auth.server"));
 vi.mock(import("@/shared/db/db.server"));
@@ -46,7 +46,7 @@ describe("todo form submission", () => {
     // Arrange
     const user = userEvent.setup();
     const handleSubmit = vi.fn<(event: unknown) => void>();
-    render(<TodoForm onSubmit={handleSubmit} />);
+    render(<CreateTodoForm onSubmit={handleSubmit} />);
 
     // Act
     await fillAndSubmit(user, "New Todo", "New Description");
@@ -68,7 +68,7 @@ describe("todo form submission", () => {
 
     // Arrange
     const user = userEvent.setup();
-    render(<TodoForm />);
+    render(<CreateTodoForm />);
 
     // Act
     await fillAndSubmit(user, "Title Only");
@@ -103,7 +103,7 @@ describe("todo form validation", () => {
 
     // Arrange
     const user = userEvent.setup();
-    render(<TodoForm />);
+    render(<CreateTodoForm />);
 
     // Act
     await user.type(screen.getByPlaceholderText("Title"), "   ");
@@ -136,7 +136,7 @@ describe("todo form states", () => {
 
     // Arrange
     const user = userEvent.setup();
-    render(<TodoForm />);
+    render(<CreateTodoForm />);
     const submitButton = screen.getByRole("button", { name: /add todo/iu });
 
     // Assert - initially empty

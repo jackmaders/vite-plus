@@ -25,7 +25,7 @@ const updateTodoFn = createServerFn({ method: "POST" })
   .validator(updateTodoInputSchema)
   .handler(
     async ({ context, data }) =>
-      await updateTodo(data.id, data.data, { userId: context.session.user.id }),
+      await updateTodo(data.id, data, { userId: context.session.user.id }),
   );
 
 const deleteTodoFn = createServerFn({ method: "POST" })

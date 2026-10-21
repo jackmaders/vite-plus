@@ -1,37 +1,26 @@
 import { Pencil, Trash2 } from "lucide-react";
+import type { ComponentProps } from "react";
 
-import { Button } from "@/shared/ui/shadcn/button";
+import type { Todo } from "@/shared/db";
 
-interface TodoItemActionsProps {
-  isUpdating?: boolean;
-  onDelete: () => void;
-  onEdit: () => void;
+import { DeleteTodoDialog } from "./delete-todo-dialog";
+import { UpdateTodoDialog } from "./update-todo-dialog";
+
+interface TodoItemActionsProps extends ComponentProps<"div"> {
+  todo: Todo;
 }
 
-function TodoItemActions({ isUpdating = false, onDelete, onEdit }: TodoItemActionsProps) {
+function TodoItemActions({ todo, ...props }: TodoItemActionsProps) {
   return (
-    <div className="flex items-center gap-1">
-      <Button
-        aria-label="Edit todo"
-        disabled={isUpdating}
-        onClick={onEdit}
-        size="sm"
-        variant="ghost"
-      >
+    <div className="flex items-center gap-1" {...props}>
+      <UpdateTodoDialog todo={todo}>
         <Pencil />
-      </Button>
-      <Button
-        aria-label="Delete todo"
-        disabled={isUpdating}
-        onClick={onDelete}
-        size="sm"
-        variant="ghost"
-      >
+      </UpdateTodoDialog>
+      <DeleteTodoDialog todo={todo}>
         <Trash2 />
-      </Button>
+      </DeleteTodoDialog>
     </div>
   );
 }
 
 export { TodoItemActions };
-export type { TodoItemActionsProps };

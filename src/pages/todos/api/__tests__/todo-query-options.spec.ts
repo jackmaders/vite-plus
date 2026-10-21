@@ -15,12 +15,10 @@ describe("todo query options", () => {
   });
 
   it("constructs expected hierarchical query keys", () => {
-    expect.assertions(4);
+    expect.assertions(2);
 
     expect(todoKeys.all).toStrictEqual(["todos"]);
-    expect(todoKeys.lists()).toStrictEqual(["todos", "list"]);
-    expect(todoKeys.details()).toStrictEqual(["todos", "detail"]);
-    expect(todoKeys.detail("todo-123")).toStrictEqual(["todos", "detail", "todo-123"]);
+    expect(todoKeys.list()).toStrictEqual(["todos", "list"]);
   });
 
   it("builds todosQueryOptions with lists queryKey and delegates to getTodosFn", async () => {

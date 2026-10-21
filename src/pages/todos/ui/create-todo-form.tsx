@@ -11,7 +11,7 @@ const DEFAULT_FORM_VALUES: CreateTodoInput = {
   title: "",
 };
 
-function TodoForm(props: TodoFormProps = {}) {
+function CreateTodoForm(props: TodoFormProps = {}) {
   const { mutate: createTodo } = useCreateTodo();
 
   const form = useAppForm({
@@ -42,5 +42,4 @@ function TodoForm(props: TodoFormProps = {}) {
   );
 }
 
-export { TodoForm };
-export type { TodoFormProps };
+export { CreateTodoForm };
