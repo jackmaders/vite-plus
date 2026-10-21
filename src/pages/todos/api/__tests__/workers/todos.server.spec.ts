@@ -1,17 +1,14 @@
 import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
-import { beforeAll, beforeEach, describe, expect, it } from "vite-plus/test";
+import { describe, expect, it } from "vite-plus/test";
 
 import { todos } from "@/shared/db";
 import { getDb } from "@/shared/db/index.server";
-import { createEmptyInsertMockDb, resetTestDb, setupTestDb } from "@test/vitest/fixtures/test-db";
+import { createEmptyInsertMockDb } from "@test/vitest/fixtures/test-db";
 
 import { createTodo, deleteTodo, getTodos, updateTodo } from "../../todos-operations";
 
 describe("todos.server createTodo creation", () => {
-  beforeAll(setupTestDb);
-  beforeEach(resetTestDb);
-
   it("creates a new todo with defaults and trimmed title for user", async () => {
     expect.assertions(3);
 
@@ -49,9 +46,6 @@ describe("todos.server createTodo creation", () => {
 });
 
 describe("todos.server createTodo failures", () => {
-  beforeAll(setupTestDb);
-  beforeEach(resetTestDb);
-
   it("throws an error when insert returning array is empty", async () => {
     expect.assertions(1);
 
@@ -67,9 +61,6 @@ describe("todos.server createTodo failures", () => {
 });
 
 describe("todos.server getTodos", () => {
-  beforeAll(setupTestDb);
-  beforeEach(resetTestDb);
-
   it("returns todos for user ordered by createdAt descending", async () => {
     expect.assertions(3);
 
@@ -109,9 +100,6 @@ describe("todos.server getTodos", () => {
 });
 
 describe("todos.server updateTodo toggling completed", () => {
-  beforeAll(setupTestDb);
-  beforeEach(resetTestDb);
-
   it("toggles the completed status of an existing todo", async () => {
     expect.assertions(2);
 
@@ -129,9 +117,6 @@ describe("todos.server updateTodo toggling completed", () => {
 });
 
 describe("todos.server updateTodo", () => {
-  beforeAll(setupTestDb);
-  beforeEach(resetTestDb);
-
   it("updates title and description of an existing todo", async () => {
     expect.assertions(2);
 
@@ -162,9 +147,6 @@ describe("todos.server updateTodo", () => {
 });
 
 describe("todos.server updateTodo error cases", () => {
-  beforeAll(setupTestDb);
-  beforeEach(resetTestDb);
-
   it("throws Todo not found when attempting to update another user's todo", async () => {
     expect.assertions(1);
 
@@ -198,9 +180,6 @@ describe("todos.server updateTodo error cases", () => {
 });
 
 describe("todos.server deleteTodo", () => {
-  beforeAll(setupTestDb);
-  beforeEach(resetTestDb);
-
   it("deletes an existing todo and returns the deleted record", async () => {
     expect.assertions(2);
 
