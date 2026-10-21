@@ -66,6 +66,21 @@ describe("create todo input schema invalid inputs", () => {
     // Assert
     expect(parse).toThrow("Title is required");
   });
+
+  it("throws when description exceeds 1024 characters", () => {
+    expect.assertions(1);
+
+    // Arrange
+    const invalidInput = { description: "a".repeat(1025), title: "Valid title" };
+
+    // Act
+    function parse() {
+      createTodoInputSchema.parse(invalidInput);
+    }
+
+    // Assert
+    expect(parse).toThrow("Description must not exceed 1024 characters");
+  });
 });
 
 describe("update todo input schema valid inputs", () => {
@@ -74,10 +89,12 @@ describe("update todo input schema valid inputs", () => {
 
     // Arrange
     const rawInput = {
-      completed: true,
-      description: "New desc",
+      data: {
+        completed: true,
+        description: "New desc",
+        title: "  New title  ",
+      },
       id: "todo-1",
-      title: "  New title  ",
     };
 
     // Act
@@ -85,25 +102,25 @@ describe("update todo input schema valid inputs", () => {
 
     // Assert
     expect(parsed.id).toBe("todo-1");
-    expect(parsed.title).toBe("New title");
-    expect(parsed.description).toBe("New desc");
-    expect(parsed.completed).toBe(true);
+    expect(parsed.data.title).toBe("New title");
+    expect(parsed.data.description).toBe("New desc");
+    expect(parsed.data.completed).toBe(true);
   });
 
-  it("parses valid update input with only id", () => {
+  it("parses valid update input with empty data", () => {
     expect.assertions(4);
 
     // Arrange
-    const rawInput = { id: "todo-1" };
+    const rawInput = { data: {}, id: "todo-1" };
 
     // Act
     const parsed = updateTodoInputSchema.parse(rawInput);
 
     // Assert
     expect(parsed.id).toBe("todo-1");
-    expect(parsed.title).toBeUndefined();
-    expect(parsed.description).toBeUndefined();
-    expect(parsed.completed).toBeUndefined();
+    expect(parsed.data.title).toBeUndefined();
+    expect(parsed.data.description).toBeUndefined();
+    expect(parsed.data.completed).toBeUndefined();
   });
 });
 
@@ -112,14 +129,14 @@ describe("update todo input schema toggle completed", () => {
     expect.assertions(2);
 
     // Arrange
-    const rawInput = { completed: true, id: "todo-1" };
+    const rawInput = { data: { completed: true }, id: "todo-1" };
 
     // Act
     const parsed = updateTodoInputSchema.parse(rawInput);
 
     // Assert
     expect(parsed.id).toBe("todo-1");
-    expect(parsed.completed).toBe(true);
+    expect(parsed.data.completed).toBe(true);
   });
 });
 
@@ -128,7 +145,7 @@ describe("update todo input schema invalid inputs", () => {
     expect.assertions(1);
 
     // Arrange
-    const invalidInput = { id: "" };
+    const invalidInput = { data: {}, id: "" };
 
     // Act
     function parse() {
@@ -143,7 +160,7 @@ describe("update todo input schema invalid inputs", () => {
     expect.assertions(1);
 
     // Arrange
-    const invalidInput = { id: "todo-1", title: "" };
+    const invalidInput = { data: { title: "" }, id: "todo-1" };
 
     // Act
     function parse() {
@@ -158,7 +175,7 @@ describe("update todo input schema invalid inputs", () => {
     expect.assertions(1);
 
     // Arrange
-    const invalidInput = { completed: "yes", id: "todo-1" };
+    const invalidInput = { data: { completed: "yes" }, id: "todo-1" };
 
     // Act
     function parse() {

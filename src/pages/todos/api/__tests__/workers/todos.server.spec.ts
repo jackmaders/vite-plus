@@ -120,7 +120,7 @@ describe("todos.server updateTodo toggling completed", () => {
     const created = await createTodo({ title: "Toggle test" }, { db, userId: "user-a" });
 
     // Act
-    const toggled = await updateTodo({ completed: true, id: created.id }, { db, userId: "user-a" });
+    const toggled = await updateTodo(created.id, { completed: true }, { db, userId: "user-a" });
 
     // Assert
     expect(toggled.id).toBe(created.id);
@@ -147,9 +147,9 @@ describe("todos.server updateTodo", () => {
 
     // Act
     const updated = await updateTodo(
+      created.id,
       {
         description: "Updated description",
-        id: created.id,
         title: "Updated title",
       },
       { db, userId: "user-a" },
@@ -173,10 +173,7 @@ describe("todos.server updateTodo error cases", () => {
     const todoB = await createTodo({ title: "User B todo" }, { db, userId: "user-b" });
 
     // Act
-    const action = updateTodo(
-      { id: todoB.id, title: "Unauthorized update" },
-      { db, userId: "user-a" },
-    );
+    const action = updateTodo(todoB.id, { title: "Unauthorized update" }, { db, userId: "user-a" });
 
     // Assert
     await expect(action).rejects.toThrow("Todo not found");
@@ -190,7 +187,8 @@ describe("todos.server updateTodo error cases", () => {
 
     // Act
     const action = updateTodo(
-      { id: "non-existent-id", title: "Non-existent update" },
+      "non-existent-id",
+      { title: "Non-existent update" },
       { db, userId: "user-a" },
     );
 

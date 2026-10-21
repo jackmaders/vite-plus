@@ -89,14 +89,17 @@ describe("todos functions updateTodoFn fields", () => {
 
     // Act
     const result = await updateTodoFn({
-      data: { description: "Updated desc", id: MOCK_TODO.id, title: "Updated title" },
+      data: {
+        data: { description: "Updated desc", title: "Updated title" },
+        id: MOCK_TODO.id,
+      },
     });
 
     // Assert
     expect(updateTodo).toHaveBeenCalledWith(
+      MOCK_TODO.id,
       {
         description: "Updated desc",
-        id: MOCK_TODO.id,
         title: "Updated title",
       },
       { userId: TEST_SESSION.user.id },
@@ -123,14 +126,17 @@ describe("todos functions updateTodoFn completed toggle", () => {
 
     // Act
     const result = await updateTodoFn({
-      data: { completed: true, id: MOCK_TODO.id },
+      data: {
+        data: { completed: true },
+        id: MOCK_TODO.id,
+      },
     });
 
     // Assert
     expect(updateTodo).toHaveBeenCalledWith(
+      MOCK_TODO.id,
       {
         completed: true,
-        id: MOCK_TODO.id,
       },
       { userId: TEST_SESSION.user.id },
     );

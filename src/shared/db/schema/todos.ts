@@ -4,6 +4,11 @@ import type * as z from "zod";
 
 import { user } from "./auth";
 
+const TITLE_MIN_LENGTH = 1;
+const TITLE_MAX_LENGTH = 256;
+const DESCRIPTION_MAX_LENGTH = 1024;
+const ID_MIN_LENGTH = 1;
+
 const todos = sqliteTable(
   "todos",
   {
@@ -11,11 +16,11 @@ const todos = sqliteTable(
     createdAt: integer("created_at", { mode: "timestamp" })
       .notNull()
       .$defaultFn(() => new Date()),
-    description: text("description"),
+    description: text("description", { length: DESCRIPTION_MAX_LENGTH }),
     id: text("id")
       .primaryKey()
       .$defaultFn(() => crypto.randomUUID()),
-    title: text("title", { length: 256 }).notNull(),
+    title: text("title", { length: TITLE_MAX_LENGTH }).notNull(),
     updatedAt: integer("updated_at", { mode: "timestamp" })
       .notNull()
       .$defaultFn(() => new Date())
@@ -27,13 +32,16 @@ const todos = sqliteTable(
   (table) => [index("todos_user_id_idx").on(table.userId)],
 );
 
-const TITLE_MIN_LENGTH = 1;
-const ID_MIN_LENGTH = 1;
-
 const refinements = {
-  description: (schema: z.ZodString) => schema.trim().nullable().optional(),
+  description: (schema: z.ZodString) =>
+    schema
+      .trim()
+      .max(DESCRIPTION_MAX_LENGTH, "Description must not exceed 1024 characters")
+      .nullable()
+      .optional(),
   id: (schema: z.ZodString) => schema.trim().min(ID_MIN_LENGTH),
-  title: (schema: z.ZodString) => schema.trim().min(TITLE_MIN_LENGTH, "Title is required"),
+  title: (schema: z.ZodString) =>
+    schema.trim().min(TITLE_MIN_LENGTH, "Title is required").max(TITLE_MAX_LENGTH),
 };
 
 const selectTodoSchema = createSelectSchema(todos, refinements);
@@ -45,9 +53,12 @@ const insertTodoSchema = createInsertSchema(todos, refinements).omit({
   userId: true,
 });
 
-const updateTodoSchema = createUpdateSchema(todos, refinements)
-  .extend({ id: selectTodoSchema.shape.id })
-  .omit({ createdAt: true, updatedAt: true, userId: true });
+const updateTodoSchema = createUpdateSchema(todos, refinements).omit({
+  createdAt: true,
+  id: true,
+  updatedAt: true,
+  userId: true,
+});
 
 type Todo = typeof todos.$inferSelect;
 
