@@ -76,6 +76,27 @@ describe("todo form validation", () => {
   });
 });
 
+interface Deferred<TValue = void> {
+  promise: Promise<TValue>;
+  resolve: (value: TValue) => void;
+}
+
+function createDeferred<TValue = void>(): Deferred<TValue> {
+  let resolveFn: (value: TValue) => void = vi.fn<(value: TValue) => void>();
+  const promise = new Promise<TValue>((resolve) => {
+    resolveFn = resolve;
+  });
+  return { promise, resolve: resolveFn };
+}
+
+function expectInputsDisabled() {
+  expect(screen.getByPlaceholderText("Title").hasAttribute("disabled")).toBe(true);
+  expect(screen.getByPlaceholderText("Description").hasAttribute("disabled")).toBe(true);
+  expect(screen.getByRole("button", { name: /adding\.\.\./iu }).hasAttribute("disabled")).toBe(
+    true,
+  );
+}
+
 describe("todo form states", () => {
   afterEach(() => {
     cleanup();
@@ -100,20 +121,23 @@ describe("todo form states", () => {
     expect(submitButton.hasAttribute("disabled")).toBe(true);
   });
 
-  it("disables inputs and button and shows loading state when isCreating", () => {
+  it("disables inputs and button and shows loading state while submitting", async () => {
     expect.assertions(3);
 
     // Arrange
-    const handleCreate = vi.fn<CreateFn>();
+    const user = userEvent.setup();
+    const deferred = createDeferred();
+    const handleCreate = vi.fn<CreateFn>(async () => {
+      await deferred.promise;
+    });
+    render(<TodoForm onCreate={handleCreate} />);
 
     // Act
-    render(<TodoForm isCreating onCreate={handleCreate} />);
+    await user.type(screen.getByPlaceholderText("Title"), "New Todo");
+    await user.click(screen.getByRole("button", { name: /add todo/iu }));
 
     // Assert
-    expect(screen.getByPlaceholderText("Title").hasAttribute("disabled")).toBe(true);
-    expect(screen.getByPlaceholderText("Description").hasAttribute("disabled")).toBe(true);
-    expect(screen.getByRole("button", { name: /adding\.\.\./iu }).hasAttribute("disabled")).toBe(
-      true,
-    );
+    expectInputsDisabled();
+    deferred.resolve();
   });
 });

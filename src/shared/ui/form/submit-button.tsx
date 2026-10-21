@@ -8,12 +8,17 @@ function selectSubmitState(state: { canSubmit: boolean; isSubmitting: boolean })
   return [state.canSubmit, state.isSubmitting] as const;
 }
 
+interface SubmitButtonProps extends ComponentProps<typeof Button> {
+  busyLabel?: string;
+}
+
 function SubmitButton({
+  busyLabel = "Please wait…",
   children,
   disabled,
   type = "submit",
   ...props
-}: ComponentProps<typeof Button>) {
+}: SubmitButtonProps) {
   const form = useFormContext();
 
   return (
@@ -25,7 +30,7 @@ function SubmitButton({
           disabled={Boolean(disabled) || !canSubmit || isSubmitting}
           type={type}
         >
-          {isSubmitting ? "Please wait…" : children}
+          {isSubmitting ? busyLabel : children}
         </Button>
       )}
     </form.Subscribe>
@@ -33,3 +38,4 @@ function SubmitButton({
 }
 
 export { SubmitButton };
+export type { SubmitButtonProps };

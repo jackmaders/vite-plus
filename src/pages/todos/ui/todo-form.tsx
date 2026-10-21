@@ -1,61 +1,64 @@
+import { useSelector } from "@tanstack/react-form";
+
 import { useAppForm } from "@/shared/ui/form";
 import { Card } from "@/shared/ui/shadcn/card";
 
-import { createTodoInputSchema } from "../model/todo-schema";
+import { createTodoInputSchema, type CreateTodoInput } from "../model/todo-schema";
+
+const EMPTY_LENGTH = 0;
 
 interface TodoFormProps {
-  isCreating?: boolean;
-  onCreate: (input: { description?: string | null; title: string }) => void;
+  onCreate: (input: CreateTodoInput) => void | Promise<void>;
 }
 
-function createTodoPayload(title: string, description: string) {
-  const trimmedTitle = title.trim();
-  const trimmedDescription = description.trim();
-  return trimmedDescription === ""
-    ? { title: trimmedTitle }
-    : { description: trimmedDescription, title: trimmedTitle };
-}
+const DEFAULT_FORM_VALUES: CreateTodoInput = {
+  description: "",
+  title: "",
+};
 
-function validateTodoInput({ value }: { value: { description: string; title: string } }) {
-  const result = createTodoInputSchema.safeParse(value);
-  return result.success ? "" : "Title is required";
-}
-
-function TodoForm({ isCreating = false, onCreate }: TodoFormProps) {
+function TodoForm({ onCreate }: TodoFormProps) {
   const form = useAppForm({
-    defaultValues: { description: "", title: "" },
-    onSubmit: ({ value }) => {
-      if (value.title.trim() === "" || isCreating) {
-        return;
-      }
-      onCreate(createTodoPayload(value.title, value.description));
+    defaultValues: DEFAULT_FORM_VALUES,
+    onSubmit: async ({ value: { description, title } }) => {
+      const trimmedDescription = description?.trim();
+      const hasDescription =
+        typeof trimmedDescription === "string" && trimmedDescription.length > EMPTY_LENGTH;
+
+      await onCreate(
+        hasDescription
+          ? { description: trimmedDescription, title: title.trim() }
+          : { title: title.trim() },
+      );
+
       form.reset();
     },
     validators: {
-      onChange: validateTodoInput,
-      onMount: validateTodoInput,
+      onChange: createTodoInputSchema,
+      onMount: createTodoInputSchema,
     },
   });
+
+  const isSubmitting = useSelector(form.store, (state) => state.isSubmitting);
 
   return (
     <Card className="p-4">
       <form.AppForm>
         <form.Form className="flex flex-col gap-3">
           <form.AppField name="title">
-            {(field) => <field.TextField disabled={isCreating} label="Title" placeholder="Title" />}
+            {(field) => (
+              <field.TextField disabled={isSubmitting} label="Title" placeholder="Title" />
+            )}
           </form.AppField>
           <form.AppField name="description">
             {(field) => (
               <field.TextField
-                disabled={isCreating}
+                disabled={isSubmitting}
                 label="Description"
                 placeholder="Description"
               />
             )}
           </form.AppField>
-          <form.SubmitButton disabled={isCreating}>
-            {isCreating ? "Adding..." : "Add Todo"}
-          </form.SubmitButton>
+          <form.SubmitButton busyLabel="Adding...">Add Todo</form.SubmitButton>
         </form.Form>
       </form.AppForm>
     </Card>

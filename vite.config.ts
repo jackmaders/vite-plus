@@ -57,6 +57,7 @@ const lintConfig = defineConfig({
           "eslint/max-lines-per-function": "off",
           "eslint/no-magic-numbers": "off",
           "import/group-exports": "off",
+          "promise/avoid-new": "off",
           "testing-library/await-async-events": "error",
           "testing-library/await-async-queries": "error",
           "testing-library/await-async-utils": "error",

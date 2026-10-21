@@ -3,5 +3,5 @@ export { fieldContext, formContext, useFieldContext, useFormContext } from "./fo
 export { Form, type FormProps } from "./form";
 export { FormError } from "./form-error";
 export { FormSubmissionError } from "./form-submission-error";
-export { SubmitButton } from "./submit-button";
+export { SubmitButton, type SubmitButtonProps } from "./submit-button";
 export { TextField, type TextFieldProps } from "./text-field";
