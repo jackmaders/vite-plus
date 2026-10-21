@@ -14,6 +14,7 @@ const mockForm = {
   handleSubmit: vi.fn<() => Promise<void>>(async () => {
     await Promise.resolve();
   }),
+  reset: vi.fn<() => void>(),
   setErrorMap: vi.fn<(map: unknown) => void>(),
 };
 

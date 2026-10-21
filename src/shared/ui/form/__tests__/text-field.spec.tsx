@@ -1,6 +1,7 @@
 import { createFormHookContexts } from "@tanstack/react-form";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { ReactElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { createTextFieldFixture } from "@test/vitest/fixtures/form";
@@ -9,7 +10,7 @@ import { TextField } from "../text-field";
 
 vi.mock(import("@tanstack/react-form"));
 
-const { useFieldContext } = createFormHookContexts();
+const { useFieldContext, useFormContext } = createFormHookContexts();
 
 async function fillAndBlur(user: ReturnType<typeof userEvent.setup>, input: HTMLElement) {
   await user.click(input);
@@ -115,5 +116,46 @@ describe("text field component", () => {
     expect(input.hasAttribute("aria-describedby")).toBe(false);
     expect(screen.queryByRole("alert")).toBeNull();
     expect(screen.getByText("Enter a valid email address").hasAttribute("hidden")).toBe(true);
+  });
+
+  it("disables the input while the form is submitting", () => {
+    expect.assertions(1);
+
+    // Arrange
+    const form = useFormContext();
+    const mockFormSubmitting = vi.fn<
+      ({
+        children,
+        selector,
+      }: {
+        children: (selected: unknown) => ReactElement;
+        selector: (state: unknown) => unknown;
+      }) => ReactElement | null
+    >(({ children, selector }) => children(selector({ isSubmitting: true })));
+    vi.mocked(form.Subscribe).mockImplementationOnce(mockFormSubmitting as never);
+    const field = createTextFieldFixture();
+    vi.mocked(useFieldContext<string>).mockReturnValueOnce(field as never);
+
+    // Act
+    render(<TextField label="Email address" />);
+    const input = screen.getByRole("textbox", { name: "Email address" });
+
+    // Assert
+    expect(input.hasAttribute("disabled")).toBe(true);
+  });
+
+  it("keeps an explicitly disabled input disabled when the form is not submitting", () => {
+    expect.assertions(1);
+
+    // Arrange
+    const field = createTextFieldFixture();
+    vi.mocked(useFieldContext<string>).mockReturnValueOnce(field as never);
+
+    // Act
+    render(<TextField disabled label="Email address" />);
+    const input = screen.getByRole("textbox", { name: "Email address" });
+
+    // Assert
+    expect(input.hasAttribute("disabled")).toBe(true);
   });
 });

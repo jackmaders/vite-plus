@@ -1,36 +1,23 @@
-import { useSelector } from "@tanstack/react-form";
-
-import { useAppForm } from "@/shared/ui/form";
+import { useAppForm, type FormProps } from "@/shared/ui/form";
 import { Card } from "@/shared/ui/shadcn/card";
 
+import { useCreateTodo } from "../api";
 import { createTodoInputSchema, type CreateTodoInput } from "../model/todo-schema";
 
-const EMPTY_LENGTH = 0;
-
-interface TodoFormProps {
-  onCreate: (input: CreateTodoInput) => void | Promise<void>;
-}
+type TodoFormProps = FormProps;
 
 const DEFAULT_FORM_VALUES: CreateTodoInput = {
   description: "",
   title: "",
 };
 
-function TodoForm({ onCreate }: TodoFormProps) {
+function TodoForm(props: TodoFormProps = {}) {
+  const { mutate: createTodo } = useCreateTodo();
+
   const form = useAppForm({
     defaultValues: DEFAULT_FORM_VALUES,
-    onSubmit: async ({ value: { description, title } }) => {
-      const trimmedDescription = description?.trim();
-      const hasDescription =
-        typeof trimmedDescription === "string" && trimmedDescription.length > EMPTY_LENGTH;
-
-      await onCreate(
-        hasDescription
-          ? { description: trimmedDescription, title: title.trim() }
-          : { title: title.trim() },
-      );
-
-      form.reset();
+    onSubmit: ({ value }) => {
+      createTodo(value);
     },
     validators: {
       onChange: createTodoInputSchema,
@@ -38,25 +25,15 @@ function TodoForm({ onCreate }: TodoFormProps) {
     },
   });
 
-  const isSubmitting = useSelector(form.store, (state) => state.isSubmitting);
-
   return (
-    <Card className="p-4">
+    <Card>
       <form.AppForm>
-        <form.Form className="flex flex-col gap-3">
+        <form.Form className="flex flex-col gap-3" {...props}>
           <form.AppField name="title">
-            {(field) => (
-              <field.TextField disabled={isSubmitting} label="Title" placeholder="Title" />
-            )}
+            {(field) => <field.TextField label="Title" placeholder="Title" />}
           </form.AppField>
           <form.AppField name="description">
-            {(field) => (
-              <field.TextField
-                disabled={isSubmitting}
-                label="Description"
-                placeholder="Description"
-              />
-            )}
+            {(field) => <field.TextField label="Description" placeholder="Description" />}
           </form.AppField>
           <form.SubmitButton busyLabel="Adding...">Add Todo</form.SubmitButton>
         </form.Form>

@@ -9,6 +9,12 @@ vi.mock(import("@tanstack/react-form"));
 
 const { useFormContext } = createFormHookContexts();
 
+function dispatchSubmit(element: HTMLElement) {
+  const event = createEvent.submit(element);
+  fireEvent(element, event);
+  return event;
+}
+
 describe("form component", () => {
   afterEach(() => {
     cleanup();
@@ -33,8 +39,8 @@ describe("form component", () => {
     expect(form.textContent).toContain("Account details");
   });
 
-  it("prevents the native submit and stops the event from bubbling", () => {
-    expect.assertions(3);
+  it("prevents the native submit and stops the event from bubbling", async () => {
+    expect.hasAssertions();
 
     // Arrange
     const form = useFormContext();
@@ -48,13 +54,38 @@ describe("form component", () => {
     );
 
     const element = screen.getByRole("form", { name: "Account form" });
-    const event = createEvent.submit(element);
-    fireEvent(element, event);
+    const event = dispatchSubmit(element);
 
     // Assert
     expect(event.defaultPrevented).toBe(true);
     expect(parentOnSubmit).not.toHaveBeenCalled();
-    expect(form.handleSubmit).toHaveBeenCalledOnce();
+    await waitFor(() => {
+      expect(form.handleSubmit).toHaveBeenCalledOnce();
+      expect(form.reset).toHaveBeenCalledOnce();
+    });
+  });
+
+  it("calls onSubmit prop after a successful submission", async () => {
+    expect.hasAssertions();
+
+    // Arrange
+    const form = useFormContext();
+    const onSubmit = vi.fn<(event: unknown) => void>();
+
+    // Act
+    render(
+      <Form aria-label="Account form" onSubmit={onSubmit}>
+        Account details
+      </Form>,
+    );
+
+    fireEvent.submit(screen.getByRole("form", { name: "Account form" }));
+
+    // Assert
+    await waitFor(() => {
+      expect(form.handleSubmit).toHaveBeenCalledOnce();
+      expect(onSubmit).toHaveBeenCalledOnce();
+    });
   });
 
   it("passes submission errors to the onError callback", async () => {

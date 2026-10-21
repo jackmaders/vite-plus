@@ -1,103 +1,131 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { TodoForm, type TodoFormProps } from "@/pages/todos/ui/todo-form";
+import { useCreateTodo } from "@/pages/todos/api";
+import { TodoForm } from "@/pages/todos/ui/todo-form";
 
-type CreateFn = TodoFormProps["onCreate"];
+vi.mock(import("@/shared/auth/auth.server"));
+vi.mock(import("@/shared/db/db.server"));
+vi.mock(import("@/pages/todos/api"));
+
+const mockCreateTodo = vi.fn<() => void>();
+
+async function fillAndSubmit(
+  user: ReturnType<typeof userEvent.setup>,
+  title: string,
+  description?: string,
+) {
+  await user.type(screen.getByPlaceholderText("Title"), title);
+  if (typeof description === "string") {
+    await user.type(screen.getByPlaceholderText("Description"), description);
+  }
+  await user.click(screen.getByRole("button", { name: /add todo/iu }));
+}
 
 describe("todo form submission", () => {
+  beforeEach(() => {
+    mockCreateTodo.mockClear();
+    vi.mocked(useCreateTodo).mockReturnValue({
+      isError: false,
+      isPending: false,
+      isSuccess: false,
+      mutate: mockCreateTodo,
+      mutateAsync: vi.fn<() => Promise<unknown>>(),
+    } as never);
+  });
+
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
   });
 
-  it("submits title and description, calls onCreate, and resets inputs", async () => {
-    expect.assertions(3);
+  it("submits title and description, calls createTodo, and resets inputs", async () => {
+    expect.hasAssertions();
 
     // Arrange
     const user = userEvent.setup();
-    const handleCreate = vi.fn<CreateFn>();
-    render(<TodoForm onCreate={handleCreate} />);
+    const handleSubmit = vi.fn<(event: unknown) => void>();
+    render(<TodoForm onSubmit={handleSubmit} />);
 
     // Act
-    await user.type(screen.getByPlaceholderText("Title"), "New Todo");
-    await user.type(screen.getByPlaceholderText("Description"), "New Description");
-    await user.click(screen.getByRole("button", { name: /add todo/iu }));
+    await fillAndSubmit(user, "New Todo", "New Description");
 
     // Assert
-    expect(handleCreate).toHaveBeenCalledWith({
+    expect(mockCreateTodo).toHaveBeenCalledWith({
       description: "New Description",
       title: "New Todo",
     });
-    expect(screen.getByPlaceholderText("Title").getAttribute("value")).toBe("");
-    expect(screen.getByPlaceholderText("Description").getAttribute("value")).toBe("");
+    await waitFor(() => {
+      expect(handleSubmit).toHaveBeenCalledOnce();
+      expect(screen.getByPlaceholderText("Title").getAttribute("value")).toBe("");
+      expect(screen.getByPlaceholderText("Description").getAttribute("value")).toBe("");
+    });
   });
 
-  it("omits description when submitted with whitespace description", async () => {
-    expect.assertions(2);
+  it("submits without description when submitted with empty description", async () => {
+    expect.hasAssertions();
 
     // Arrange
     const user = userEvent.setup();
-    const handleCreate = vi.fn<CreateFn>();
-    render(<TodoForm onCreate={handleCreate} />);
+    render(<TodoForm />);
 
     // Act
-    await user.type(screen.getByPlaceholderText("Title"), "Title Only");
-    await user.type(screen.getByPlaceholderText("Description"), "   ");
-    await user.click(screen.getByRole("button", { name: /add todo/iu }));
+    await fillAndSubmit(user, "Title Only");
 
     // Assert
-    expect(handleCreate).toHaveBeenCalledWith({ title: "Title Only" });
-    expect(screen.getByPlaceholderText("Title").getAttribute("value")).toBe("");
+    expect(mockCreateTodo).toHaveBeenCalledWith({ description: "", title: "Title Only" });
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Title").getAttribute("value")).toBe("");
+    });
   });
 });
 
 describe("todo form validation", () => {
+  beforeEach(() => {
+    mockCreateTodo.mockClear();
+    vi.mocked(useCreateTodo).mockReturnValue({
+      isError: false,
+      isPending: false,
+      isSuccess: false,
+      mutate: mockCreateTodo,
+      mutateAsync: vi.fn<() => Promise<unknown>>(),
+    } as never);
+  });
+
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
   });
 
-  it("does not call onCreate when form is submitted with whitespace title", async () => {
+  it("does not call createTodo when form is submitted with whitespace title", async () => {
     expect.assertions(1);
 
     // Arrange
     const user = userEvent.setup();
-    const handleCreate = vi.fn<CreateFn>();
-    render(<TodoForm onCreate={handleCreate} />);
+    render(<TodoForm />);
 
     // Act
     await user.type(screen.getByPlaceholderText("Title"), "   ");
     fireEvent.submit(screen.getByPlaceholderText("Title"));
 
     // Assert
-    expect(handleCreate).not.toHaveBeenCalled();
+    expect(mockCreateTodo).not.toHaveBeenCalled();
   });
 });
 
-interface Deferred<TValue = void> {
-  promise: Promise<TValue>;
-  resolve: (value: TValue) => void;
-}
-
-function createDeferred<TValue = void>(): Deferred<TValue> {
-  let resolveFn: (value: TValue) => void = vi.fn<(value: TValue) => void>();
-  const promise = new Promise<TValue>((resolve) => {
-    resolveFn = resolve;
-  });
-  return { promise, resolve: resolveFn };
-}
-
-function expectInputsDisabled() {
-  expect(screen.getByPlaceholderText("Title").hasAttribute("disabled")).toBe(true);
-  expect(screen.getByPlaceholderText("Description").hasAttribute("disabled")).toBe(true);
-  expect(screen.getByRole("button", { name: /adding\.\.\./iu }).hasAttribute("disabled")).toBe(
-    true,
-  );
-}
-
 describe("todo form states", () => {
+  beforeEach(() => {
+    mockCreateTodo.mockClear();
+    vi.mocked(useCreateTodo).mockReturnValue({
+      isError: false,
+      isPending: false,
+      isSuccess: false,
+      mutate: mockCreateTodo,
+      mutateAsync: vi.fn<() => Promise<unknown>>(),
+    } as never);
+  });
+
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
@@ -108,7 +136,7 @@ describe("todo form states", () => {
 
     // Arrange
     const user = userEvent.setup();
-    render(<TodoForm onCreate={vi.fn<CreateFn>()} />);
+    render(<TodoForm />);
     const submitButton = screen.getByRole("button", { name: /add todo/iu });
 
     // Assert - initially empty
@@ -119,25 +147,5 @@ describe("todo form states", () => {
 
     // Assert - whitespace only
     expect(submitButton.hasAttribute("disabled")).toBe(true);
-  });
-
-  it("disables inputs and button and shows loading state while submitting", async () => {
-    expect.assertions(3);
-
-    // Arrange
-    const user = userEvent.setup();
-    const deferred = createDeferred();
-    const handleCreate = vi.fn<CreateFn>(async () => {
-      await deferred.promise;
-    });
-    render(<TodoForm onCreate={handleCreate} />);
-
-    // Act
-    await user.type(screen.getByPlaceholderText("Title"), "New Todo");
-    await user.click(screen.getByRole("button", { name: /add todo/iu }));
-
-    // Assert
-    expectInputsDisabled();
-    deferred.resolve();
   });
 });

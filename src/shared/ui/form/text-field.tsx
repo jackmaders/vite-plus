@@ -3,7 +3,7 @@ import { useCallback, useId, type ChangeEvent, type ComponentProps } from "react
 import { Field, FieldError, FieldLabel } from "@/shared/ui/shadcn/field";
 import { Input } from "@/shared/ui/shadcn/input";
 
-import { useFieldContext } from "./form-context";
+import { useFieldContext, useFormContext } from "./form-context";
 
 type TextFieldProps = Omit<
   ComponentProps<typeof Input>,
@@ -12,8 +12,13 @@ type TextFieldProps = Omit<
   label: string;
 };
 
-function TextField({ label, ...props }: TextFieldProps) {
+function selectIsSubmitting(state: { isSubmitting: boolean }) {
+  return state.isSubmitting;
+}
+
+function TextField({ disabled, label, ...props }: TextFieldProps) {
   const field = useFieldContext<string>();
+  const form = useFormContext();
   const id = useId();
   const errorId = `${id}-error`;
   const { errors, isTouched, isValid } = field.state.meta;
@@ -29,16 +34,21 @@ function TextField({ label, ...props }: TextFieldProps) {
   return (
     <Field data-invalid={isInvalid}>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <Input
-        {...props}
-        {...(isInvalid ? { "aria-describedby": errorId } : {})}
-        aria-invalid={isInvalid}
-        id={id}
-        name={field.name}
-        onBlur={field.handleBlur}
-        onChange={handleChange}
-        value={field.state.value}
-      />
+      <form.Subscribe selector={selectIsSubmitting}>
+        {(isSubmitting) => (
+          <Input
+            {...props}
+            {...(isInvalid ? { "aria-describedby": errorId } : {})}
+            aria-invalid={isInvalid}
+            disabled={Boolean(disabled) || isSubmitting}
+            id={id}
+            name={field.name}
+            onBlur={field.handleBlur}
+            onChange={handleChange}
+            value={field.state.value}
+          />
+        )}
+      </form.Subscribe>
       <FieldError errors={errors} hidden={!isInvalid} id={errorId} />
     </Field>
   );
