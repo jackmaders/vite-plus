@@ -3,7 +3,7 @@ import { env } from "cloudflare:workers";
 import { afterEach, beforeAll } from "vite-plus/test";
 
 import { todos } from "@/shared/db";
-import { getDb } from "@/shared/db/db.server";
+import { getDb } from "@/shared/db/index.server";
 import { user } from "@/shared/db/schema";
 
 const testEnv = env as unknown as {

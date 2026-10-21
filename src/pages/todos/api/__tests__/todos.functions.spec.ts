@@ -3,13 +3,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { ensureSession } from "@/shared/auth/session.server";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 
-import { createTodo, deleteTodo, getTodos, updateTodo } from "../api/todos-operations";
-import { createTodoFn, deleteTodoFn, getTodosFn, updateTodoFn } from "../api/todos.functions";
+import { createTodo, deleteTodo, getTodos, updateTodo } from "../todos-operations";
+import { createTodoFn, deleteTodoFn, getTodosFn, updateTodoFn } from "../todos.functions";
 
 vi.mock(import("@tanstack/react-start"));
 vi.mock(import("@/shared/auth/auth.server"));
 vi.mock(import("@/shared/auth/session.server"));
-vi.mock(import("../api/todos-operations"));
+vi.mock(import("../todos-operations"));
 vi.mock(import("@/shared/db/db.server"));
 
 const MOCK_TODO = {
@@ -133,20 +133,5 @@ describe("todos functions deleteTodoFn", () => {
     // Assert
     expect(deleteTodo).toHaveBeenCalledWith(MOCK_TODO.id, { userId: TEST_SESSION.user.id });
     expect(result).toStrictEqual(MOCK_TODO);
-  });
-});
-
-describe("todos api index barrel", () => {
-  it("api index barrel exports all server functions", async () => {
-    expect.assertions(4);
-
-    // Act
-    const api = await import("../api/index");
-
-    // Assert
-    expect(api.getTodosFn).toBeDefined();
-    expect(api.createTodoFn).toBeDefined();
-    expect(api.updateTodoFn).toBeDefined();
-    expect(api.deleteTodoFn).toBeDefined();
   });
 });
