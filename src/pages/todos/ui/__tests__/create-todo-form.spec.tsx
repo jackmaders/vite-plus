@@ -23,6 +23,12 @@ async function fillAndSubmit(
   await user.click(screen.getByRole("button", { name: /add todo/iu }));
 }
 
+async function fillAndSubmitInvalidTitle(user: ReturnType<typeof userEvent.setup>, title: string) {
+  const titleInput = screen.getByPlaceholderText<HTMLInputElement>("Title");
+  await user.type(titleInput, title);
+  fireEvent.submit(titleInput);
+}
+
 describe("todo form submission", () => {
   beforeEach(() => {
     mockCreateTodo.mockClear();
@@ -46,8 +52,8 @@ describe("todo form submission", () => {
 
     // Arrange
     const user = userEvent.setup();
-    const handleSubmit = vi.fn<(event: unknown) => void>();
-    render(<CreateTodoForm onSubmit={handleSubmit} />);
+    const onSuccess = vi.fn<() => void>();
+    render(<CreateTodoForm onSuccess={onSuccess} />);
 
     // Act
     await fillAndSubmit(user, "New Todo", "New Description");
@@ -58,7 +64,7 @@ describe("todo form submission", () => {
       title: "New Todo",
     });
     await waitFor(() => {
-      expect(handleSubmit).toHaveBeenCalledOnce();
+      expect(onSuccess).toHaveBeenCalledOnce();
       expect(screen.getByPlaceholderText("Title").getAttribute("value")).toBe("");
       expect(screen.getByPlaceholderText("Description").getAttribute("value")).toBe("");
     });
@@ -79,6 +85,26 @@ describe("todo form submission", () => {
     await waitFor(() => {
       expect(screen.getByPlaceholderText("Title").getAttribute("value")).toBe("");
     });
+  });
+
+  it("preserves the draft and skips success effects when the save fails", async () => {
+    expect.hasAssertions();
+
+    // Arrange
+    const user = userEvent.setup();
+    const onSuccess = vi.fn<() => void>();
+    mockCreateTodo.mockRejectedValueOnce(new Error("save failed"));
+    render(<CreateTodoForm onSuccess={onSuccess} />);
+
+    // Act
+    await fillAndSubmit(user, "Draft title");
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByText("Something went wrong. Please try again.")).toBeDefined();
+    });
+    expect(screen.getByPlaceholderText<HTMLInputElement>("Title").value).toBe("Draft title");
+    expect(onSuccess).not.toHaveBeenCalled();
   });
 });
 
@@ -108,11 +134,30 @@ describe("todo form validation", () => {
     render(<CreateTodoForm />);
 
     // Act
-    await user.type(screen.getByPlaceholderText("Title"), "   ");
-    fireEvent.submit(screen.getByPlaceholderText("Title"));
+    await fillAndSubmitInvalidTitle(user, "   ");
 
     // Assert
     expect(mockCreateTodo).not.toHaveBeenCalled();
+  });
+
+  it("preserves the draft and validation feedback when submission is invalid", async () => {
+    expect.hasAssertions();
+
+    // Arrange
+    const user = userEvent.setup();
+    const onSuccess = vi.fn<() => void>();
+    render(<CreateTodoForm onSuccess={onSuccess} />);
+
+    // Act
+    await fillAndSubmitInvalidTitle(user, "   ");
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByText("Title is required")).toBeDefined();
+    });
+    expect(screen.getByPlaceholderText<HTMLInputElement>("Title").value).toBe("   ");
+    expect(mockCreateTodo).not.toHaveBeenCalled();
+    expect(onSuccess).not.toHaveBeenCalled();
   });
 });
 

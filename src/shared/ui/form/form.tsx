@@ -3,11 +3,12 @@ import { useCallback, type ComponentProps, type SubmitEvent } from "react";
 import { useFormContext } from "./form-context";
 import { FormSubmissionError } from "./form-submission-error";
 
-interface FormProps extends Omit<ComponentProps<"form">, "onError"> {
+interface FormProps extends Omit<ComponentProps<"form">, "onError" | "onSubmit"> {
   onError?: (error: unknown) => void;
+  onSuccess?: () => void;
 }
 
-function Form({ onError, onSubmit, ...props }: FormProps) {
+function Form({ onError, onSuccess, ...props }: FormProps) {
   const form = useFormContext();
 
   const handleSubmit = useCallback(
@@ -17,8 +18,9 @@ function Form({ onError, onSubmit, ...props }: FormProps) {
       void (async () => {
         try {
           await form.handleSubmit();
-          form.reset();
-          onSubmit?.(event);
+          if (form.state.isSubmitSuccessful) {
+            onSuccess?.();
+          }
         } catch (error) {
           form.setErrorMap({
             onSubmit:
@@ -30,7 +32,7 @@ function Form({ onError, onSubmit, ...props }: FormProps) {
         }
       })();
     },
-    [form, onError, onSubmit],
+    [form, onError, onSuccess],
   );
 
   return <form onSubmit={handleSubmit} {...props} />;

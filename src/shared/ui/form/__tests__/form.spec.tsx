@@ -1,13 +1,48 @@
-import { createFormHookContexts } from "@tanstack/react-form";
 import { cleanup, createEvent, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import * as z from "zod";
 
-import { Form } from "../form";
+import { useAppForm } from "../app-form";
+import { Form, type FormProps } from "../form";
 import { FormSubmissionError } from "../form-submission-error";
 
-vi.mock(import("@tanstack/react-form"));
+const defaultSave = vi.fn<() => Promise<void>>().mockResolvedValue();
+const accountSchema = z.object({
+  accountName: z.string().trim().min(1, "Account name is required"),
+});
 
-const { useFormContext } = createFormHookContexts();
+interface TestFormProps extends FormProps {
+  initialName?: string;
+  onSave?: () => Promise<void>;
+}
+
+function TestForm({
+  children = "Account details",
+  initialName = "Account",
+  onSave = defaultSave,
+  ...props
+}: TestFormProps) {
+  const form = useAppForm({
+    defaultValues: { accountName: initialName },
+    onSubmit: async () => {
+      await onSave();
+    },
+    validators: { onSubmit: accountSchema },
+  });
+
+  return (
+    <form.AppForm>
+      <Form aria-label="Account form" {...props}>
+        {children}
+        <form.AppField name="accountName">
+          {(field) => <field.TextField label="Account name" placeholder="Account name" />}
+        </form.AppField>
+        <form.FormError />
+        <button type="submit">Save</button>
+      </Form>
+    </form.AppForm>
+  );
+}
 
 function dispatchSubmit(element: HTMLElement) {
   const event = createEvent.submit(element);
@@ -25,11 +60,7 @@ describe("form component", () => {
     expect.assertions(3);
 
     // Act
-    render(
-      <Form aria-label="Account form" className="p-2" data-testid="form" id="account-form">
-        Account details
-      </Form>,
-    );
+    render(<TestForm className="p-2" data-testid="form" id="account-form" />);
 
     const form = screen.getByRole("form", { name: "Account form" });
 
@@ -43,113 +74,102 @@ describe("form component", () => {
     expect.hasAssertions();
 
     // Arrange
-    const form = useFormContext();
+    const onSave = vi.fn<() => Promise<void>>().mockResolvedValue();
     const parentOnSubmit = vi.fn<() => void>();
 
     // Act
     render(
       <div onSubmit={parentOnSubmit}>
-        <Form aria-label="Account form">Account details</Form>
+        <TestForm onSave={onSave} />
       </div>,
     );
-
-    const element = screen.getByRole("form", { name: "Account form" });
-    const event = dispatchSubmit(element);
+    const event = dispatchSubmit(screen.getByRole("form", { name: "Account form" }));
 
     // Assert
     expect(event.defaultPrevented).toBe(true);
     expect(parentOnSubmit).not.toHaveBeenCalled();
     await waitFor(() => {
-      expect(form.handleSubmit).toHaveBeenCalledOnce();
-      expect(form.reset).toHaveBeenCalledOnce();
+      expect(onSave).toHaveBeenCalledOnce();
     });
   });
 
-  it("calls onSubmit prop after a successful submission", async () => {
+  it("calls onSuccess after a successful submission", async () => {
     expect.hasAssertions();
 
     // Arrange
-    const form = useFormContext();
-    const onSubmit = vi.fn<(event: unknown) => void>();
+    const onSave = vi.fn<() => Promise<void>>().mockResolvedValue();
+    const onSuccess = vi.fn<() => void>();
 
     // Act
-    render(
-      <Form aria-label="Account form" onSubmit={onSubmit}>
-        Account details
-      </Form>,
-    );
-
+    render(<TestForm onSave={onSave} onSuccess={onSuccess} />);
     fireEvent.submit(screen.getByRole("form", { name: "Account form" }));
 
     // Assert
     await waitFor(() => {
-      expect(form.handleSubmit).toHaveBeenCalledOnce();
-      expect(onSubmit).toHaveBeenCalledOnce();
+      expect(onSave).toHaveBeenCalledOnce();
+      expect(onSuccess).toHaveBeenCalledOnce();
     });
   });
 
-  it("passes submission errors to the onError callback", async () => {
+  it("preserves validation feedback and skips onSuccess when submission is invalid", async () => {
     expect.hasAssertions();
 
     // Arrange
-    const form = useFormContext();
+    const onSave = vi.fn<() => Promise<void>>().mockResolvedValue();
+    const onSuccess = vi.fn<() => void>();
+
+    // Act
+    render(<TestForm initialName="   " onSave={onSave} onSuccess={onSuccess} />);
+    fireEvent.submit(screen.getByRole("form", { name: "Account form" }));
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByText("Account name is required")).toBeDefined();
+    });
+    expect(screen.getByPlaceholderText<HTMLInputElement>("Account name").value).toBe("   ");
+    expect(onSave).not.toHaveBeenCalled();
+    expect(onSuccess).not.toHaveBeenCalled();
+  });
+
+  it("passes rejected saves to onError and leaves the draft in place", async () => {
+    expect.hasAssertions();
+
+    // Arrange
     const error = new Error("submission failed");
+    const onSave = vi.fn<() => Promise<void>>().mockRejectedValue(error);
     const onError = vi.fn<(err: unknown) => void>();
-    vi.mocked(form.handleSubmit).mockRejectedValueOnce(error);
+    const onSuccess = vi.fn<() => void>();
 
     // Act
     render(
-      <Form aria-label="Account form" onError={onError}>
-        Account details
-      </Form>,
+      <TestForm initialName="Draft" onError={onError} onSave={onSave} onSuccess={onSuccess} />,
     );
-
     fireEvent.submit(screen.getByRole("form", { name: "Account form" }));
 
     // Assert
     await waitFor(() => {
       expect(onError).toHaveBeenCalledWith(error);
+      expect(screen.getByText("Something went wrong. Please try again.")).toBeDefined();
     });
-    expect(form.handleSubmit).toHaveBeenCalledOnce();
-  });
-
-  it("handles rejected submissions without an error callback", async () => {
-    expect.hasAssertions();
-
-    // Arrange
-    const form = useFormContext();
-    vi.mocked(form.handleSubmit).mockRejectedValueOnce(new Error("Internal details"));
-
-    // Act
-    render(<Form aria-label="Account form" />);
-    fireEvent.submit(screen.getByRole("form", { name: "Account form" }));
-
-    // Assert
-    await waitFor(() => {
-      expect(form.setErrorMap).toHaveBeenCalledWith({
-        onSubmit: "Something went wrong. Please try again.",
-      });
-    });
+    expect(screen.getByPlaceholderText<HTMLInputElement>("Account name").value).toBe("Draft");
+    expect(onSuccess).not.toHaveBeenCalled();
   });
 
   it("displays the safe message from a submission error", async () => {
     expect.hasAssertions();
 
     // Arrange
-    const form = useFormContext();
-    vi.mocked(form.handleSubmit).mockRejectedValueOnce(
-      new FormSubmissionError("Unable to save your changes."),
-    );
+    const onSave = vi
+      .fn<() => Promise<void>>()
+      .mockRejectedValue(new FormSubmissionError("Unable to save your changes."));
 
     // Act
-    render(<Form aria-label="Account form" />);
+    render(<TestForm onSave={onSave} />);
     fireEvent.submit(screen.getByRole("form", { name: "Account form" }));
 
     // Assert
     await waitFor(() => {
-      expect(form.setErrorMap).toHaveBeenCalledWith({
-        onSubmit: "Unable to save your changes.",
-      });
+      expect(screen.getByText("Unable to save your changes.")).toBeDefined();
     });
   });
 });

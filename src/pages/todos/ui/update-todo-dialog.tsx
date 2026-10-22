@@ -60,7 +60,6 @@ function UpdateTodoForm({ todo, onSuccess, onCancel }: UpdateTodoFormProps) {
     defaultValues,
     onSubmit: async ({ value }) => {
       await updateTodo({ data: value, id: todo.id });
-      onSuccess?.();
     },
     validators: {
       onChange: updateTodoDataSchema,
@@ -70,7 +69,7 @@ function UpdateTodoForm({ todo, onSuccess, onCancel }: UpdateTodoFormProps) {
 
   return (
     <form.AppForm>
-      <form.Form className="flex flex-col gap-4">
+      <form.Form className="flex flex-col gap-4" onSuccess={onSuccess}>
         <form.AppField name="title">
           {(field) => <field.TextField label="Title" placeholder="Title" />}
         </form.AppField>
@@ -78,6 +77,8 @@ function UpdateTodoForm({ todo, onSuccess, onCancel }: UpdateTodoFormProps) {
         <form.AppField name="description">
           {(field) => <field.TextField label="Description" placeholder="Description" />}
         </form.AppField>
+
+        <form.FormError />
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           {onCancel && (

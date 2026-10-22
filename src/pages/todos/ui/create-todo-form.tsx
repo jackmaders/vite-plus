@@ -11,7 +11,7 @@ const DEFAULT_FORM_VALUES: CreateTodoInput = {
   title: "",
 };
 
-function CreateTodoForm(props: TodoFormProps = {}) {
+function CreateTodoForm({ onSuccess, ...props }: TodoFormProps = {}) {
   const { mutateAsync: createTodo } = useCreateTodo();
 
   const form = useAppForm({
@@ -28,13 +28,21 @@ function CreateTodoForm(props: TodoFormProps = {}) {
   return (
     <Card>
       <form.AppForm>
-        <form.Form className="flex flex-col gap-3" {...props}>
+        <form.Form
+          className="flex flex-col gap-3"
+          onSuccess={() => {
+            form.reset();
+            onSuccess?.();
+          }}
+          {...props}
+        >
           <form.AppField name="title">
             {(field) => <field.TextField label="Title" placeholder="Title" />}
           </form.AppField>
           <form.AppField name="description">
             {(field) => <field.TextField label="Description" placeholder="Description" />}
           </form.AppField>
+          <form.FormError />
           <form.SubmitButton busyLabel="Adding...">Add Todo</form.SubmitButton>
         </form.Form>
       </form.AppForm>
