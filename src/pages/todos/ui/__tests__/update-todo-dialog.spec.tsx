@@ -114,7 +114,8 @@ describe("update todo dialog", () => {
     await user.click(screen.getByRole("button", { name: "Update Item" }));
 
     // Assert
-    expect(screen.getByPlaceholderText("Description").getAttribute("value") ?? "").toBe("");
+    const descriptionInput = screen.getByPlaceholderText<HTMLInputElement>("Description");
+    expect(descriptionInput.value).toBe("");
   });
 
   it("closes dialog when cancel button is clicked", async () => {
