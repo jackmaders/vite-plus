@@ -177,7 +177,10 @@ const lintConfig = defineConfig({
       },
       {
         files: ["src/app/routes/**"],
-        rules: { "react/only-export-components": "off" },
+        rules: {
+          "eslint/sort-keys": "off",
+          "react/only-export-components": "off",
+        },
       },
       {
         files: ["src/shared/ui/shadcn/**"],

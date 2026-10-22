@@ -3,6 +3,8 @@ import { describe, expect, it } from "vite-plus/test";
 import {
   createTodoInputSchema,
   deleteTodoInputSchema,
+  todoCompletionStatusSchema,
+  todosSearchSchema,
   updateTodoInputSchema,
 } from "../todo-schema";
 
@@ -214,5 +216,82 @@ describe("delete todo input schema", () => {
 
     // Assert
     expect(parse).toThrow(/too_small/iu);
+  });
+});
+
+describe("todo completion status schema", () => {
+  it("parses valid status values", () => {
+    expect.assertions(3);
+
+    // Arrange
+    const all = "all";
+    const active = "active";
+    const completed = "completed";
+
+    // Act
+    const parsedAll = todoCompletionStatusSchema.parse(all);
+    const parsedActive = todoCompletionStatusSchema.parse(active);
+    const parsedCompleted = todoCompletionStatusSchema.parse(completed);
+
+    // Assert
+    expect(parsedAll).toBe("all");
+    expect(parsedActive).toBe("active");
+    expect(parsedCompleted).toBe("completed");
+  });
+
+  it("throws for invalid status values", () => {
+    expect.assertions(1);
+
+    // Arrange
+    const invalid = "unknown";
+
+    // Act
+    function parse() {
+      todoCompletionStatusSchema.parse(invalid);
+    }
+
+    // Assert
+    expect(parse).toThrow(/invalid_value/iu);
+  });
+});
+
+describe("todos search schema", () => {
+  it("parses valid search status", () => {
+    expect.assertions(1);
+
+    // Arrange
+    const raw = { status: "active" };
+
+    // Act
+    const parsed = todosSearchSchema.parse(raw);
+
+    // Assert
+    expect(parsed.status).toBe("active");
+  });
+
+  it("defaults to all when status is missing", () => {
+    expect.assertions(1);
+
+    // Arrange
+    const raw = {};
+
+    // Act
+    const parsed = todosSearchSchema.parse(raw);
+
+    // Assert
+    expect(parsed.status).toBe("all");
+  });
+
+  it("falls back to all on invalid status", () => {
+    expect.assertions(1);
+
+    // Arrange
+    const raw = { status: "invalid" };
+
+    // Act
+    const parsed = todosSearchSchema.parse(raw);
+
+    // Assert
+    expect(parsed.status).toBe("all");
   });
 });

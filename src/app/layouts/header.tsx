@@ -6,46 +6,64 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-(--line) bg-(--header-bg) px-4 backdrop-blur-lg">
       <nav className="mx-auto flex w-page flex-wrap items-center gap-x-3 gap-y-2 py-3 sm:py-4">
-        <h2 className="m-0 shrink-0 text-base font-semibold tracking-tight">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-2 rounded-full border border-(--chip-line) bg-(--chip-bg) px-3 py-1.5 text-sm text-(--sea-ink) no-underline shadow-lg shadow-emerald-900/10 sm:px-4 sm:py-2"
-          >
-            <span className="size-2 rounded-full bg-linear-to-r from-teal-400 to-emerald-300" />
-            TanStack Start
-          </Link>
-        </h2>
-
-        <div className="order-3 flex w-full flex-wrap items-center gap-x-4 gap-y-1 pb-1 text-sm font-semibold sm:order-0 sm:w-auto sm:flex-nowrap sm:pb-0">
-          <Link
-            to="/"
-            className="relative inline-flex items-center no-underline after:absolute after:-bottom-1.5 after:left-0 after:h-0.5 after:w-full after:origin-left after:bg-linear-to-r after:from-(--lagoon) after:to-mint after:transition-transform after:duration-170 after:ease-in-out hover:text-(--sea-ink) hover:after:scale-x-100 max-sm:after:-bottom-1"
-            activeProps={{ className: "text-(--sea-ink) after:scale-x-100" }}
-            inactiveProps={{ className: "text-(--sea-ink-soft) after:scale-x-0" }}
-          >
-            Home
-          </Link>
-          <Link
-            to="/about"
-            className="relative inline-flex items-center no-underline after:absolute after:-bottom-1.5 after:left-0 after:h-0.5 after:w-full after:origin-left after:bg-linear-to-r after:from-(--lagoon) after:to-mint after:transition-transform after:duration-170 after:ease-in-out hover:text-(--sea-ink) hover:after:scale-x-100 max-sm:after:-bottom-1"
-            activeProps={{ className: "text-(--sea-ink) after:scale-x-100" }}
-            inactiveProps={{ className: "text-(--sea-ink-soft) after:scale-x-0" }}
-          >
-            About
-          </Link>
-          <a
-            href="https://tanstack.com/start/latest/docs/framework/react/overview"
-            className="relative inline-flex items-center text-(--sea-ink-soft) no-underline after:absolute after:-bottom-1.5 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-linear-to-r after:from-(--lagoon) after:to-mint after:transition-transform after:duration-170 after:ease-in-out hover:text-(--sea-ink) hover:after:scale-x-100 max-sm:after:-bottom-1"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Docs
-          </a>
-        </div>
-
+        <HeaderBrand />
+        <HeaderNavLinks />
         <HeaderActions />
       </nav>
     </header>
+  );
+}
+
+function HeaderBrand() {
+  return (
+    <h2 className="m-0 shrink-0 text-base font-semibold tracking-tight">
+      <Link
+        to="/"
+        className="inline-flex items-center gap-2 rounded-full border border-(--chip-line) bg-(--chip-bg) px-3 py-1.5 text-sm text-(--sea-ink) no-underline shadow-lg shadow-emerald-900/10 sm:px-4 sm:py-2"
+      >
+        <span className="size-2 rounded-full bg-linear-to-r from-teal-400 to-emerald-300" />
+        TanStack Start
+      </Link>
+    </h2>
+  );
+}
+
+function HeaderNavLinks() {
+  return (
+    <div className="order-3 flex w-full flex-wrap items-center gap-x-4 gap-y-1 pb-1 text-sm font-semibold sm:order-0 sm:w-auto sm:flex-nowrap sm:pb-0">
+      <Link
+        to="/"
+        className="relative inline-flex items-center no-underline after:absolute after:-bottom-1.5 after:left-0 after:h-0.5 after:w-full after:origin-left after:bg-linear-to-r after:from-(--lagoon) after:to-mint after:transition-transform after:duration-170 after:ease-in-out hover:text-(--sea-ink) hover:after:scale-x-100 max-sm:after:-bottom-1"
+        activeProps={{ className: "text-(--sea-ink) after:scale-x-100" }}
+        inactiveProps={{ className: "text-(--sea-ink-soft) after:scale-x-0" }}
+      >
+        Home
+      </Link>
+      <Link
+        to="/about"
+        className="relative inline-flex items-center no-underline after:absolute after:-bottom-1.5 after:left-0 after:h-0.5 after:w-full after:origin-left after:bg-linear-to-r after:from-(--lagoon) after:to-mint after:transition-transform after:duration-170 after:ease-in-out hover:text-(--sea-ink) hover:after:scale-x-100 max-sm:after:-bottom-1"
+        activeProps={{ className: "text-(--sea-ink) after:scale-x-100" }}
+        inactiveProps={{ className: "text-(--sea-ink-soft) after:scale-x-0" }}
+      >
+        About
+      </Link>
+      <Link
+        to="/todos"
+        className="relative inline-flex items-center no-underline after:absolute after:-bottom-1.5 after:left-0 after:h-0.5 after:w-full after:origin-left after:bg-linear-to-r after:from-(--lagoon) after:to-mint after:transition-transform after:duration-170 after:ease-in-out hover:text-(--sea-ink) hover:after:scale-x-100 max-sm:after:-bottom-1"
+        activeProps={{ className: "text-(--sea-ink) after:scale-x-100" }}
+        inactiveProps={{ className: "text-(--sea-ink-soft) after:scale-x-0" }}
+      >
+        Todos
+      </Link>
+      <a
+        href="https://tanstack.com/start/latest/docs/framework/react/overview"
+        className="relative inline-flex items-center text-(--sea-ink-soft) no-underline after:absolute after:-bottom-1.5 after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:bg-linear-to-r after:from-(--lagoon) after:to-mint after:transition-transform after:duration-170 after:ease-in-out hover:text-(--sea-ink) hover:after:scale-x-100 max-sm:after:-bottom-1"
+        target="_blank"
+        rel="noreferrer"
+      >
+        Docs
+      </a>
+    </div>
   );
 }
 

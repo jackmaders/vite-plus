@@ -2,11 +2,15 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { TodoFilters, type TodoFilter } from "@/pages/todos/ui/todo-filters";
+import type { TodoCompletionStatus } from "@/pages/todos";
+import { TodoStatusTabs } from "@/pages/todos/ui/todo-status-tabs";
+
+vi.mock(import("@/shared/auth/auth.server"));
+vi.mock(import("@/shared/db/db.server"));
 
 const mockCounts = { active: 3, all: 5, completed: 2 };
 
-describe("todo filters component", () => {
+describe("todo status tabs component", () => {
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
@@ -16,25 +20,25 @@ describe("todo filters component", () => {
     expect.assertions(4);
 
     // Arrange
-    const handleChange = vi.fn<(filter: TodoFilter) => void>();
+    const handleChange = vi.fn<(status: TodoCompletionStatus) => void>();
 
     // Act
-    render(<TodoFilters counts={mockCounts} filter="all" onFilterChange={handleChange} />);
+    render(<TodoStatusTabs counts={mockCounts} onStatusChange={handleChange} status="all" />);
 
     // Assert
-    expect(screen.getByRole("navigation", { name: /filter todos/iu })).toBeDefined();
+    expect(screen.getByRole("navigation", { name: /filter todos by status/iu })).toBeDefined();
     expect(screen.getByRole("button", { name: /all 5/iu, pressed: true })).toBeDefined();
     expect(screen.getByRole("button", { name: /active 3/iu, pressed: false })).toBeDefined();
     expect(screen.getByRole("button", { name: /completed 2/iu, pressed: false })).toBeDefined();
   });
 
-  it("calls onFilterChange when filter buttons are clicked", async () => {
+  it("calls onStatusChange when status buttons are clicked", async () => {
     expect.assertions(2);
 
     // Arrange
     const user = userEvent.setup();
-    const handleChange = vi.fn<(filter: TodoFilter) => void>();
-    render(<TodoFilters counts={mockCounts} filter="all" onFilterChange={handleChange} />);
+    const handleChange = vi.fn<(status: TodoCompletionStatus) => void>();
+    render(<TodoStatusTabs counts={mockCounts} onStatusChange={handleChange} status="all" />);
 
     // Act
     await user.click(screen.getByRole("button", { name: /active 3/iu }));
