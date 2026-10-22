@@ -21,6 +21,7 @@ function Tabs<TabValue extends string = string>({
       className={cn("group/tabs flex gap-2 data-horizontal:flex-col", className)}
       data-orientation={orientation}
       data-slot="tabs"
+      orientation={orientation}
       {...props}
     />
   );
