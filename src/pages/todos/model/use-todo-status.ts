@@ -1,6 +1,6 @@
 import { useNavigate, useSearch } from "@tanstack/react-router";
 
-import type { TodoCompletionStatus } from "../model/todo-schema";
+import type { TodoCompletionStatus } from "./todo-schema";
 
 function useTodoStatus() {
   const search = useSearch({ strict: false });

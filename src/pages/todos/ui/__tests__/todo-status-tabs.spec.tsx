@@ -5,6 +5,9 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import type { TodoCompletionStatus } from "@/pages/todos";
 import { TodoStatusTabs } from "@/pages/todos/ui/todo-status-tabs";
 
+vi.mock(import("@/shared/auth/auth.server"));
+vi.mock(import("@/shared/db/db.server"));
+
 const mockCounts = { active: 3, all: 5, completed: 2 };
 
 describe("todo status tabs component", () => {

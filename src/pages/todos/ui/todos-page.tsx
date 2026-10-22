@@ -1,15 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
-
-import { todosQueryOptions } from "../api/todo-query-options";
-import { computeStatusCounts, filterTodosByStatus } from "../model/todo-status";
+import { useFilteredTodos } from "../model/use-filtered-todos";
 import { CreateTodoForm } from "./create-todo-form";
 import { TodoList } from "./todo-list";
 import { TodoStatusTabs } from "./todo-status-tabs";
-import { useTodoStatus } from "./use-todo-status";
 
 export function TodosPage() {
-  const { onStatusChange, status } = useTodoStatus();
-  const { data: todos = [] } = useQuery(todosQueryOptions());
+  const { counts, onStatusChange, status, todos } = useFilteredTodos();
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 p-4">
@@ -18,12 +13,8 @@ export function TodosPage() {
         <p className="text-sm text-muted-foreground">Manage your tasks and stay organized.</p>
       </header>
       <CreateTodoForm />
-      <TodoStatusTabs
-        counts={computeStatusCounts(todos)}
-        onStatusChange={onStatusChange}
-        status={status}
-      />
-      <TodoList todos={filterTodosByStatus(todos, status)} />
+      <TodoStatusTabs counts={counts} onStatusChange={onStatusChange} status={status} />
+      <TodoList todos={todos} />
     </div>
   );
 }
