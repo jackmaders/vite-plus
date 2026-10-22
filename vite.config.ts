@@ -3,6 +3,8 @@ import { defineConfig, lazyPlugins } from "vite-plus";
 const fullCheck = Boolean(process.env["CI"]) || process.env["VITE_PLUS_FULL_CHECK"] === "1";
 const runningTests = process.env["VITEST"] === "true";
 
+process.env["WRANGLER_LOG"] ??= "error";
+
 export default defineConfig(async ({ mode, command }) => ({
   ...fmtConfig,
   ...lintConfig,
@@ -380,6 +382,7 @@ const testConfig = defineConfig(async () => ({
       {
         test: {
           environment: "happy-dom",
+          environmentOptions: clientEnvironmentOptions,
           exclude: ["src/**/__tests__/workers/**"],
           include: ["src/**/__tests__/**/*.spec.{ts,tsx}"],
           name: "client",
@@ -416,3 +419,7 @@ async function workerTestConfig() {
     },
   };
 }
+
+const clientEnvironmentOptions = {
+  happyDOM: { settings: { handleDisabledFileLoadingAsSuccess: true } },
+};

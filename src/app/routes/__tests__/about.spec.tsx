@@ -5,6 +5,8 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { routeTree } from "@/app/routeTree.gen";
 
+vi.mock(import("@/app/styles/styles.css?url"), () => ({ default: "/styles.css" }));
+
 vi.mock(import("@tanstack/react-devtools"));
 vi.mock(import("@/shared/auth/auth.server"));
 
@@ -25,7 +27,7 @@ describe("about route", () => {
     await router.load();
 
     // Act
-    render(<RouterProvider router={router} />, {});
+    render(<RouterProvider router={router} />, { container: document });
 
     // Assert
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe(
@@ -45,7 +47,7 @@ describe("about route", () => {
     await router.load();
 
     // Act
-    render(<RouterProvider router={router} />, {});
+    render(<RouterProvider router={router} />, { container: document });
 
     // Assert
     expect(screen.getByText(/TanStack Start gives you type-safe routing/u)).toBeDefined();
