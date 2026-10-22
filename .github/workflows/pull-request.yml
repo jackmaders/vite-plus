@@ -28,7 +28,7 @@ jobs:
           run-install: true
           cache: true
       - name: Check code quality
-        run: vp run check:full
+        run: vp run --no-cache check:full
       - name: Check architecture
         run: vp run lint:arch --fail-on-warnings
 

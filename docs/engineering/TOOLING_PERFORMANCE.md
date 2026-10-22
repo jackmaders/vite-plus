@@ -8,11 +8,12 @@
 | `vp lint [paths...]`                  | Same local lint profile, optionally for selected files                           | Show warnings; fail on errors |
 | `vp run typecheck`                    | Full TypeScript compiler diagnostics                                             | Fail on type errors           |
 | `vp run check:full`                   | Formatting, every enabled lint rule, type-aware linting and compiler diagnostics | Fail on errors and warnings   |
+| `vp run --no-cache check:full`        | Execute the full check without reusing a task result; used by CI                 | Fail on errors and warnings   |
 | `vp run lint:arch --fail-on-warnings` | Architecture checks used by CI                                                   | Fail on errors and warnings   |
 
 Any nonempty `CI` environment variable forces the full profile. The
-`check:full` and `typecheck` scripts set `VITE_PLUS_FULL_CHECK=1` explicitly so
-they also work locally. CI invokes `check:full` and checks architecture
+`check:full` task and `typecheck` script set `VITE_PLUS_FULL_CHECK=1` explicitly so
+they also work locally. CI invokes `vp run --no-cache check:full` and checks architecture
 separately. The full profile preserves every previously enabled rule, rule
 option, plugin, ignore pattern and TypeScript compiler option.
 
@@ -35,6 +36,27 @@ After the changes, end-to-end `vp check` took a median **4.31s** across three
 runs, about **53% less elapsed time** than the original observation. The full
 `vp run check:full` command took a median **10.26s**, including task-runner
 startup; `vp run typecheck` took **4.68s** in one run. Every run passed.
+
+Those timings describe the initial local/full split. Follow-up experiments
+deferred Worker test setup and reduced local `vp check` from a **4.01s** median
+to **1.47s**. Full-check task caching reduced unchanged runs from **8.57s** to
+**0.11s**. The staged hook now runs `vp check --fix`; combined with deferred
+test setup its one-file median was **1.44s**, compared with **2.17s** for the
+previous formatter-only hook. See [follow-up benchmarks](TOOLING_FOLLOWUP_BENCHMARKS.md)
+for the five-run samples, first-cache-miss cost and limitations.
+
+`check:full` is a configuration-defined task with automatic file tracking,
+`CI` and `VITE_PLUS_FULL_CHECK` in its environment fingerprint and no restored
+output files. Inputs or environment changes invalidate a successful result.
+CI bypasses this cache. Use `vp run --no-cache check:full` for a fresh check or
+when the file-tracking supervisor is unavailable, such as a restricted sandbox.
+The cache remains local; this workflow does not persist task results across CI
+runs.
+
+Test projects and their dynamic Cloudflare import are only constructed when
+`VITEST=true`. Application plugins use the same test-process check, including
+when Vitest overrides the mode. Ordinary format, lint, task lookup and editor
+config reads avoid Worker setup.
 
 To isolate lint costs, the resolved source configuration was serialized to a
 temporary root JSON config and passed to `vp lint -c`. This preserved JS rules,
@@ -64,7 +86,7 @@ times. Canonical spelling is therefore deferred locally and retained in full
 checks. No other Tailwind rule was disabled.
 
 Keep formatter options: formatting was a small part of the original total,
-and the existing format-on-save and staged-file hook already narrow immediate
+and format-on-save and the staged-file hook narrow immediate
 work to edited files. Keep all `tsconfig` strictness flags and the existing
 `skipLibCheck: true`; move type analysis out of the frequent local lint pass
 instead of weakening type safety at the CI boundary. The project already uses
@@ -173,8 +195,8 @@ an input change invalidates it. If an environment variable changes check
 behavior, include it in `cache.env` so local and CI modes cannot share a stale
 success. [Vite+ task caching](https://viteplus.dev/guide/cache).
 
-Prefer formatting the edited file on save and the existing staged-file
-formatter hook for immediate feedback. Keep the complete formatting check at
+Prefer formatting the edited file on save and the staged-file format-and-lint
+hook for immediate feedback. Keep the complete formatting check at
 the CI boundary. The installed formatter accepts file paths, but has no
 per-option performance profiler. [Vite+ formatting](https://viteplus.dev/guide/fmt),
 [editor integration](https://viteplus.dev/guide/ide-integration).

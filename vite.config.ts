@@ -1,15 +1,23 @@
-import { cloudflareTest, readD1Migrations } from "@cloudflare/vitest-plugin";
 import { defineConfig, lazyPlugins } from "vite-plus";
 
 const fullCheck = Boolean(process.env["CI"]) || process.env["VITE_PLUS_FULL_CHECK"] === "1";
+const runningTests = process.env["VITEST"] === "true";
 
 export default defineConfig(async ({ mode, command }) => ({
   ...fmtConfig,
   ...lintConfig,
-  ...(await testConfig({ command, mode })),
-  plugins: mode === "test" ? [] : (lazyPlugins(loadPlugins) ?? []),
+  ...(runningTests ? await testConfig({ command, mode }) : {}),
+  plugins: runningTests ? [] : (lazyPlugins(loadPlugins) ?? []),
   resolve: { tsconfigPaths: true },
-  staged: { "*": "vp fmt" },
+  run: {
+    tasks: {
+      "check:full": {
+        cache: { env: ["CI", "VITE_PLUS_FULL_CHECK"], output: [] },
+        command: "VITE_PLUS_FULL_CHECK=1 vp check",
+      },
+    },
+  },
+  staged: { "*": "vp check --fix" },
 }));
 
 const lintConfig = defineConfig({
@@ -377,28 +385,34 @@ const testConfig = defineConfig(async () => ({
           name: "client",
         },
       },
-      {
-        plugins: [
-          cloudflareTest({
-            main: "tests/vitest/worker-entry.ts",
-            miniflare: {
-              bindings: {
-                TEST_MIGRATIONS: await readD1Migrations({
-                  migrationsDir: "drizzle",
-                  migrationsPattern: "drizzle/*/migration.sql",
-                  projectPath: process.cwd(),
-                }),
-              },
-            },
-            wrangler: { configPath: "wrangler.jsonc" },
-          }),
-        ],
-        test: {
-          include: ["src/**/__tests__/workers/**/*.spec.ts"],
-          name: "workers",
-          setupFiles: ["tests/vitest/setup/workers.ts"],
-        },
-      },
+      await workerTestConfig(),
     ],
   },
 }));
+
+async function workerTestConfig() {
+  const { cloudflareTest, readD1Migrations } = await import("@cloudflare/vitest-plugin");
+
+  return {
+    plugins: [
+      cloudflareTest({
+        main: "tests/vitest/worker-entry.ts",
+        miniflare: {
+          bindings: {
+            TEST_MIGRATIONS: await readD1Migrations({
+              migrationsDir: "drizzle",
+              migrationsPattern: "drizzle/*/migration.sql",
+              projectPath: process.cwd(),
+            }),
+          },
+        },
+        wrangler: { configPath: "wrangler.jsonc" },
+      }),
+    ],
+    test: {
+      include: ["src/**/__tests__/workers/**/*.spec.ts"],
+      name: "workers",
+      setupFiles: ["tests/vitest/setup/workers.ts"],
+    },
+  };
+}
