@@ -59,47 +59,51 @@ loader data fetching, or server functions.
 
 ## TanStack integration in this repository
 
-This section defines the repository-specific TanStack setup and authenticated data flow. The files under `.agents/skills` are managed by `npx skills`; use them as general references and follow this section when their examples differ from the project. Check `pnpm-lock.yaml` and the installed package source when dependency versions change or live documentation is ambiguous.
+Use this section as the authority for repository conventions; consult managed
+skills and first-party docs for vendor API details. Check `pnpm-lock.yaml` and
+the installed package source for version-sensitive behavior.
 
-### Setup and entry points
+### Setup and data flow
 
-- `vite.config.ts` composes the Cloudflare Vite plugin, TanStack Start Vite plugin with `srcDirectory: "src/app"`, and React plugin. Start generates `src/app/routeTree.gen.ts`; `src/app/router.tsx` creates the router. The app does not use `app.config.ts`, Vinxi/Nitro setup, or a separate TanStack Router Vite plugin.
-- Put file routes in `src/app/routes` and keep them thin. Routes delegate page rendering to `src/pages`; authenticated routes belong under `src/app/routes/_authenticated`.
-- Use Start server functions for application calls to server-side operations. Use Start server routes for externally addressed HTTP endpoints. The Better Auth HTTP handler is mounted at `src/app/routes/api/auth/$.ts`.
-- TanStack Form uses the shared `useAppForm` hook and Zod schemas directly through Standard Schema support. This project does not install or require a Zod form adapter.
-- The database uses Drizzle's D1 adapter and SQLite tables. Schemas live in `src/shared/db/schema`, migrations in `drizzle/`, and `getDb()` defaults to the Cloudflare `env.DB` binding. Pass the authenticated user's ID to every operation on user-owned rows.
+- Configure TanStack Start through its Vite plugin in `vite.config.ts` with
+  `srcDirectory: "src/app"`; `src/app/router.tsx` creates the router.
+- `getRouter()` creates a `QueryClient` for each router.
+  `setupRouterSsrQueryIntegration` provides the Query context and handles SSR
+  dehydration, hydration, and streaming.
+- Share query options between the route loader and page. For initial data, use
+  `context.queryClient.query(options)` in the loader and
+  `useSuspenseQuery(options)` in the page, as in the
+  [Start and Query guide](https://tanstack.com/start/latest/docs/framework/react/guide/tanstack-query).
+  Follow this loader method for the repository's installed Query API when
+  managed skills show a different method.
 
-### Authenticated read and write flow
+  ```tsx
+  const Route = createFileRoute("/_authenticated/todos")({
+    loader: ({ context }) => context.queryClient.query(todosQueryOptions()),
+    component: TodosPage,
+  });
 
-The todo modules show the server-side pieces of this flow, but there is not yet a todo route or page that connects them end to end. Use this sequence when adding one:
+  function TodosPage() {
+    const { data: todos } = useSuspenseQuery(todosQueryOptions());
+    return <TodoList todos={todos} />;
+  }
+  ```
 
-1. Add a thin file route under `src/app/routes/_authenticated` and delegate its component to `src/pages/todos`.
-2. Keep the query key and server-function query function together in `todosQueryOptions()`. For data needed in the initial render, await that shared option in the route loader and read the same option with `useSuspenseQuery` in the page:
-
-   ```tsx
-   const Route = createFileRoute("/_authenticated/todos")({
-     loader: ({ context }) => context.queryClient.query(todosQueryOptions()),
-     component: TodosPage,
-   });
-   ```
-
-   ```tsx
-   function TodosPage() {
-     const { data: todos } = useSuspenseQuery(todosQueryOptions());
-     return <TodoList todos={todos} />;
-   }
-   ```
-
-3. Create the `QueryClient` inside `getRouter()` in `src/app/router.tsx`. `setupRouterSsrQueryIntegration` owns the Query provider and SSR dehydration, hydration, and streaming. Keep Router responsible for navigation and loaders; Query owns cached data, freshness, mutation state, and invalidation. An awaited query failure follows the route loader's error handling. After a mutation, invalidate the Query key that owns the changed data.
-4. Put reads and writes behind `createServerFn`: use `GET` for reads and `POST` for writes. Attach `authMiddleware`, validate write input with `.validator(schema)`, and pass `context.session.user.id` into the Drizzle operation. Scope updates and deletes by both record ID and user ID.
-5. Keep database work in `src/pages/todos/api/todos-operations.ts` and schemas in `src/shared/db/schema`. Server functions in `src/pages/todos/api/todos.functions.ts` validate and connect middleware context to those operations; they do not own SQL queries.
-
-For SSR and loader examples, use the [TanStack Start Query guide](https://tanstack.com/start/latest/docs/framework/react/guide/tanstack-query). Verify version-sensitive APIs against the lockfile and installed package before copying a live-doc example.
+- For authenticated read/write examples, follow the [todo server functions](../../src/pages/todos/api/todos.functions.ts)
+  and [Drizzle operations](../../src/pages/todos/api/todos-operations.ts).
+- Router owns navigation and loader errors; Query owns cached data and mutation
+  invalidation. Await critical reads in the loader and invalidate the query key
+  after a mutation.
+- Use Start server routes for externally addressed HTTP endpoints.
 
 ### Validation and errors
 
-- Reuse Zod schemas directly in TanStack Form validators. Standard Schema validation checks form values, but Form's `onSubmit({ value })` receives the original input. Parse in `onSubmit` when that caller needs the schema's transformed output. The [Form submission guide](https://tanstack.com/form/latest/docs/framework/react/guides/submission-handling) documents this behavior.
-- Start server-function `.validator(schema)` validates at the request boundary and passes the schema result to the handler. For Standard Schema validators, the current Start implementation returns `result.value`; check the [validator implementation](https://github.com/TanStack/router/blob/main/packages/start-client-core/src/createServerFn.ts) against the installed package when upgrading. Keep server validation even when the form also validates: server functions are an independently callable boundary.
-- Await critical Query reads in the route loader so failures reach Router's route error handling. Use a route error component for route-specific recovery UI. Mutations surface rejected promises to their caller; the shared form wrapper stores submission failures in `errorMap.onSubmit`, and forms that display submission failures must render `FormError`.
-
-See the first-party [Start stable migration guide](https://tanstack.com/start/latest/docs/framework/react/migrate-from-release-candidate), [Start server functions](https://tanstack.com/start/latest/docs/framework/react/guide/server-functions), [Start server routes](https://tanstack.com/start/latest/docs/framework/react/guide/server-routes), [Router and Query integration](https://tanstack.com/router/latest/docs/integrations/query), [Drizzle with D1](https://orm.drizzle.team/docs/sqlite/connect-cloudflare-d1), and [Cloudflare TanStack Start guide](https://developers.cloudflare.com/workers/framework-guides/web-apps/tanstack-start/) when the task needs vendor details beyond this repository's conventions.
+- The shared `useAppForm` hook accepts Zod validators through Standard Schema
+  support. Pass schemas directly, as in the
+  [Form submission guide](https://tanstack.com/form/latest/docs/framework/react/guides/submission-handling).
+- TanStack Form calls `onSubmit` with the original input, even when validators use a transforming schema. Call `schema.parse(value)` there when the handler needs transformed output.
+- A Start server-function `.validator(schema)` passes the validated schema
+  result to its handler, including Standard Schema transformations.
+- The shared form exposes `<form.FormError />`, which renders the submission
+  message from `errorMap.onSubmit`. Include it where submission failures should
+  appear.

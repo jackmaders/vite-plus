@@ -35,10 +35,8 @@ release. Add a tool name to select part of the graph. For example, run
 - When designing module interfaces, adapting vendor SDKs, adding routes, placing
   UI or form primitives, or changing route authentication, loader prefetching,
   or server functions, read [architecture](docs/engineering/ARCHITECTURE.md).
-- When applying TanStack guidance to this repository, follow the repo-specific
-  setup and integration recipe in [architecture](docs/engineering/ARCHITECTURE.md)
-  when it differs from generic managed skill examples. Check `pnpm-lock.yaml`
-  for the resolved dependency versions.
+- When configuring TanStack Start, Router, Query, or Form here, read
+  [architecture](docs/engineering/ARCHITECTURE.md) for repository conventions.
 - When implementing new behavior or writing, reviewing, or organizing tests, read
   [testing](docs/engineering/TESTING.md).
 - When organizing FSD layers, slices, or segments, defining slice public APIs,
