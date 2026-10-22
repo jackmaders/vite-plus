@@ -12,12 +12,12 @@ const DEFAULT_FORM_VALUES: CreateTodoInput = {
 };
 
 function CreateTodoForm(props: TodoFormProps = {}) {
-  const { mutate: createTodo } = useCreateTodo();
+  const { mutateAsync: createTodo } = useCreateTodo();
 
   const form = useAppForm({
     defaultValues: DEFAULT_FORM_VALUES,
-    onSubmit: ({ value }) => {
-      createTodo(value);
+    onSubmit: async ({ value }) => {
+      await createTodo(value);
     },
     validators: {
       onChange: createTodoInputSchema,

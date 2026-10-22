@@ -9,7 +9,7 @@ const todoKeys = {
 
 function todosQueryOptions() {
   return queryOptions({
-    queryFn: async () => await getTodosFn(),
+    queryFn: getTodosFn,
     queryKey: todoKeys.list(),
   });
 }

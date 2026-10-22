@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -14,12 +14,18 @@ const mockTodo = TEST_TODO;
 const mockDeleteTodo = vi.fn<() => void>();
 
 describe("delete todo dialog", () => {
+  let successCallback: (() => void) | undefined;
+
   beforeEach(() => {
     mockDeleteTodo.mockClear();
-    vi.mocked(useDeleteTodo).mockReturnValue({
-      isPending: false,
-      mutate: mockDeleteTodo,
-    } as never);
+    successCallback = undefined;
+    vi.mocked(useDeleteTodo).mockImplementation((options) => {
+      successCallback = options?.onSuccess as (() => void) | undefined;
+      return {
+        isPending: false,
+        mutate: mockDeleteTodo,
+      } as never;
+    });
   });
 
   afterEach(() => {
@@ -57,5 +63,23 @@ describe("delete todo dialog", () => {
 
     // Assert
     expect(mockDeleteTodo).toHaveBeenCalledWith({ id: mockTodo.id });
+  });
+
+  it("closes dialog when delete mutation succeeds", async () => {
+    expect.assertions(2);
+
+    // Arrange
+    const user = userEvent.setup();
+    render(<DeleteTodoDialog todo={mockTodo} />);
+
+    // Act
+    await user.click(screen.getByRole("button", { name: "Delete Item" }));
+    expect(screen.getByRole("heading", { name: /delete todo item\?/iu })).toBeDefined();
+
+    // Simulate mutation success callback
+    successCallback?.();
+
+    // Assert dialog closed
+    expect(screen.queryByRole("heading", { name: /delete todo item\?/iu })).toBeNull();
   });
 });

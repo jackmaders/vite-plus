@@ -1,25 +1,23 @@
+import { cn } from "cn";
+import type { ComponentProps } from "react";
+
 import type { Todo } from "@/shared/db";
 
-import type { TodoFilter } from "./todo-filters";
-import { TodoItem, type TodoItemProps } from "./todo-item";
+import { TodoItem } from "./todo-item";
 
-interface TodoListProps extends Omit<TodoItemProps, "isUpdating" | "todo"> {
-  filter: TodoFilter;
+interface TodoListProps extends ComponentProps<"div"> {
   todos: Todo[];
-  updatingId?: string | null;
 }
 
-const EMPTY_COUNT = 0;
-
-function TodoList({ todos, ...actions }: TodoListProps) {
-  if (todos.length === EMPTY_COUNT) {
+function TodoList({ todos, className, ...props }: TodoListProps) {
+  if (todos.length === 0) {
     return <p>No todos found</p>;
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className={cn("flex flex-col gap-2", className)} {...props}>
       {todos.map((item) => (
-        <TodoItem key={item.id} todo={item} {...actions} />
+        <TodoItem key={item.id} todo={item} />
       ))}
     </div>
   );

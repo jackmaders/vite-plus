@@ -227,6 +227,7 @@ const lintConfig = defineConfig({
       "@tanstack/router/route-param-names": "error",
       "eslint/func-style": ["error", "declaration"],
       "eslint/id-length": ["error", { exceptions: ["z"] }],
+      "eslint/no-magic-numbers": ["error", { ignore: [0, 1] }],
       "eslint/no-ternary": "off",
       "eslint/no-use-before-define": "off",
       "eslint/no-void": ["error", { allowAsStatement: true }],

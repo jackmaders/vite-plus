@@ -4,10 +4,6 @@ import { useMemo, type ComponentProps, type ReactNode } from "react";
 
 import { Label } from "./label";
 
-const SINGLE_ERROR_COUNT = 1;
-const FIRST_ERROR_INDEX = 0;
-const EMPTY_COUNT = 0;
-
 function FieldSet({ className, ...props }: ComponentProps<"fieldset">) {
   return (
     <fieldset
@@ -173,8 +169,8 @@ function extractErrorMessage(error: unknown): string {
 
 function renderErrorList(messages: string[]) {
   const uniqueErrors = [...new Set(messages)];
-  if (uniqueErrors.length === SINGLE_ERROR_COUNT) {
-    return uniqueErrors[FIRST_ERROR_INDEX];
+  if (uniqueErrors.length === 1) {
+    return uniqueErrors[0];
   }
   return (
     <ul className="ml-4 flex list-disc flex-col gap-1">
@@ -193,13 +189,13 @@ function renderErrorContent(
   if (hasChildren) {
     return children;
   }
-  if (!errors || errors.length === EMPTY_COUNT) {
+  if (!errors || errors.length === 0) {
     return false;
   }
   const messages = errors
     .map((error) => extractErrorMessage(error))
-    .filter((message) => message.length > EMPTY_COUNT);
-  if (messages.length === EMPTY_COUNT) {
+    .filter((message) => message.length > 0);
+  if (messages.length === 0) {
     return false;
   }
   return renderErrorList(messages);

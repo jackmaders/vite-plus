@@ -1,4 +1,4 @@
-import type { ComponentProps } from "react";
+import { useState, type ComponentProps } from "react";
 
 import type { Todo } from "@/shared/db";
 import { Button } from "@/shared/ui/shadcn/button";
@@ -24,27 +24,33 @@ export function DeleteTodoDialog({
   todo,
   ...props
 }: DeleteTodoDialogProps) {
-  const { mutate: deleteTodo } = useDeleteTodo();
+  const [open, setOpen] = useState(false);
+  const { isPending, mutate: deleteTodo } = useDeleteTodo({
+    onSuccess: () => {
+      setOpen(false);
+    },
+  });
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger {...props}>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Delete Todo Item?</DialogTitle>
-          <DialogDescription>Are you sure? This actions is not reversable</DialogDescription>
+          <DialogDescription>Are you sure? This action is not reversible</DialogDescription>
         </DialogHeader>
 
         <DialogFooter>
           <DialogClose render={() => <Button variant="ghost">Cancel</Button>} />
 
           <Button
+            disabled={isPending}
             variant="destructive"
             onClick={() => {
               deleteTodo({ id: todo.id });
             }}
           >
-            Delete Todo
+            {isPending ? "Deleting..." : "Delete Todo"}
           </Button>
         </DialogFooter>
       </DialogContent>

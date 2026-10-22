@@ -1,13 +1,11 @@
-import type { ComponentProps } from "react";
+import { type ComponentProps, useState } from "react";
 
 import type { Todo } from "@/shared/db";
 import { useAppForm } from "@/shared/ui/form";
 import { Button } from "@/shared/ui/shadcn/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -20,21 +18,25 @@ interface UpdateTodoDialogProps extends ComponentProps<typeof DialogTrigger> {
   todo: Todo;
 }
 
-const DEFAULT_FORM_VALUES: UpdateTodoData = {
-  description: "",
-  title: "",
-};
+function UpdateTodoDialog({ children = "Update Item", todo, ...props }: UpdateTodoDialogProps) {
+  const [open, setOpen] = useState(false);
 
-export function UpdateTodoDialog({
-  children = "Update Item",
-  todo,
-  ...props
-}: UpdateTodoDialogProps) {
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger {...props}>{children}</DialogTrigger>
       <DialogContent>
-        <UpdateTodoForm todo={todo} />
+        <DialogHeader>
+          <DialogTitle>Update Todo Item?</DialogTitle>
+        </DialogHeader>
+        <UpdateTodoForm
+          todo={todo}
+          onSuccess={() => {
+            setOpen(false);
+          }}
+          onCancel={() => {
+            setOpen(false);
+          }}
+        />
       </DialogContent>
     </Dialog>
   );
@@ -42,15 +44,23 @@ export function UpdateTodoDialog({
 
 interface UpdateTodoFormProps {
   todo: Todo;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
-function UpdateTodoForm({ todo }: UpdateTodoFormProps) {
-  const { mutate: updateTodo } = useUpdateTodo();
+function UpdateTodoForm({ todo, onSuccess, onCancel }: UpdateTodoFormProps) {
+  const { mutateAsync: updateTodo } = useUpdateTodo();
+
+  const defaultValues: UpdateTodoData = {
+    description: todo.description ?? "",
+    title: todo.title,
+  };
 
   const form = useAppForm({
-    defaultValues: DEFAULT_FORM_VALUES,
-    onSubmit: ({ value }) => {
-      updateTodo({ data: value, id: todo.id });
+    defaultValues,
+    onSubmit: async ({ value }) => {
+      await updateTodo({ data: value, id: todo.id });
+      onSuccess?.();
     },
     validators: {
       onChange: updateTodoDataSchema,
@@ -60,21 +70,26 @@ function UpdateTodoForm({ todo }: UpdateTodoFormProps) {
 
   return (
     <form.AppForm>
-      <form.Form className="flex flex-col gap-3">
-        <DialogHeader>
-          <DialogTitle>Update Todo Item?</DialogTitle>
-        </DialogHeader>
+      <form.Form className="flex flex-col gap-4">
         <form.AppField name="title">
           {(field) => <field.TextField label="Title" placeholder="Title" />}
         </form.AppField>
+
         <form.AppField name="description">
           {(field) => <field.TextField label="Description" placeholder="Description" />}
         </form.AppField>
-        <DialogFooter>
-          <DialogClose render={() => <Button variant="ghost">Cancel</Button>} />
-          <DialogClose render={() => <form.SubmitButton>Update</form.SubmitButton>} />
-        </DialogFooter>
+
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          {onCancel && (
+            <Button type="button" variant="ghost" onClick={onCancel}>
+              Cancel
+            </Button>
+          )}
+          <form.SubmitButton>Update</form.SubmitButton>
+        </div>
       </form.Form>
     </form.AppForm>
   );
 }
+
+export { UpdateTodoDialog };
