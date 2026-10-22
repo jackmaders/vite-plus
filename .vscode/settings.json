@@ -23,6 +23,7 @@
     "editor.defaultFormatter": "oxc.oxc-vscode"
   },
   "oxc.disableNestedConfig": true,
+  "oxc.typeAware": false,
   "oxc.fmt.disableNestedConfig": true,
   "editor.formatOnSave": true,
   "editor.formatOnSaveMode": "file",
