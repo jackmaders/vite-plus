@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import { ensureSession } from "@/shared/auth/session.server";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
+import { TEST_TODO } from "@test/vitest/fixtures/todos";
 
 import { createTodo, deleteTodo, getTodos, updateTodo } from "../todos-operations";
 import { createTodoFn, deleteTodoFn, getTodosFn, updateTodoFn } from "../todos.functions";
@@ -12,15 +13,7 @@ vi.mock(import("@/shared/auth/session.server"));
 vi.mock(import("../todos-operations"));
 vi.mock(import("@/shared/db/db.server"));
 
-const MOCK_TODO = {
-  completed: false,
-  createdAt: new Date("2026-10-20T00:00:00Z"),
-  description: "Test description",
-  id: "todo-1",
-  title: "Test todo",
-  updatedAt: new Date("2026-10-20T00:00:00Z"),
-  userId: TEST_SESSION.user.id,
-};
+const MOCK_TODO = TEST_TODO;
 
 beforeEach(() => {
   vi.mocked(ensureSession).mockResolvedValue(TEST_SESSION);
