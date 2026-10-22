@@ -27,10 +27,11 @@ jq --arg name "$PROJECT_NAME" '.name = $name' wrangler.jsonc > wrangler.jsonc.tm
 
 ## Cloudflare Workers production setup
 
-Local development uses the top-level Wrangler configuration, including
-`BETTER_AUTH_URL=http://localhost:5173`. Production uses the separate
-`production` environment in `wrangler.jsonc`; configure its D1 database and
-canonical application origin before deploying.
+The top-level Wrangler configuration is used to build and deploy the Worker.
+Configure its D1 database and canonical application origin before deploying.
+For local development, copy `.env.example` to `.dev.vars` and replace the
+secret placeholder with a generated local secret. Those values override the
+config's `vars`, including `BETTER_AUTH_URL`.
 
 If you can access multiple Cloudflare accounts, set `CLOUDFLARE_ACCOUNT_ID` to
 the intended account before running these commands. Confirm Wrangler is
@@ -40,31 +41,29 @@ authenticated and select the account:
 pnpm exec wrangler whoami
 ```
 
-Construct the production Worker URL from the project name and the workers.dev
-subdomain shown in your Cloudflare account. Wrangler names the production
-environment `<project-name>-production` by default:
+Construct the Worker URL from the project name and the workers.dev subdomain
+shown in your Cloudflare account:
 
 ```bash
-PROJECT_NAME="$(jq -er '.name' package.json)"
-WORKER_NAME="${PROJECT_NAME}-production"
+WORKER_NAME="$(jq -er '.name' package.json)"
 read -rp "Account subdomain (without .workers.dev): " WORKERS_SUBDOMAIN
 WORKERS_URL="https://${WORKER_NAME}.${WORKERS_SUBDOMAIN}.workers.dev"
 jq --arg url "$WORKERS_URL" \
-  '.env.production.vars.BETTER_AUTH_URL = $url' wrangler.jsonc \
+  '.vars.BETTER_AUTH_URL = $url' wrangler.jsonc \
   > wrangler.jsonc.tmp && mv wrangler.jsonc.tmp wrangler.jsonc
 ```
 
 Review `wrangler.jsonc` and confirm that the production URL points to the
-intended Worker. Leave the top-level localhost URL unchanged. If deploying to a
-custom domain, use its canonical HTTPS origin instead.
+intended Worker. If deploying to a custom domain, use its canonical HTTPS
+origin instead.
 
 Create the remote production D1 database, then copy its returned database name
-and ID into the existing `env.production.d1_databases` entry in `wrangler.jsonc`.
+and ID into the existing top-level `d1_databases` entry in `wrangler.jsonc`.
 Keep the `DB` binding, `migrations_dir`, and `migrations_pattern` aligned with
 the nested Drizzle migration files.
 
 ```bash
-pnpm exec wrangler d1 create "${WORKER_NAME}-db" --env production
+pnpm exec wrangler d1 create "${WORKER_NAME}-db"
 ```
 
 Regenerate Worker binding types after updating the D1 configuration:
@@ -74,10 +73,10 @@ pnpm run cf:generate
 ```
 
 Use `pnpm run db:migrate` for the local D1 database. To apply migrations to the
-production D1 database, pass Wrangler's remote and environment flags explicitly:
+remote D1 database, pass Wrangler's remote flag explicitly:
 
 ```bash
-pnpm run db:migrate --remote --env production
+pnpm run db:migrate --remote
 ```
 
 For the first deployment, generate an auth secret and pass it to Wrangler using
@@ -89,16 +88,13 @@ ENV_FILE="$(mktemp "${TMPDIR:-/tmp}/worker-secrets.XXXXXX")"
 trap 'rm -f "$ENV_FILE"' EXIT
 printf 'BETTER_AUTH_SECRET="%s"\n' "$BETTER_AUTH_SECRET" > "$ENV_FILE"
 
-pnpm run db:migrate --remote --env production
+pnpm run db:migrate --remote
 pnpm run deploy --secrets-file "$ENV_FILE"
 ```
 
-For later deployments, use `pnpm run deploy`. This selects the production
-Wrangler environment during the Vite build and deploys the generated config. Do
-not add `--env production` to `wrangler deploy`; the Cloudflare Vite plugin
-applies Wrangler environments at build time. Store the production
-`BETTER_AUTH_SECRET` in Cloudflare as a Worker secret, and use a generated local
-secret in `.dev.vars` after copying `.env.example` for local development.
+For later deployments, use `pnpm run deploy` to build and deploy the top-level
+Worker configuration. Store the production `BETTER_AUTH_SECRET` in Cloudflare
+as a Worker secret; the local secret belongs in `.dev.vars` only.
 
 The compatibility date in `wrangler.jsonc` stays pinned until a deliberate
 runtime update. Before changing it, review Cloudflare's
