@@ -1,10 +1,8 @@
 import { cleanup, renderHook, waitFor } from "@testing-library/react";
-import type { PropsWithChildren } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { createTodoFixture } from "@test/vitest/fixtures/todos";
-import { createReactQueryWrapper } from "@test/vitest/wrappers/react-query-wrapper";
-import { createTanStackRouterWrapper } from "@test/vitest/wrappers/tanstack-router-wrapper";
+import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
 
 import { todoKeys } from "../todo-query-options";
 import { createTodoFn } from "../todos.functions";
@@ -15,22 +13,6 @@ vi.mock(import("@/shared/db/db.server"));
 vi.mock(import("../todos.functions"));
 
 const MOCK_TODO = createTodoFixture();
-
-function createTestContext() {
-  const { queryClient, wrapper: QueryWrapper } = createReactQueryWrapper();
-  const { wrapper: RouterWrapper } = createTanStackRouterWrapper();
-
-  // oxlint-disable-next-line unicorn/consistent-function-scoping -- JSX captures the per-test provider wrappers.
-  function Wrapper({ children }: PropsWithChildren) {
-    return (
-      <RouterWrapper>
-        <QueryWrapper>{children}</QueryWrapper>
-      </RouterWrapper>
-    );
-  }
-
-  return { queryClient, wrapper: Wrapper };
-}
 
 describe("useCreateTodo mutation hook", () => {
   afterEach(() => {
@@ -43,7 +25,7 @@ describe("useCreateTodo mutation hook", () => {
 
     // Arrange
     vi.mocked(createTodoFn).mockResolvedValueOnce(MOCK_TODO);
-    const { queryClient, wrapper } = createTestContext();
+    const { queryClient, wrapper } = createTestingWrapper();
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
     const { result } = renderHook(() => useCreateTodo(), { wrapper });
 
@@ -64,7 +46,7 @@ describe("useCreateTodo mutation hook", () => {
     // Arrange
     vi.mocked(createTodoFn).mockResolvedValueOnce(MOCK_TODO);
     const customOnSuccess = vi.fn<() => void>();
-    const { wrapper } = createTestContext();
+    const { wrapper } = createTestingWrapper();
     const { result } = renderHook(() => useCreateTodo({ onSuccess: customOnSuccess }), { wrapper });
 
     // Act

@@ -10,7 +10,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
 import { Header } from "@/app/layouts/header";
-import { createTanStackRouterWrapper } from "@test/vitest/wrappers/tanstack-router-wrapper";
+import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
 
 function createAboutPageRouteTree() {
   const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()();
@@ -26,7 +26,7 @@ describe("header identity and documentation", () => {
     expect.assertions(2);
 
     // Arrange
-    const { wrapper } = createTanStackRouterWrapper();
+    const { wrapper } = createTestingWrapper();
 
     // Act
     render(<Header />, { wrapper });
@@ -44,7 +44,7 @@ describe("header identity and documentation", () => {
     expect.assertions(3);
 
     // Arrange
-    const { wrapper } = createTanStackRouterWrapper();
+    const { wrapper } = createTestingWrapper();
 
     // Act
     render(<Header />, { wrapper });
@@ -66,7 +66,7 @@ describe("header navigation", () => {
     expect.assertions(5);
 
     // Arrange
-    const { wrapper } = createTanStackRouterWrapper();
+    const { wrapper } = createTestingWrapper();
 
     // Act
     render(<Header />, { wrapper });
@@ -90,7 +90,7 @@ describe("header navigation", () => {
       history: createMemoryHistory({ initialEntries: ["/about"] }),
       routeTree: createAboutPageRouteTree(),
     });
-    const { wrapper } = createTanStackRouterWrapper(router);
+    const { wrapper } = createTestingWrapper({ router });
 
     // Act
     render(<Header />, { wrapper });
@@ -112,7 +112,7 @@ describe("header social links", () => {
     expect.assertions(3);
 
     // Arrange
-    const { wrapper } = createTanStackRouterWrapper();
+    const { wrapper } = createTestingWrapper();
 
     // Act
     render(<Header />, { wrapper });
@@ -128,7 +128,7 @@ describe("header social links", () => {
     expect.assertions(3);
 
     // Arrange
-    const { wrapper } = createTanStackRouterWrapper();
+    const { wrapper } = createTestingWrapper();
 
     // Act
     render(<Header />, { wrapper });
@@ -152,7 +152,7 @@ describe("header theme control", () => {
 
     // Arrange
     const user = userEvent.setup();
-    const { wrapper } = createTanStackRouterWrapper();
+    const { wrapper } = createTestingWrapper();
     render(<Header />, { wrapper });
     const button = screen.getByRole("button", {
       name: "Theme mode: auto (system). Click to switch to light mode.",
