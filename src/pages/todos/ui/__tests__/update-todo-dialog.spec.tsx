@@ -103,6 +103,20 @@ describe("update todo dialog", () => {
     });
   });
 
+  it("handles empty description fallback", async () => {
+    expect.assertions(1);
+
+    // Arrange
+    const user = userEvent.setup();
+    render(<UpdateTodoDialog todo={{ ...mockTodo, description: null }} />);
+
+    // Act
+    await user.click(screen.getByRole("button", { name: "Update Item" }));
+
+    // Assert
+    expect(screen.getByPlaceholderText("Description").getAttribute("value") ?? "").toBe("");
+  });
+
   it("closes dialog when cancel button is clicked", async () => {
     expect.hasAssertions();
 
