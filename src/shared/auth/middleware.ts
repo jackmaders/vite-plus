@@ -5,7 +5,7 @@ const authMiddleware = createMiddleware({
 }).server(async ({ next }) => {
   const { ensureSession } = await import("./session.server");
   const session = await ensureSession();
-  return next({ context: { session } });
+  return await next({ context: { session } });
 });
 
 export { authMiddleware };

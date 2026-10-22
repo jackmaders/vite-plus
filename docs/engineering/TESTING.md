@@ -10,6 +10,23 @@ Applies when implementing new behavior or writing, reviewing, or organizing test
   `__tests__/workers/` and name it `<module>.spec.ts`.
 - Place browser tests in `tests/e2e/` and name them `<scenario>.test.ts`.
 
+## Fixtures
+
+- Place complex, reusable test data and mock factories in `tests/vitest/fixtures/`
+  and import them via `@test/vitest/fixtures/<fixture>`.
+- Name fixture files by domain (`session.ts`, `todos.ts`, `db.ts`) without
+  `test-` or `mock-` prefixes.
+- Name static reference records with `TEST_<ENTITY>` (e.g. `TEST_USER`,
+  `TEST_TODO`) and enforce deterministic timestamps and IDs.
+- Provide `create<Entity>Fixture(overrides?)` factory functions when tests
+  require customized copies of domain entities.
+- Provide `createMock<Service>(...)` factory functions for mocked runtimes or
+  databases.
+- Place slice-private fixtures exclusively used by a single test suite in
+  `__tests__/fixtures/` within that slice.
+- Never place test fixtures or mock helpers in un-prefixed directories under
+  `src/` (such as `src/**/testing/`).
+
 ## Unit tests
 
 - When implementing new behavior, first write a failing test stating

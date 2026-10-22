@@ -1,48 +1,51 @@
-import { z } from "zod";
+import * as z from "zod";
 
-import { insertTodoSchema } from "@/shared/db";
+import { insertTodoSchema, selectTodoSchema, updateTodoSchema } from "@/shared/db";
 
-const MIN_LENGTH = 1;
+const todoIdSchema = selectTodoSchema.shape.id;
+type TodoId = z.infer<typeof todoIdSchema>;
 
-const createTodoInputSchema = insertTodoSchema.pick({ description: true, title: true }).extend({
-  title: z.string().trim().min(MIN_LENGTH, "Title is required"),
-});
+const createTodoInputSchema = insertTodoSchema.pick({ description: true, title: true });
+type CreateTodoInput = z.infer<typeof createTodoInputSchema>;
 
-const toggleTodoInputSchema = z.object({
-  completed: z.boolean(),
-  id: z.string().min(MIN_LENGTH),
-});
+const updateTodoDataSchema = updateTodoSchema;
+type UpdateTodoData = z.infer<typeof updateTodoDataSchema>;
 
 const updateTodoInputSchema = z.object({
-  description: z.string().nullable().optional(),
-  id: z.string().min(MIN_LENGTH),
-  title: z.string().trim().min(MIN_LENGTH).optional(),
+  data: updateTodoDataSchema,
+  id: todoIdSchema,
 });
+type UpdateTodoInput = z.infer<typeof updateTodoInputSchema>;
 
-const deleteTodoInputSchema = z.object({ id: z.string().min(MIN_LENGTH) });
+const deleteTodoInputSchema = z.object({ id: todoIdSchema });
+type DeleteTodoInput = z.infer<typeof deleteTodoInputSchema>;
 
-const todoFilterSchema = z.enum(["all", "active", "completed"]);
-
-type TodoFilter = z.infer<typeof todoFilterSchema>;
+const todoCompletionStatusSchema = z.enum(["all", "active", "completed"]);
+type TodoCompletionStatus = z.infer<typeof todoCompletionStatusSchema>;
 
 const todosSearchSchema = z.object({
-  filter: z.preprocess((value) => {
-    if (value === "active" || value === "completed") {
-      return value;
-    }
-    return "all";
-  }, todoFilterSchema.default("all")),
+  status: z.preprocess(
+    (value) => (todoCompletionStatusSchema.safeParse(value).success ? value : "all"),
+    todoCompletionStatusSchema.default("all"),
+  ),
 });
-
 type TodosSearch = z.infer<typeof todosSearchSchema>;
 
 export {
   createTodoInputSchema,
   deleteTodoInputSchema,
-  todoFilterSchema,
+  todoCompletionStatusSchema,
+  todoIdSchema,
   todosSearchSchema,
-  toggleTodoInputSchema,
+  updateTodoDataSchema,
   updateTodoInputSchema,
-  type TodoFilter,
-  type TodosSearch,
+};
+export type {
+  CreateTodoInput,
+  DeleteTodoInput,
+  TodoCompletionStatus,
+  TodoId,
+  TodosSearch,
+  UpdateTodoData,
+  UpdateTodoInput,
 };
