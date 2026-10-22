@@ -12,13 +12,12 @@ type UpdateTodoMutationOptions = Omit<
   "mutationFn"
 >;
 
-function useUpdateTodo(options?: UpdateTodoMutationOptions) {
+function useUpdateTodo({ onSuccess, ...options }: UpdateTodoMutationOptions = {}) {
   const queryClient = useQueryClient();
   const updateTodo = useServerFn(updateTodoFn);
-  const { onSuccess, ...restOptions } = options ?? {};
 
   return useMutation({
-    ...restOptions,
+    ...options,
     mutationFn: async (data: UpdateTodoInput) => await updateTodo({ data }),
     onSuccess: (...args) => {
       void queryClient.invalidateQueries({ queryKey: todoKeys.all });

@@ -12,13 +12,12 @@ type DeleteTodoMutationOptions = Omit<
   "mutationFn"
 >;
 
-function useDeleteTodo(options?: DeleteTodoMutationOptions) {
+function useDeleteTodo({ onSuccess, ...options }: DeleteTodoMutationOptions = {}) {
   const queryClient = useQueryClient();
   const deleteTodo = useServerFn(deleteTodoFn);
-  const { onSuccess, ...restOptions } = options ?? {};
 
   return useMutation({
-    ...restOptions,
+    ...options,
     mutationFn: async (data: DeleteTodoInput) => await deleteTodo({ data }),
     onSuccess: (...args) => {
       void queryClient.invalidateQueries({ queryKey: todoKeys.all });
