@@ -12,8 +12,6 @@ interface TestingWrapperOptions {
   router?: AnyRouter;
 }
 
-// Creates fresh defaults and reuses supplied instances.
-// Updates the router's query client while preserving other router context fields.
 function createTestingWrapper({
   queryClient = new QueryClient({
     defaultOptions: {
