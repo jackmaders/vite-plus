@@ -12,8 +12,7 @@
     "lint:arch": "steiger ./src",
     "prepare": "vp config",
     "preview": "vp preview",
-    "test:e2e": "playwright test",
-    "typecheck": "FULL_CHECK=1 vp check --no-fmt --no-lint"
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
