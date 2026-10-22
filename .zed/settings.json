@@ -5,7 +5,7 @@
         "settings": {
           "run": "onType",
           "fixKind": "safe_fix",
-          "typeAware": true,
+          "typeAware": false,
           "unusedDisableDirectives": "deny"
         }
       }

@@ -28,9 +28,11 @@ jobs:
           run-install: true
           cache: true
       - name: Check code quality
+        env:
+          FULL_CHECK: "1"
         run: vp check
       - name: Check architecture
-        run: vp run lint:arch
+        run: vp run lint:arch --fail-on-warnings
 
   build:
     name: 🏗️ Build
