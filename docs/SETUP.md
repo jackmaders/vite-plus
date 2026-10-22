@@ -25,6 +25,49 @@ jq --arg name "$PROJECT_NAME" '.name = $name' package.json > package.json.tmp &&
 jq --arg name "$PROJECT_NAME" '.name = $name' wrangler.jsonc > wrangler.jsonc.tmp && mv wrangler.jsonc.tmp wrangler.jsonc
 ```
 
+## Cloudflare Workers production setup
+
+Local development uses the top-level Wrangler configuration, including
+`BETTER_AUTH_URL=http://localhost:5173`. Production uses the separate
+`production` environment in `wrangler.jsonc`; configure its D1 database and
+canonical application origin before deploying.
+
+1. Create a production D1 database:
+
+   ```bash
+   pnpm exec wrangler d1 create your-app-production
+   ```
+
+   Copy the returned database name and ID into `env.production.d1_databases` in
+   `wrangler.jsonc`. Keep the `DB` binding, `migrations_dir`, and
+   `migrations_pattern` aligned with the nested Drizzle migration files.
+
+2. Set `env.production.vars.BETTER_AUTH_URL` to the canonical HTTPS origin users
+   visit, such as the production `workers.dev` hostname or your custom domain.
+   Replace the setup placeholder; leave the top-level local URL unchanged.
+3. Set the production auth secret with
+   `pnpm exec wrangler secret put BETTER_AUTH_SECRET --env production`. Wrangler
+   requires this secret for production deployments. For local development,
+   copy `.env.example` to `.dev.vars` and use a generated secret. The local URL
+   comes from the top-level `vars` entry in `wrangler.jsonc`.
+4. Regenerate Worker binding types after changing the production database
+   configuration with `pnpm run cf:generate`.
+
+Use `pnpm run db:migrate:local` for the local D1 database. Use
+`pnpm run db:migrate:remote` only when you intend to apply migrations to the
+production D1 database.
+
+Deploy with `pnpm run deploy:production`. This selects the production Wrangler
+environment during the Vite build, checks the generated deployment config, and
+deploys that generated config to the separate `<worker-name>-production`
+Worker. Do not add `--env production` to `wrangler deploy`; the Cloudflare Vite
+plugin applies Wrangler environments at build time.
+
+The compatibility date in `wrangler.jsonc` stays pinned until a deliberate
+runtime update. Before changing it, review Cloudflare's
+[compatibility changes](https://developers.cloudflare.com/workers/configuration/compatibility-dates/)
+and validate affected Worker behavior.
+
 ## GitHub Setup
 
 Create and push the repository:

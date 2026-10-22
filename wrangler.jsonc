@@ -22,5 +22,24 @@
   },
   "vars": {
     "BETTER_AUTH_URL": "http://localhost:5173"
+  },
+  "env": {
+    "production": {
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "set-your-production-database-name",
+          "database_id": "00000000-0000-0000-0000-000000000000",
+          "migrations_dir": "./drizzle",
+          "migrations_pattern": "drizzle/*/migration.sql"
+        }
+      ],
+      "secrets": {
+        "required": ["BETTER_AUTH_SECRET"]
+      },
+      "vars": {
+        "BETTER_AUTH_URL": "https://set-your-production-domain.invalid"
+      }
+    }
   }
 }
