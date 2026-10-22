@@ -1,9 +1,9 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, renderHook, waitFor } from "@testing-library/react";
 import type { PropsWithChildren } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { createTodoFixture } from "@test/vitest/fixtures/todos";
+import { createReactQueryWrapper } from "@test/vitest/wrappers/react-query-wrapper";
 import { createTanStackRouterWrapper } from "@test/vitest/wrappers/tanstack-router-wrapper";
 
 import { todoKeys } from "../todo-query-options";
@@ -17,19 +17,14 @@ vi.mock(import("../todos.functions"));
 const MOCK_TODO = createTodoFixture();
 
 function createTestContext() {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      mutations: { retry: false },
-      queries: { retry: false },
-    },
-  });
-
+  const { queryClient, wrapper: QueryWrapper } = createReactQueryWrapper();
   const { wrapper: RouterWrapper } = createTanStackRouterWrapper();
 
+  // oxlint-disable-next-line unicorn/consistent-function-scoping -- JSX captures the per-test provider wrappers.
   function Wrapper({ children }: PropsWithChildren) {
     return (
       <RouterWrapper>
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        <QueryWrapper>{children}</QueryWrapper>
       </RouterWrapper>
     );
   }
