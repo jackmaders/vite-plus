@@ -1,0 +1,74 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { cleanup, renderHook, waitFor } from "@testing-library/react";
+import type { PropsWithChildren } from "react";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+
+import { createTodoFixture } from "@test/vitest/fixtures/todos";
+
+import { todoKeys } from "../todo-query-options";
+import { createTodoFn } from "../todos.functions";
+import { useCreateTodo } from "../use-create-todo";
+
+vi.mock(import("@/shared/auth/auth.server"));
+vi.mock(import("@/shared/db/db.server"));
+vi.mock(import("../todos.functions"));
+
+const MOCK_TODO = createTodoFixture();
+
+function createTestContext() {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      mutations: { retry: false },
+      queries: { retry: false },
+    },
+  });
+
+  function Wrapper({ children }: PropsWithChildren) {
+    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  }
+
+  return { queryClient, wrapper: Wrapper };
+}
+
+describe("useCreateTodo mutation hook", () => {
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+  });
+
+  it("invokes createTodoFn and updates mutation state on success", async () => {
+    expect.hasAssertions();
+
+    // Arrange
+    vi.mocked(createTodoFn).mockResolvedValueOnce(MOCK_TODO);
+    const { queryClient, wrapper } = createTestContext();
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+    const { result } = renderHook(() => useCreateTodo(), { wrapper });
+
+    // Act
+    await result.current.mutateAsync({ title: "Test Todo" });
+
+    // Assert
+    expect(createTodoFn).toHaveBeenCalledWith({ data: { title: "Test Todo" } });
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: todoKeys.all });
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+  });
+
+  it("calls custom onSuccess callback when provided", async () => {
+    expect.assertions(1);
+
+    // Arrange
+    vi.mocked(createTodoFn).mockResolvedValueOnce(MOCK_TODO);
+    const customOnSuccess = vi.fn<() => void>();
+    const { wrapper } = createTestContext();
+    const { result } = renderHook(() => useCreateTodo({ onSuccess: customOnSuccess }), { wrapper });
+
+    // Act
+    await result.current.mutateAsync({ title: "Test Todo" });
+
+    // Assert
+    expect(customOnSuccess).toHaveBeenCalledOnce();
+  });
+});
