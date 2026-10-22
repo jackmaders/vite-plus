@@ -21,13 +21,10 @@ function Form({ onError, onSubmit, ...props }: FormProps) {
           onSubmit?.(event);
         } catch (error) {
           form.setErrorMap({
-            onSubmit: {
-              fields: {},
-              form:
-                error instanceof FormSubmissionError
-                  ? error.message
-                  : "Something went wrong. Please try again.",
-            },
+            onSubmit:
+              error instanceof FormSubmissionError
+                ? error.message
+                : "Something went wrong. Please try again.",
           });
           onError?.(error);
         }

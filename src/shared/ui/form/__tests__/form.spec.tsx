@@ -127,10 +127,7 @@ describe("form component", () => {
     // Assert
     await waitFor(() => {
       expect(form.setErrorMap).toHaveBeenCalledWith({
-        onSubmit: {
-          fields: {},
-          form: "Something went wrong. Please try again.",
-        },
+        onSubmit: "Something went wrong. Please try again.",
       });
     });
   });
@@ -151,7 +148,7 @@ describe("form component", () => {
     // Assert
     await waitFor(() => {
       expect(form.setErrorMap).toHaveBeenCalledWith({
-        onSubmit: { fields: {}, form: "Unable to save your changes." },
+        onSubmit: "Unable to save your changes.",
       });
     });
   });
