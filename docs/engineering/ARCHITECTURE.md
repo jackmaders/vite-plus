@@ -94,7 +94,7 @@ The todo modules show the server-side pieces of this flow, but there is not yet 
 4. Put reads and writes behind `createServerFn`: use `GET` for reads and `POST` for writes. Attach `authMiddleware`, validate write input with `.validator(schema)`, and pass `context.session.user.id` into the Drizzle operation. Scope updates and deletes by both record ID and user ID.
 5. Keep database work in `src/pages/todos/api/todos-operations.ts` and schemas in `src/shared/db/schema`. Server functions in `src/pages/todos/api/todos.functions.ts` validate and connect middleware context to those operations; they do not own SQL queries.
 
-For SSR and loader examples, use the [TanStack Start Query guide](https://tanstack.com/start/latest/docs/framework/react/guide/tanstack-query). Query 5.104.4 supports the guide's `queryClient.query` loader pattern. Verify any version-sensitive API against the lockfile and installed package before copying a live-doc example.
+For SSR and loader examples, use the [TanStack Start Query guide](https://tanstack.com/start/latest/docs/framework/react/guide/tanstack-query). Verify version-sensitive APIs against the lockfile and installed package before copying a live-doc example.
 
 ### Validation and errors
 
