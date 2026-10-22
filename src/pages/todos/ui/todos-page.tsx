@@ -1,37 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate, useSearch } from "@tanstack/react-router";
-
-import type { Todo } from "@/shared/db";
 
 import { todosQueryOptions } from "../api/todo-query-options";
-import type { TodoFilter } from "../model/todo-schema";
+import { computeCounts, filterTodos } from "../model/todo-filters";
 import { CreateTodoForm } from "./create-todo-form";
 import { TodoFilters } from "./todo-filters";
 import { TodoList } from "./todo-list";
-
-function computeCounts(todos: Todo[]): Record<TodoFilter, number> {
-  const active = todos.filter((todo) => !todo.completed).length;
-  return { active, all: todos.length, completed: todos.length - active };
-}
-
-function filterTodos(todos: Todo[], filter: TodoFilter): Todo[] {
-  if (filter === "all") {
-    return todos;
-  }
-  return todos.filter((todo) => (filter === "completed" ? todo.completed : !todo.completed));
-}
-
-function useTodoFilter() {
-  const search = useSearch({ strict: false });
-  const navigate = useNavigate();
-  const filter: TodoFilter = search.filter ?? "all";
-
-  function onFilterChange(next: TodoFilter) {
-    void navigate({ search: { filter: next }, to: "/todos" });
-  }
-
-  return { filter, onFilterChange };
-}
+import { useTodoFilter } from "./use-todo-filter";
 
 export function TodosPage() {
   const { filter, onFilterChange } = useTodoFilter();
