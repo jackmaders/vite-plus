@@ -4,6 +4,7 @@ import type { PropsWithChildren } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { createTodoFixture } from "@test/vitest/fixtures/todos";
+import { createTanStackRouterWrapper } from "@test/vitest/wrappers/tanstack-router-wrapper";
 
 import { todoKeys } from "../todo-query-options";
 import { createTodoFn } from "../todos.functions";
@@ -23,8 +24,14 @@ function createTestContext() {
     },
   });
 
+  const { wrapper: RouterWrapper } = createTanStackRouterWrapper();
+
   function Wrapper({ children }: PropsWithChildren) {
-    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+    return (
+      <RouterWrapper>
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      </RouterWrapper>
+    );
   }
 
   return { queryClient, wrapper: Wrapper };
