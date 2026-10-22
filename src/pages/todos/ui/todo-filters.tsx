@@ -9,25 +9,29 @@ interface TodoFiltersProps {
   onFilterChange: (filter: TodoFilter) => void;
 }
 
-const FILTER_TABS: readonly TodoFilter[] = ["all", "active", "completed"];
+const FILTERS: readonly TodoFilter[] = ["all", "active", "completed"];
 
 function TodoFilters({ counts, filter, onFilterChange }: TodoFiltersProps) {
   return (
-    <div className="flex gap-2">
-      {FILTER_TABS.map((tab) => {
-        const variant = filter === tab ? "default" : "outline";
-        function handleClick() {
-          onFilterChange(tab);
-        }
-
+    <nav aria-label="Filter todos" className="flex items-center gap-1.5">
+      {FILTERS.map((item) => {
+        const isActive = filter === item;
         return (
-          <Button key={tab} onClick={handleClick} size="sm" variant={variant}>
-            <span className="capitalize">{tab}</span>
-            <Badge variant="secondary">{counts[tab]}</Badge>
+          <Button
+            aria-pressed={isActive}
+            key={item}
+            onClick={() => {
+              onFilterChange(item);
+            }}
+            size="sm"
+            variant={isActive ? "secondary" : "ghost"}
+          >
+            <span className="capitalize">{item}</span>
+            <Badge variant={isActive ? "default" : "secondary"}>{counts[item]}</Badge>
           </Button>
         );
       })}
-    </div>
+    </nav>
   );
 }
 

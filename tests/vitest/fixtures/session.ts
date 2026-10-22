@@ -24,4 +24,12 @@ const TEST_SESSION: { session: Session; user: User } = {
   user: TEST_USER,
 };
 
-export { TEST_SESSION, TEST_USER };
+function createUserFixture(overrides: Partial<User> = {}): User {
+  return { ...TEST_USER, ...overrides };
+}
+
+function createSessionFixture(overrides: Partial<typeof TEST_SESSION> = {}) {
+  return { ...TEST_SESSION, ...overrides };
+}
+
+export { TEST_SESSION, TEST_USER, createSessionFixture, createUserFixture };

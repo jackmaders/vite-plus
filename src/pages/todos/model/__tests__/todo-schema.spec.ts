@@ -5,7 +5,6 @@ import {
   deleteTodoInputSchema,
   todoFilterSchema,
   todosSearchSchema,
-  toggleTodoInputSchema,
   updateTodoInputSchema,
 } from "../todo-schema";
 
@@ -69,83 +68,77 @@ describe("create todo input schema invalid inputs", () => {
     // Assert
     expect(parse).toThrow("Title is required");
   });
-});
 
-describe("toggle todo input schema", () => {
-  it("parses valid toggle input", () => {
-    expect.assertions(2);
-
-    // Arrange
-    const rawInput = { completed: true, id: "todo-1" };
-
-    // Act
-    const parsed = toggleTodoInputSchema.parse(rawInput);
-
-    // Assert
-    expect(parsed.id).toBe("todo-1");
-    expect(parsed.completed).toBe(true);
-  });
-
-  it("throws when id is empty", () => {
+  it("throws when description exceeds 1024 characters", () => {
     expect.assertions(1);
 
     // Arrange
-    const invalidInput = { completed: true, id: "" };
+    const invalidInput = { description: "a".repeat(1025), title: "Valid title" };
 
     // Act
     function parse() {
-      toggleTodoInputSchema.parse(invalidInput);
+      createTodoInputSchema.parse(invalidInput);
     }
 
     // Assert
-    expect(parse).toThrow(/too_small/iu);
-  });
-
-  it("throws when completed is invalid", () => {
-    expect.assertions(1);
-
-    // Arrange
-    const invalidInput = { completed: "yes", id: "todo-1" };
-
-    // Act
-    function parse() {
-      toggleTodoInputSchema.parse(invalidInput);
-    }
-
-    // Assert
-    expect(parse).toThrow(/invalid_type/iu);
+    expect(parse).toThrow("Description must not exceed 1024 characters");
   });
 });
 
 describe("update todo input schema valid inputs", () => {
   it("parses valid update input with all fields provided", () => {
-    expect.assertions(3);
+    expect.assertions(4);
 
     // Arrange
-    const rawInput = { description: "New desc", id: "todo-1", title: "  New title  " };
+    const rawInput = {
+      data: {
+        completed: true,
+        description: "New desc",
+        title: "  New title  ",
+      },
+      id: "todo-1",
+    };
 
     // Act
     const parsed = updateTodoInputSchema.parse(rawInput);
 
     // Assert
     expect(parsed.id).toBe("todo-1");
-    expect(parsed.title).toBe("New title");
-    expect(parsed.description).toBe("New desc");
+    expect(parsed.data.title).toBe("New title");
+    expect(parsed.data.description).toBe("New desc");
+    expect(parsed.data.completed).toBe(true);
   });
 
-  it("parses valid update input with only id", () => {
-    expect.assertions(3);
+  it("parses valid update input with empty data", () => {
+    expect.assertions(4);
 
     // Arrange
-    const rawInput = { id: "todo-1" };
+    const rawInput = { data: {}, id: "todo-1" };
 
     // Act
     const parsed = updateTodoInputSchema.parse(rawInput);
 
     // Assert
     expect(parsed.id).toBe("todo-1");
-    expect(parsed.title).toBeUndefined();
-    expect(parsed.description).toBeUndefined();
+    expect(parsed.data.title).toBeUndefined();
+    expect(parsed.data.description).toBeUndefined();
+    expect(parsed.data.completed).toBeUndefined();
+  });
+});
+
+describe("update todo input schema toggle completed", () => {
+  it("parses valid toggle update input", () => {
+    expect.assertions(2);
+
+    // Arrange
+    const rawInput = { data: { completed: true }, id: "todo-1" };
+
+    // Act
+    const parsed = updateTodoInputSchema.parse(rawInput);
+
+    // Assert
+    expect(parsed.id).toBe("todo-1");
+    expect(parsed.data.completed).toBe(true);
   });
 });
 
@@ -154,7 +147,7 @@ describe("update todo input schema invalid inputs", () => {
     expect.assertions(1);
 
     // Arrange
-    const invalidInput = { id: "" };
+    const invalidInput = { data: {}, id: "" };
 
     // Act
     function parse() {
@@ -169,7 +162,7 @@ describe("update todo input schema invalid inputs", () => {
     expect.assertions(1);
 
     // Arrange
-    const invalidInput = { id: "todo-1", title: "" };
+    const invalidInput = { data: { title: "" }, id: "todo-1" };
 
     // Act
     function parse() {
@@ -178,6 +171,21 @@ describe("update todo input schema invalid inputs", () => {
 
     // Assert
     expect(parse).toThrow(/too_small/iu);
+  });
+
+  it("throws when completed is invalid", () => {
+    expect.assertions(1);
+
+    // Arrange
+    const invalidInput = { data: { completed: "yes" }, id: "todo-1" };
+
+    // Act
+    function parse() {
+      updateTodoInputSchema.parse(invalidInput);
+    }
+
+    // Assert
+    expect(parse).toThrow(/invalid_type/iu);
   });
 });
 

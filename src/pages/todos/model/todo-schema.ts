@@ -1,28 +1,23 @@
-import { z } from "zod";
+import * as z from "zod";
 
-import { insertTodoSchema } from "@/shared/db";
+import { insertTodoSchema, selectTodoSchema, updateTodoSchema } from "@/shared/db";
 
-const MIN_LENGTH = 1;
+const createTodoInputSchema = insertTodoSchema.pick({ description: true, title: true });
+type CreateTodoInput = z.infer<typeof createTodoInputSchema>;
 
-const createTodoInputSchema = insertTodoSchema.pick({ description: true, title: true }).extend({
-  title: z.string().trim().min(MIN_LENGTH, "Title is required"),
-});
-
-const toggleTodoInputSchema = z.object({
-  completed: z.boolean(),
-  id: z.string().min(MIN_LENGTH),
-});
+const updateTodoDataSchema = updateTodoSchema;
+type UpdateTodoData = z.infer<typeof updateTodoDataSchema>;
 
 const updateTodoInputSchema = z.object({
-  description: z.string().nullable().optional(),
-  id: z.string().min(MIN_LENGTH),
-  title: z.string().trim().min(MIN_LENGTH).optional(),
+  data: updateTodoDataSchema,
+  id: selectTodoSchema.shape.id,
 });
+type UpdateTodoInput = z.infer<typeof updateTodoInputSchema>;
 
-const deleteTodoInputSchema = z.object({ id: z.string().min(MIN_LENGTH) });
+const deleteTodoInputSchema = selectTodoSchema.pick({ id: true });
+type DeleteTodoInput = z.infer<typeof deleteTodoInputSchema>;
 
 const todoFilterSchema = z.enum(["all", "active", "completed"]);
-
 type TodoFilter = z.infer<typeof todoFilterSchema>;
 
 const todosSearchSchema = z.object({
@@ -33,7 +28,6 @@ const todosSearchSchema = z.object({
     return "all";
   }, todoFilterSchema.default("all")),
 });
-
 type TodosSearch = z.infer<typeof todosSearchSchema>;
 
 export {
@@ -41,8 +35,14 @@ export {
   deleteTodoInputSchema,
   todoFilterSchema,
   todosSearchSchema,
-  toggleTodoInputSchema,
+  updateTodoDataSchema,
   updateTodoInputSchema,
-  type TodoFilter,
-  type TodosSearch,
+};
+export type {
+  CreateTodoInput,
+  DeleteTodoInput,
+  TodoFilter,
+  TodosSearch,
+  UpdateTodoData,
+  UpdateTodoInput,
 };

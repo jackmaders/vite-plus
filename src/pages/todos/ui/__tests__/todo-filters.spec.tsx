@@ -12,8 +12,8 @@ describe("todo filters component", () => {
     vi.clearAllMocks();
   });
 
-  it("displays status tabs and badge counts correctly", () => {
-    expect.assertions(3);
+  it("displays filter buttons and badge counts correctly", () => {
+    expect.assertions(4);
 
     // Arrange
     const handleChange = vi.fn<(filter: TodoFilter) => void>();
@@ -22,9 +22,10 @@ describe("todo filters component", () => {
     render(<TodoFilters counts={mockCounts} filter="all" onFilterChange={handleChange} />);
 
     // Assert
-    expect(screen.getByRole("button", { name: /all 5/iu })).toBeDefined();
-    expect(screen.getByRole("button", { name: /active 3/iu })).toBeDefined();
-    expect(screen.getByRole("button", { name: /completed 2/iu })).toBeDefined();
+    expect(screen.getByRole("navigation", { name: /filter todos/iu })).toBeDefined();
+    expect(screen.getByRole("button", { name: /all 5/iu, pressed: true })).toBeDefined();
+    expect(screen.getByRole("button", { name: /active 3/iu, pressed: false })).toBeDefined();
+    expect(screen.getByRole("button", { name: /completed 2/iu, pressed: false })).toBeDefined();
   });
 
   it("calls onFilterChange when filter buttons are clicked", async () => {
