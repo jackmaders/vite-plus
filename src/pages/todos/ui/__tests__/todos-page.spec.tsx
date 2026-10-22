@@ -17,7 +17,7 @@ import {
   useCreateTodo,
   useDeleteTodo,
   useUpdateTodo,
-  type TodoFilter,
+  type TodoCompletionStatus,
 } from "@/pages/todos";
 import { TEST_TODOS } from "@test/vitest/fixtures/todos";
 
@@ -30,7 +30,7 @@ vi.mock(import("@/pages/todos/api/use-delete-todo"));
 
 const mockTodos = TEST_TODOS;
 
-function createTestRouter(initialFilter?: TodoFilter) {
+function createTestRouter(initialStatus?: TodoCompletionStatus) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
@@ -42,10 +42,12 @@ function createTestRouter(initialFilter?: TodoFilter) {
     getParentRoute: () => rootRoute,
     path: "/todos",
     validateSearch: (search: Record<string, unknown>) =>
-      typeof search["filter"] === "string" ? { filter: search["filter"] as TodoFilter } : {},
+      typeof search["status"] === "string"
+        ? { status: search["status"] as TodoCompletionStatus }
+        : {},
   });
   const initialEntry =
-    typeof initialFilter === "string" ? `/todos?filter=${initialFilter}` : "/todos";
+    typeof initialStatus === "string" ? `/todos?status=${initialStatus}` : "/todos";
   const router = createRouter({
     context: { queryClient },
     history: createMemoryHistory({ initialEntries: [initialEntry] }),
@@ -54,8 +56,8 @@ function createTestRouter(initialFilter?: TodoFilter) {
   return { queryClient, router };
 }
 
-async function renderTodosPage(initialFilter?: TodoFilter) {
-  const { queryClient, router } = createTestRouter(initialFilter);
+async function renderTodosPage(initialStatus?: TodoCompletionStatus) {
+  const { queryClient, router } = createTestRouter(initialStatus);
   await router.load();
   render(
     <QueryClientProvider client={queryClient}>
@@ -124,7 +126,7 @@ describe("todos page filtering", () => {
     vi.clearAllMocks();
   });
 
-  it("renders with initial filter query parameter", async () => {
+  it("renders with initial status query parameter", async () => {
     expect.assertions(3);
 
     await renderTodosPage("completed");

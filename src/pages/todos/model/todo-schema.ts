@@ -20,13 +20,13 @@ type UpdateTodoInput = z.infer<typeof updateTodoInputSchema>;
 const deleteTodoInputSchema = z.object({ id: todoIdSchema });
 type DeleteTodoInput = z.infer<typeof deleteTodoInputSchema>;
 
-const todoFilterSchema = z.enum(["all", "active", "completed"]);
-type TodoFilter = z.infer<typeof todoFilterSchema>;
+const todoCompletionStatusSchema = z.enum(["all", "active", "completed"]);
+type TodoCompletionStatus = z.infer<typeof todoCompletionStatusSchema>;
 
 const todosSearchSchema = z.object({
-  filter: z.preprocess(
-    (value) => (todoFilterSchema.safeParse(value).success ? value : "all"),
-    todoFilterSchema.default("all"),
+  status: z.preprocess(
+    (value) => (todoCompletionStatusSchema.safeParse(value).success ? value : "all"),
+    todoCompletionStatusSchema.default("all"),
   ),
 });
 type TodosSearch = z.infer<typeof todosSearchSchema>;
@@ -34,7 +34,7 @@ type TodosSearch = z.infer<typeof todosSearchSchema>;
 export {
   createTodoInputSchema,
   deleteTodoInputSchema,
-  todoFilterSchema,
+  todoCompletionStatusSchema,
   todoIdSchema,
   todosSearchSchema,
   updateTodoDataSchema,
@@ -43,7 +43,7 @@ export {
 export type {
   CreateTodoInput,
   DeleteTodoInput,
-  TodoFilter,
+  TodoCompletionStatus,
   TodoId,
   TodosSearch,
   UpdateTodoData,

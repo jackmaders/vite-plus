@@ -3,7 +3,7 @@ import { describe, expect, it } from "vite-plus/test";
 import {
   createTodoInputSchema,
   deleteTodoInputSchema,
-  todoFilterSchema,
+  todoCompletionStatusSchema,
   todosSearchSchema,
   updateTodoInputSchema,
 } from "../todo-schema";
@@ -219,8 +219,8 @@ describe("delete todo input schema", () => {
   });
 });
 
-describe("todo filter schema", () => {
-  it("parses valid filter values", () => {
+describe("todo completion status schema", () => {
+  it("parses valid status values", () => {
     expect.assertions(3);
 
     // Arrange
@@ -229,9 +229,9 @@ describe("todo filter schema", () => {
     const completed = "completed";
 
     // Act
-    const parsedAll = todoFilterSchema.parse(all);
-    const parsedActive = todoFilterSchema.parse(active);
-    const parsedCompleted = todoFilterSchema.parse(completed);
+    const parsedAll = todoCompletionStatusSchema.parse(all);
+    const parsedActive = todoCompletionStatusSchema.parse(active);
+    const parsedCompleted = todoCompletionStatusSchema.parse(completed);
 
     // Assert
     expect(parsedAll).toBe("all");
@@ -239,7 +239,7 @@ describe("todo filter schema", () => {
     expect(parsedCompleted).toBe("completed");
   });
 
-  it("throws for invalid filter values", () => {
+  it("throws for invalid status values", () => {
     expect.assertions(1);
 
     // Arrange
@@ -247,7 +247,7 @@ describe("todo filter schema", () => {
 
     // Act
     function parse() {
-      todoFilterSchema.parse(invalid);
+      todoCompletionStatusSchema.parse(invalid);
     }
 
     // Assert
@@ -256,20 +256,20 @@ describe("todo filter schema", () => {
 });
 
 describe("todos search schema", () => {
-  it("parses valid search filter", () => {
+  it("parses valid search status", () => {
     expect.assertions(1);
 
     // Arrange
-    const raw = { filter: "active" };
+    const raw = { status: "active" };
 
     // Act
     const parsed = todosSearchSchema.parse(raw);
 
     // Assert
-    expect(parsed.filter).toBe("active");
+    expect(parsed.status).toBe("active");
   });
 
-  it("defaults to all when filter is missing", () => {
+  it("defaults to all when status is missing", () => {
     expect.assertions(1);
 
     // Arrange
@@ -279,19 +279,19 @@ describe("todos search schema", () => {
     const parsed = todosSearchSchema.parse(raw);
 
     // Assert
-    expect(parsed.filter).toBe("all");
+    expect(parsed.status).toBe("all");
   });
 
-  it("falls back to all on invalid filter", () => {
+  it("falls back to all on invalid status", () => {
     expect.assertions(1);
 
     // Arrange
-    const raw = { filter: "invalid" };
+    const raw = { status: "invalid" };
 
     // Act
     const parsed = todosSearchSchema.parse(raw);
 
     // Assert
-    expect(parsed.filter).toBe("all");
+    expect(parsed.status).toBe("all");
   });
 });

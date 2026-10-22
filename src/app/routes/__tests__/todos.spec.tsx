@@ -29,24 +29,24 @@ function getLoader() {
 type LoaderArgs = Parameters<ReturnType<typeof getLoader>>[0];
 
 describe("todos route search params validation", () => {
-  it("accepts valid filter values", () => {
+  it("accepts valid status values", () => {
     expect.assertions(3);
 
-    expect(parseSearch({ filter: "all" })).toStrictEqual({ filter: "all" });
-    expect(parseSearch({ filter: "active" })).toStrictEqual({ filter: "active" });
-    expect(parseSearch({ filter: "completed" })).toStrictEqual({ filter: "completed" });
+    expect(parseSearch({ status: "all" })).toStrictEqual({ status: "all" });
+    expect(parseSearch({ status: "active" })).toStrictEqual({ status: "active" });
+    expect(parseSearch({ status: "completed" })).toStrictEqual({ status: "completed" });
   });
 
-  it("defaults to 'all' when filter is missing or empty", () => {
+  it("defaults to 'all' when status is missing or empty", () => {
     expect.assertions(1);
 
-    expect(parseSearch({})).toStrictEqual({ filter: "all" });
+    expect(parseSearch({})).toStrictEqual({ status: "all" });
   });
 
-  it("falls back to 'all' on invalid filter value", () => {
+  it("falls back to 'all' on invalid status value", () => {
     expect.assertions(1);
 
-    expect(parseSearch({ filter: "invalid" })).toStrictEqual({ filter: "all" });
+    expect(parseSearch({ status: "invalid" })).toStrictEqual({ status: "all" });
   });
 });
 
