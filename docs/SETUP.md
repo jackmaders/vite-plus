@@ -32,36 +32,71 @@ Local development uses the top-level Wrangler configuration, including
 `production` environment in `wrangler.jsonc`; configure its D1 database and
 canonical application origin before deploying.
 
-1. Create a production D1 database:
+If you can access multiple Cloudflare accounts, set `CLOUDFLARE_ACCOUNT_ID` to
+the intended account before running these commands. Confirm Wrangler is
+authenticated and select the account:
 
-   ```bash
-   pnpm exec wrangler d1 create your-app-production
-   ```
+```bash
+pnpm exec wrangler whoami
+```
 
-   Copy the returned database name and ID into `env.production.d1_databases` in
-   `wrangler.jsonc`. Keep the `DB` binding, `migrations_dir`, and
-   `migrations_pattern` aligned with the nested Drizzle migration files.
+Construct the production Worker URL from the project name and the workers.dev
+subdomain shown in your Cloudflare account. Wrangler names the production
+environment `<project-name>-production` by default:
 
-2. Set `env.production.vars.BETTER_AUTH_URL` to the canonical HTTPS origin users
-   visit, such as the production `workers.dev` hostname or your custom domain.
-   Replace the setup placeholder; leave the top-level local URL unchanged.
-3. Set the production auth secret with
-   `pnpm exec wrangler secret put BETTER_AUTH_SECRET --env production`. Wrangler
-   requires this secret for production deployments. For local development,
-   copy `.env.example` to `.dev.vars` and use a generated secret. The local URL
-   comes from the top-level `vars` entry in `wrangler.jsonc`.
-4. Regenerate Worker binding types after changing the production database
-   configuration with `pnpm run cf:generate`.
+```bash
+PROJECT_NAME="$(jq -er '.name' package.json)"
+WORKER_NAME="${PROJECT_NAME}-production"
+read -rp "Account subdomain (without .workers.dev): " WORKERS_SUBDOMAIN
+WORKERS_URL="https://${WORKER_NAME}.${WORKERS_SUBDOMAIN}.workers.dev"
+jq --arg url "$WORKERS_URL" \
+  '.env.production.vars.BETTER_AUTH_URL = $url' wrangler.jsonc \
+  > wrangler.jsonc.tmp && mv wrangler.jsonc.tmp wrangler.jsonc
+```
+
+Review `wrangler.jsonc` and confirm that the production URL points to the
+intended Worker. Leave the top-level localhost URL unchanged. If deploying to a
+custom domain, use its canonical HTTPS origin instead.
+
+Create the remote production D1 database, then copy its returned database name
+and ID into the existing `env.production.d1_databases` entry in `wrangler.jsonc`.
+Keep the `DB` binding, `migrations_dir`, and `migrations_pattern` aligned with
+the nested Drizzle migration files.
+
+```bash
+pnpm exec wrangler d1 create "${WORKER_NAME}-db" --env production
+```
+
+Regenerate Worker binding types after updating the D1 configuration:
+
+```bash
+pnpm run cf:generate
+```
 
 Use `pnpm run db:migrate:local` for the local D1 database. Use
 `pnpm run db:migrate:remote` only when you intend to apply migrations to the
 production D1 database.
 
-Deploy with `pnpm run deploy:production`. This selects the production Wrangler
-environment during the Vite build, checks the generated deployment config, and
-deploys that generated config to the separate `<worker-name>-production`
-Worker. Do not add `--env production` to `wrangler deploy`; the Cloudflare Vite
-plugin applies Wrangler environments at build time.
+For the first deployment, generate an auth secret and pass it to Wrangler using
+a temporary secrets file. The trap removes the file when the shell exits:
+
+```bash
+BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
+ENV_FILE="$(mktemp "${TMPDIR:-/tmp}/worker-secrets.XXXXXX")"
+trap 'rm -f "$ENV_FILE"' EXIT
+printf 'BETTER_AUTH_SECRET="%s"\n' "$BETTER_AUTH_SECRET" > "$ENV_FILE"
+
+pnpm run db:migrate:remote
+pnpm run build:production
+pnpm exec wrangler deploy --secrets-file "$ENV_FILE"
+```
+
+For later deployments, use `pnpm run deploy:production`. This selects the
+production Wrangler environment during the Vite build and deploys the generated
+config. Do not add `--env production` to `wrangler deploy`; the Cloudflare Vite
+plugin applies Wrangler environments at build time. Store the production
+`BETTER_AUTH_SECRET` in Cloudflare as a Worker secret, and use a generated local
+secret in `.dev.vars` after copying `.env.example` for local development.
 
 The compatibility date in `wrangler.jsonc` stays pinned until a deliberate
 runtime update. Before changing it, review Cloudflare's

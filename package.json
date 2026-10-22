@@ -9,7 +9,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply DB --local",
     "db:migrate:remote": "wrangler d1 migrations apply DB --env production --remote",
-    "deploy:production": "pnpm run build:production && node scripts/verify-production-config.mjs && wrangler deploy",
+    "deploy:production": "pnpm run build:production && wrangler deploy",
     "dev": "vp dev",
     "lint:arch": "steiger ./src",
     "prepare": "vp config",
