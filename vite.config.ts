@@ -1,21 +1,21 @@
 import { defineConfig, lazyPlugins } from "vite-plus";
 
-const fullCheck = Boolean(process.env["CI"]) || process.env["VITE_PLUS_FULL_CHECK"] === "1";
-const runningTests = process.env["VITEST"] === "true";
+const FULL_CHECK = process.env["FULL_CHECK"] === "1";
+const VITEST = process.env["VITEST"] === "true";
 
 process.env["WRANGLER_LOG"] ??= "error";
 
 export default defineConfig(async ({ mode, command }) => ({
   ...fmtConfig,
   ...lintConfig,
-  ...(runningTests ? await testConfig({ command, mode }) : {}),
-  plugins: runningTests ? [] : (lazyPlugins(loadPlugins) ?? []),
+  ...(VITEST ? await testConfig({ command, mode }) : {}),
+  plugins: VITEST ? [] : (lazyPlugins(loadPlugins) ?? []),
   resolve: { tsconfigPaths: true },
   run: {
     tasks: {
       "check:full": {
-        cache: { env: ["CI", "VITE_PLUS_FULL_CHECK"], output: [] },
-        command: "VITE_PLUS_FULL_CHECK=1 vp check",
+        cache: { env: ["FULL_CHECK"], output: [] },
+        command: "FULL_CHECK=1 vp check",
       },
     },
   },
@@ -50,10 +50,10 @@ const lintConfig = defineConfig({
       { name: "tailwindcss", specifier: "eslint-plugin-tailwindcss" },
     ],
     options: {
-      denyWarnings: fullCheck,
+      denyWarnings: FULL_CHECK,
       reportUnusedDisableDirectives: "error",
-      typeAware: fullCheck,
-      typeCheck: fullCheck,
+      typeAware: FULL_CHECK,
+      typeCheck: FULL_CHECK,
     },
     overrides: [
       { env: { browser: true }, files: ["src/**"] },
@@ -283,7 +283,7 @@ const lintConfig = defineConfig({
       "react/require-render-return": "error",
       "react/rules-of-hooks": "error",
       "tailwindcss/classnames-order": "warn",
-      "tailwindcss/enforces-canonical-classname": fullCheck ? "warn" : "off",
+      "tailwindcss/enforces-canonical-classname": FULL_CHECK ? "warn" : "off",
       "tailwindcss/enforces-negative-arbitrary-values": "warn",
       "tailwindcss/enforces-shorthand": "warn",
       "tailwindcss/important-modifier-suffix": "warn",

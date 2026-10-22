@@ -11,8 +11,8 @@ pnpm dev
 
 For local static checks, run `vp check`. Run `vp run check:full` for the full
 formatting, linting and type checks; this also fails on warnings and caches
-successful unchanged runs. CI runs `vp run --no-cache check:full` to execute
-the checks every time. Use the same uncached command if task-cache tracking
+successful unchanged runs. CI runs `vp check` with `FULL_CHECK=1` to execute
+the checks every time. `CI` alone leaves the local profile active. Use the same uncached command if task-cache tracking
 is unavailable in your environment. The pre-commit hook formats and lints
 staged files. Run `vp run typecheck` for compiler diagnostics alone. See the
 [tooling performance review](docs/engineering/TOOLING_PERFORMANCE.md) for

@@ -6,6 +6,10 @@ follow-ups proposed in [the investigation](FORMATTING_LINTING_NEXT_STEPS.md).
 Benchmark variants were restored after measurement. The subsequently adopted
 changes and current commands are documented in [tooling performance](TOOLING_PERFORMANCE.md).
 
+These samples used the historical CI-triggered full profile. Current config
+uses only `FULL_CHECK=1`; `CI` alone leaves local checks active. The task
+example below preserves the historical benchmark configuration.
+
 ## Method
 
 - Isolated local clone under `/tmp/vite-plus-benchmark-20261022/checkout`,
@@ -17,7 +21,7 @@ changes and current commands are documented in [tooling performance](TOOLING_PER
 - Five measured runs per case. Local comparisons used an excluded warm-up and
   alternated baseline/variant order between rounds. Cache cases distinguish
   disabled caching, first cache population and subsequent hits.
-- `CI`, `VITE_PLUS_FULL_CHECK` and `VITEST` were unset unless specified.
+- `CI`, the former full-check variable and `VITEST` were unset unless specified.
   Every variant started from the original config and was formatted before
   measurement. Tailwind formatting was normalized outside timed check runs.
 - The copied PR contains 156 formatter inputs and 119 lint inputs. The

@@ -64,8 +64,9 @@ when their arguments, tracked inputs and fingerprinted environment match.
 [Official task caching](https://viteplus.dev/guide/cache).
 
 Try a dedicated cached full-check task, or opt in only the relevant scripts.
-Keep its full profile explicit and include `CI` and `VITE_PLUS_FULL_CHECK` in
-the cache key wherever their values affect behavior. Avoid broad caching of
+Keep its full profile explicit and include `FULL_CHECK` in the cache key.
+The original proposal included `CI` and the former full-check variable; that
+CI-triggered profile is historical and no longer supported. Avoid broad caching of
 mutating formatter commands. Test cache misses after source changes, new files,
 config changes, dependency changes and environment changes, as well as a hit
 after an unchanged successful check. Run an uncached correctness check while

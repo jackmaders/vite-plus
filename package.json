@@ -13,7 +13,7 @@
     "prepare": "vp config",
     "preview": "vp preview",
     "test:e2e": "playwright test",
-    "typecheck": "VITE_PLUS_FULL_CHECK=1 vp check --no-fmt --no-lint"
+    "typecheck": "FULL_CHECK=1 vp check --no-fmt --no-lint"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

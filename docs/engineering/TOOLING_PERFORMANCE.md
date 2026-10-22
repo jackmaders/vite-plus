@@ -8,14 +8,14 @@
 | `vp lint [paths...]`                  | Same local lint profile, optionally for selected files                           | Show warnings; fail on errors |
 | `vp run typecheck`                    | Full TypeScript compiler diagnostics                                             | Fail on type errors           |
 | `vp run check:full`                   | Formatting, every enabled lint rule, type-aware linting and compiler diagnostics | Fail on errors and warnings   |
-| `vp run --no-cache check:full`        | Execute the full check without reusing a task result; used by CI                 | Fail on errors and warnings   |
+| `vp run --no-cache check:full`        | Execute the full check without reusing a task result                             | Fail on errors and warnings   |
 | `vp run lint:arch --fail-on-warnings` | Architecture checks used by CI                                                   | Fail on errors and warnings   |
 
-Any nonempty `CI` environment variable forces the full profile. The
-`check:full` task and `typecheck` script set `VITE_PLUS_FULL_CHECK=1` explicitly so
-they also work locally. CI invokes `vp run --no-cache check:full` and checks architecture
-separately. The full profile preserves every previously enabled rule, rule
-option, plugin, ignore pattern and TypeScript compiler option.
+Only `FULL_CHECK=1` enables the full profile, regardless of `CI`. The
+`check:full` task and `typecheck` script set `FULL_CHECK=1` explicitly.
+CI runs `vp check` with step-level `FULL_CHECK: "1"`, bypassing task caching,
+and checks architecture separately. The full profile preserves every previously
+enabled rule, rule option, plugin, ignore pattern and TypeScript compiler option.
 
 Local CLI checks defer **all type-aware lint rules and compiler diagnostics**.
 Use the editor's TypeScript diagnostics while developing, `vp run typecheck`
@@ -46,7 +46,7 @@ previous formatter-only hook. See [follow-up benchmarks](TOOLING_FOLLOWUP_BENCHM
 for the five-run samples, first-cache-miss cost and limitations.
 
 `check:full` is a configuration-defined task with automatic file tracking,
-`CI` and `VITE_PLUS_FULL_CHECK` in its environment fingerprint and no restored
+`FULL_CHECK` in its environment fingerprint and no restored
 output files. Inputs or environment changes invalidate a successful result.
 CI bypasses this cache. Use `vp run --no-cache check:full` for a fresh check or
 when the file-tracking supervisor is unavailable, such as a restricted sandbox.
@@ -114,13 +114,20 @@ development; it does not remove a rule or reduce its execution cost.
 `vp run lint:arch --fail-on-warnings` and `vp test --run` passed. The test suite
 contained 142 tests across 36 files.
 
-Temporary source probes verified that warnings succeed locally but fail full
+Historical validation before the environment simplification: temporary source
+probes verified that warnings succeed locally but fail full
 and CI checks, correctness errors fail locally, and compiler errors,
 type-aware floating-promise violations and noncanonical Tailwind classes fail
 their full checks. A `CI=true` run still rejected warnings with
-`VITE_PLUS_FULL_CHECK=0`. The probes were removed afterward. The effective full
+`VITE_PLUS_FULL_CHECK=0`. That CI-triggered behavior is historical; `CI` alone
+now leaves the local profile active. The probes were removed afterward. The effective full
 configuration was compared with the original after normalizing warning/error
 severity to verify that enabled checks and their options were preserved.
+
+After simplifying the environment handling, resolved-config probes confirmed
+that `CI=true` alone uses the local profile and `FULL_CHECK=1` enables warning
+rejection, type analysis and canonical spelling with or without `CI`. Local
+and full checks passed, and all 142 tests passed with 100% coverage.
 
 ## Tooling capabilities and sources
 
