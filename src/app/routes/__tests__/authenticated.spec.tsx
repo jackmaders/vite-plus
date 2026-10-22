@@ -10,6 +10,8 @@ import { TEST_SESSION } from "@test/vitest/fixtures/session";
 
 vi.mock(import("@/shared/auth"));
 vi.mock(import("@/pages/profile"));
+vi.mock(import("@/app/styles/styles.css?url"), () => ({ default: "/styles.css" }));
+
 vi.mock(import("@tanstack/react-devtools"));
 vi.mock(import("@tanstack/react-router-devtools"));
 vi.mock(import("@tanstack/react-query-devtools"));
@@ -80,7 +82,7 @@ describe("_authenticated route layout and navigation", () => {
     await router.load();
 
     // Act
-    render(<RouterProvider router={router} />);
+    render(<RouterProvider router={router} />, { container: document });
 
     // Assert
     expect(router.state.location.pathname).toBe("/");
@@ -99,7 +101,7 @@ describe("_authenticated route layout and navigation", () => {
     await router.load();
 
     // Act
-    render(<RouterProvider router={router} />);
+    render(<RouterProvider router={router} />, { container: document });
 
     // Assert
     expect(screen.getByText("Mocked Profile Page")).toBeDefined();

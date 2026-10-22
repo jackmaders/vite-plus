@@ -1,6 +1,8 @@
 import { cloudflareTest, readD1Migrations } from "@cloudflare/vitest-plugin";
 import { defineConfig, lazyPlugins } from "vite-plus";
 
+process.env["WRANGLER_LOG"] ??= "error";
+
 export default defineConfig(async ({ mode, command }) => ({
   ...fmtConfig,
   ...lintConfig,
@@ -345,6 +347,7 @@ const testConfig = defineConfig(async () => ({
       {
         test: {
           environment: "happy-dom",
+          environmentOptions: clientEnvironmentOptions,
           exclude: ["src/**/__tests__/workers/**"],
           include: ["src/**/__tests__/**/*.spec.{ts,tsx}"],
           name: "client",
@@ -375,3 +378,7 @@ const testConfig = defineConfig(async () => ({
     ],
   },
 }));
+
+const clientEnvironmentOptions = {
+  happyDOM: { settings: { handleDisabledFileLoadingAsSuccess: true } },
+};

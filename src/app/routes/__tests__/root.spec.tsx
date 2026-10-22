@@ -5,6 +5,8 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { routeTree } from "@/app/routeTree.gen";
 
+vi.mock(import("@/app/styles/styles.css?url"), () => ({ default: "/styles.css" }));
+
 vi.mock(import("@tanstack/react-devtools"));
 vi.mock(import("@tanstack/react-router-devtools"));
 vi.mock(import("@tanstack/react-query-devtools"));
@@ -27,7 +29,7 @@ describe("root route document metadata", () => {
     await router.load();
 
     // Act
-    render(<RouterProvider router={router} />, {});
+    render(<RouterProvider router={router} />, { container: document });
     const viewportContent = Array.from(
       // Viewport metadata has no accessible Testing Library query.
       // oxlint-disable-next-line testing-library/no-node-access
@@ -58,7 +60,7 @@ describe("root route layout", () => {
     await router.load();
 
     // Act
-    render(<RouterProvider router={router} />, {});
+    render(<RouterProvider router={router} />, { container: document });
 
     // Assert
     expect(screen.getByRole("banner")).toBeDefined();
@@ -84,7 +86,7 @@ describe("root route devtools panels", () => {
     await router.load();
 
     // Act
-    render(<RouterProvider router={router} />, {});
+    render(<RouterProvider router={router} />, { container: document });
 
     // Assert
     expect(screen.getByText("Router Devtools Panel")).toBeDefined();
@@ -109,7 +111,7 @@ describe("root route notFoundComponent", () => {
     await router.load();
 
     // Act
-    render(<RouterProvider router={router} />);
+    render(<RouterProvider router={router} />, { container: document });
 
     // Assert
     expect(screen.getByRole("heading", { name: "Page Not Found" })).toBeDefined();
