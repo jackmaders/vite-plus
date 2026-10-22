@@ -212,11 +212,6 @@ const lintConfig = defineConfig({
           "node/no-process-env": "off",
         },
       },
-      {
-        env: { node: true },
-        files: ["scripts/**/*.mjs"],
-        rules: { "import/no-nodejs-modules": "off" },
-      },
     ],
     plugins: [
       "eslint",

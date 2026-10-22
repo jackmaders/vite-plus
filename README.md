@@ -30,12 +30,10 @@ If you prefer not to use Tailwind CSS:
 3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
 4. Remove `@tailwindcss/vite` and `tailwindcss` from `package.json`
 
-## Deploy to Cloudflare Workers
+## New Project Setup
 
-Configure the production origin, D1 database, and auth secret as described in
-[Cloudflare Workers production setup](docs/SETUP.md#cloudflare-workers-production-setup),
-then run `pnpm run deploy:production`. The production environment is selected
-when Vite builds the deployment.
+Follow the [new project setup guide](docs/SETUP.md) to configure the repository
+and deploy it to Cloudflare Workers.
 
 ## Routing
 

@@ -1,4 +1,4 @@
-# Repository setup
+# New Project Setup
 
 ## Project Setup
 
@@ -73,9 +73,12 @@ Regenerate Worker binding types after updating the D1 configuration:
 pnpm run cf:generate
 ```
 
-Use `pnpm run db:migrate:local` for the local D1 database. Use
-`pnpm run db:migrate:remote` only when you intend to apply migrations to the
-production D1 database.
+Use `pnpm run db:migrate` for the local D1 database. To apply migrations to the
+production D1 database, pass Wrangler's remote and environment flags explicitly:
+
+```bash
+pnpm run db:migrate --remote --env production
+```
 
 For the first deployment, generate an auth secret and pass it to Wrangler using
 a temporary secrets file. The trap removes the file when the shell exits:
@@ -86,15 +89,14 @@ ENV_FILE="$(mktemp "${TMPDIR:-/tmp}/worker-secrets.XXXXXX")"
 trap 'rm -f "$ENV_FILE"' EXIT
 printf 'BETTER_AUTH_SECRET="%s"\n' "$BETTER_AUTH_SECRET" > "$ENV_FILE"
 
-pnpm run db:migrate:remote
-pnpm run build:production
-pnpm exec wrangler deploy --secrets-file "$ENV_FILE"
+pnpm run db:migrate --remote --env production
+pnpm run deploy --secrets-file "$ENV_FILE"
 ```
 
-For later deployments, use `pnpm run deploy:production`. This selects the
-production Wrangler environment during the Vite build and deploys the generated
-config. Do not add `--env production` to `wrangler deploy`; the Cloudflare Vite
-plugin applies Wrangler environments at build time. Store the production
+For later deployments, use `pnpm run deploy`. This selects the production
+Wrangler environment during the Vite build and deploys the generated config. Do
+not add `--env production` to `wrangler deploy`; the Cloudflare Vite plugin
+applies Wrangler environments at build time. Store the production
 `BETTER_AUTH_SECRET` in Cloudflare as a Worker secret, and use a generated local
 secret in `.dev.vars` after copying `.env.example` for local development.
 
