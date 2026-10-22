@@ -15,14 +15,15 @@ type CreateTodoMutationOptions = Omit<
 function useCreateTodo(options?: CreateTodoMutationOptions) {
   const queryClient = useQueryClient();
   const createTodo = useServerFn(createTodoFn);
+  const { onSuccess, ...restOptions } = options ?? {};
 
   return useMutation({
+    ...restOptions,
     mutationFn: async (data: CreateTodoInput) => await createTodo({ data }),
     onSuccess: (...args) => {
       void queryClient.invalidateQueries({ queryKey: todoKeys.all });
-      options?.onSuccess?.(...args);
+      onSuccess?.(...args);
     },
-    ...options,
   });
 }
 
