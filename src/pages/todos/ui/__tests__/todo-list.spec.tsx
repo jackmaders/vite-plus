@@ -34,7 +34,7 @@ describe("todo list empty state", () => {
     expect.assertions(1);
 
     // Arrange & Act
-    render(<TodoList filter="all" todos={[]} />);
+    render(<TodoList todos={[]} />);
 
     // Assert
     expect(screen.getByText("No todos found")).toBeDefined();
@@ -62,10 +62,20 @@ describe("todo list items rendering", () => {
     expect.assertions(2);
 
     // Arrange & Act
-    render(<TodoList filter="all" todos={mockTodos} />);
+    render(<TodoList todos={mockTodos} />);
 
     // Assert
     expect(screen.getByText("First Todo")).toBeDefined();
     expect(screen.getByText("Second Todo")).toBeDefined();
+  });
+
+  it("renders custom className on list container", () => {
+    expect.assertions(1);
+
+    // Arrange & Act
+    render(<TodoList aria-label="Todo list" className="opacity-50" todos={mockTodos} />);
+
+    // Assert
+    expect(screen.getByLabelText("Todo list").className).toContain("opacity-50");
   });
 });

@@ -17,7 +17,7 @@ function TodoItem({ todo, className, ...props }: TodoItemProps) {
   return (
     <Card className={cn("flex items-center justify-between p-4", className)} {...props}>
       <TodoItemSummary todo={todo} />
-      <div className="flex items-center gap-1" {...props}>
+      <div className="flex items-center gap-1">
         <UpdateTodoDialog aria-label="Edit todo" todo={todo}>
           <Pencil />
         </UpdateTodoDialog>

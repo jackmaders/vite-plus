@@ -9,7 +9,7 @@ vi.mock(import("@/shared/auth/auth.server"));
 vi.mock(import("@/shared/db/db.server"));
 vi.mock(import("@/pages/todos/api/use-create-todo"));
 
-const mockCreateTodo = vi.fn<() => void>();
+const mockCreateTodo = vi.fn<() => Promise<void>>();
 
 async function fillAndSubmit(
   user: ReturnType<typeof userEvent.setup>,
@@ -26,12 +26,13 @@ async function fillAndSubmit(
 describe("todo form submission", () => {
   beforeEach(() => {
     mockCreateTodo.mockClear();
+    mockCreateTodo.mockResolvedValue();
     vi.mocked(useCreateTodo).mockReturnValue({
       isError: false,
       isPending: false,
       isSuccess: false,
       mutate: mockCreateTodo,
-      mutateAsync: vi.fn<() => Promise<unknown>>(),
+      mutateAsync: mockCreateTodo,
     } as never);
   });
 
@@ -84,12 +85,13 @@ describe("todo form submission", () => {
 describe("todo form validation", () => {
   beforeEach(() => {
     mockCreateTodo.mockClear();
+    mockCreateTodo.mockResolvedValue();
     vi.mocked(useCreateTodo).mockReturnValue({
       isError: false,
       isPending: false,
       isSuccess: false,
       mutate: mockCreateTodo,
-      mutateAsync: vi.fn<() => Promise<unknown>>(),
+      mutateAsync: mockCreateTodo,
     } as never);
   });
 
@@ -117,12 +119,13 @@ describe("todo form validation", () => {
 describe("todo form states", () => {
   beforeEach(() => {
     mockCreateTodo.mockClear();
+    mockCreateTodo.mockResolvedValue();
     vi.mocked(useCreateTodo).mockReturnValue({
       isError: false,
       isPending: false,
       isSuccess: false,
       mutate: mockCreateTodo,
-      mutateAsync: vi.fn<() => Promise<unknown>>(),
+      mutateAsync: mockCreateTodo,
     } as never);
   });
 

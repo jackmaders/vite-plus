@@ -1,4 +1,4 @@
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -11,21 +11,17 @@ vi.mock(import("@/shared/db/db.server"));
 vi.mock(import("@/pages/todos/api/use-update-todo"));
 
 const mockTodo = TEST_TODO;
-const mockUpdateTodo = vi.fn<() => void>();
+const mockUpdateTodo = vi.fn<() => Promise<void>>();
 
 describe("update todo dialog", () => {
-  let successCallback: (() => void) | undefined;
-
   beforeEach(() => {
     mockUpdateTodo.mockClear();
-    successCallback = undefined;
-    vi.mocked(useUpdateTodo).mockImplementation((options) => {
-      successCallback = options?.onSuccess as (() => void) | undefined;
-      return {
-        isPending: false,
-        mutate: mockUpdateTodo,
-      } as never;
-    });
+    mockUpdateTodo.mockResolvedValue();
+    vi.mocked(useUpdateTodo).mockReturnValue({
+      isPending: false,
+      mutate: mockUpdateTodo,
+      mutateAsync: mockUpdateTodo,
+    } as never);
   });
 
   afterEach(() => {
@@ -62,11 +58,11 @@ describe("update todo dialog", () => {
 
     // Assert
     expect(screen.getByDisplayValue(mockTodo.title)).toBeDefined();
-    expect(screen.getByDisplayValue(mockTodo.description ?? "")).toBeDefined();
+    expect(screen.getByDisplayValue("Test Description")).toBeDefined();
   });
 
   it("submits update with modified form values", async () => {
-    expect.assertions(1);
+    expect.hasAssertions();
 
     // Arrange
     const user = userEvent.setup();
@@ -80,14 +76,16 @@ describe("update todo dialog", () => {
     await user.click(screen.getByRole("button", { name: "Update" }));
 
     // Assert
-    expect(mockUpdateTodo).toHaveBeenCalledWith({
-      data: { description: mockTodo.description, title: "Updated Title" },
-      id: mockTodo.id,
+    await waitFor(() => {
+      expect(mockUpdateTodo).toHaveBeenCalledWith({
+        data: { description: mockTodo.description, title: "Updated Title" },
+        id: mockTodo.id,
+      });
     });
   });
 
   it("closes dialog when mutation succeeds", async () => {
-    expect.assertions(2);
+    expect.hasAssertions();
 
     // Arrange
     const user = userEvent.setup();
@@ -97,10 +95,26 @@ describe("update todo dialog", () => {
     await user.click(screen.getByRole("button", { name: "Update Item" }));
     expect(screen.getByRole("heading", { name: /update todo item\?/iu })).toBeDefined();
 
-    // Simulate mutation success callback
-    act(() => {
-      successCallback?.();
+    await user.click(screen.getByRole("button", { name: "Update" }));
+
+    // Assert dialog is closed
+    await waitFor(() => {
+      expect(screen.queryByRole("heading", { name: /update todo item\?/iu })).toBeNull();
     });
+  });
+
+  it("closes dialog when cancel button is clicked", async () => {
+    expect.hasAssertions();
+
+    // Arrange
+    const user = userEvent.setup();
+    render(<UpdateTodoDialog todo={mockTodo} />);
+
+    // Act
+    await user.click(screen.getByRole("button", { name: "Update Item" }));
+    expect(screen.getByRole("heading", { name: /update todo item\?/iu })).toBeDefined();
+
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
 
     // Assert dialog is closed
     await waitFor(() => {

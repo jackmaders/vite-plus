@@ -14,13 +14,13 @@ const mockTodo = TEST_TODO;
 const mockDeleteTodo = vi.fn<() => void>();
 
 describe("delete todo dialog", () => {
-  let successCallback: (() => void) | undefined;
+  let successCallback: (() => void) | null = null;
 
   beforeEach(() => {
     mockDeleteTodo.mockClear();
-    successCallback = undefined;
+    successCallback = null;
     vi.mocked(useDeleteTodo).mockImplementation((options) => {
-      successCallback = options?.onSuccess as (() => void) | undefined;
+      successCallback = (options?.onSuccess as (() => void) | undefined) ?? null;
       return {
         isPending: false,
         mutate: mockDeleteTodo,
@@ -66,7 +66,7 @@ describe("delete todo dialog", () => {
   });
 
   it("closes dialog when delete mutation succeeds", async () => {
-    expect.assertions(2);
+    expect.hasAssertions();
 
     // Arrange
     const user = userEvent.setup();
@@ -77,9 +77,33 @@ describe("delete todo dialog", () => {
     expect(screen.getByRole("heading", { name: /delete todo item\?/iu })).toBeDefined();
 
     // Simulate mutation success callback
-    successCallback?.();
+    act(() => {
+      successCallback?.();
+    });
 
     // Assert dialog closed
-    expect(screen.queryByRole("heading", { name: /delete todo item\?/iu })).toBeNull();
+    await waitFor(() => {
+      expect(screen.queryByRole("heading", { name: /delete todo item\?/iu })).toBeNull();
+    });
+  });
+
+  it("shows deleting state and disables button when mutation is pending", async () => {
+    expect.assertions(2);
+
+    // Arrange
+    vi.mocked(useDeleteTodo).mockReturnValue({
+      isPending: true,
+      mutate: mockDeleteTodo,
+    } as never);
+    const user = userEvent.setup();
+    render(<DeleteTodoDialog todo={mockTodo} />);
+
+    // Act
+    await user.click(screen.getByRole("button", { name: "Delete Item" }));
+
+    // Assert
+    const deleteButton = screen.getByRole("button", { name: "Deleting..." });
+    expect(deleteButton).toBeDefined();
+    expect(deleteButton.hasAttribute("disabled")).toBe(true);
   });
 });
