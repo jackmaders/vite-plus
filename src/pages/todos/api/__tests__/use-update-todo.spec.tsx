@@ -1,6 +1,7 @@
 import { cleanup, renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
+import { NotFoundError } from "@/shared/errors";
 import { createTodoFixture } from "@test/vitest/fixtures/todos";
 import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
 
@@ -16,6 +17,25 @@ describe("useUpdateTodo mutation hook", () => {
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
+  });
+
+  it("exposes a rejected server call through Query's native error result", async () => {
+    expect.hasAssertions();
+    // Arrange
+    const error = new NotFoundError("TODO_NOT_FOUND", "Todo not found");
+    vi.mocked(updateTodoFn).mockRejectedValueOnce(error);
+    const { wrapper } = createTestingWrapper();
+    const { result } = renderHook(() => useUpdateTodo(), { wrapper });
+
+    // Act
+    result.current.mutate({ data: { title: "Draft" }, id: "missing" });
+
+    // Assert
+    await waitFor(() => {
+      expect(result.current.isError).toBe(true);
+    });
+    expect(result.current.error).toBe(error);
+    expect(result.current.data).toBeUndefined();
   });
 
   it("invokes updateTodoFn and invalidates queries on success", async () => {

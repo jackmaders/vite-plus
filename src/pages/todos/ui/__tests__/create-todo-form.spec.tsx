@@ -45,6 +45,25 @@ describe("todo form submission", () => {
     vi.clearAllMocks();
   });
 
+  it("retries an unchanged draft after a submission failure", async () => {
+    expect.hasAssertions();
+    // Arrange
+    const user = userEvent.setup();
+    mockCreateTodo.mockRejectedValueOnce(new Error("Temporary failure"));
+    render(<CreateTodoForm aria-label="Create todo" />);
+
+    // Act
+    await fillAndSubmit(user, "Retry this draft");
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.queryByRole("alert")).toBeNull();
+    });
+    expect(mockCreateTodo).toHaveBeenCalledTimes(2);
+    expect(screen.getByPlaceholderText<HTMLInputElement>("Title").value).toBe("");
+  });
+
   it("shows a submission error when creating a todo fails", async () => {
     expect.assertions(1);
 

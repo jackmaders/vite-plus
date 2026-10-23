@@ -70,6 +70,9 @@ describe("session.server ensureSession", () => {
     vi.mocked(auth.api.getSession).mockResolvedValueOnce(null);
 
     // Act & Assert
-    await expect(ensureSession()).rejects.toThrow("Unauthorized");
+    await expect(ensureSession()).rejects.toMatchObject({
+      code: "SESSION_REQUIRED",
+      name: "AuthenticationError",
+    });
   });
 });

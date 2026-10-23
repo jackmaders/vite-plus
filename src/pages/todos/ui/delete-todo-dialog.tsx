@@ -1,6 +1,7 @@
 import { useState, type ComponentProps } from "react";
 
 import type { Todo } from "@/shared/db";
+import { getErrorMessage } from "@/shared/errors";
 import { Button } from "@/shared/ui/shadcn/button";
 import {
   Dialog,
@@ -12,6 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/shared/ui/shadcn/dialog";
+import { FieldError } from "@/shared/ui/shadcn/field";
 
 import { useDeleteTodo } from "../api/use-delete-todo";
 
@@ -25,7 +27,7 @@ export function DeleteTodoDialog({
   ...props
 }: DeleteTodoDialogProps) {
   const [open, setOpen] = useState(false);
-  const { isPending, mutate: deleteTodo } = useDeleteTodo({
+  const deletion = useDeleteTodo({
     onSuccess: () => {
       setOpen(false);
     },
@@ -40,17 +42,19 @@ export function DeleteTodoDialog({
           <DialogDescription>Are you sure? This action is not reversible</DialogDescription>
         </DialogHeader>
 
+        {deletion.isError && <FieldError>{getErrorMessage(deletion.error)}</FieldError>}
+
         <DialogFooter>
           <DialogClose render={() => <Button variant="ghost">Cancel</Button>} />
 
           <Button
-            disabled={isPending}
+            disabled={deletion.isPending}
             variant="destructive"
             onClick={() => {
-              deleteTodo({ id: todo.id });
+              deletion.mutate({ id: todo.id });
             }}
           >
-            {isPending ? "Deleting..." : "Delete Todo"}
+            {deletion.isPending ? "Deleting..." : "Delete Todo"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -5,6 +5,7 @@ import type { ComponentProps } from "react";
 import type { Todo } from "@/shared/db";
 import { Card } from "@/shared/ui/shadcn/card";
 
+import { CopyTodoButton } from "./copy-todo-button";
 import { DeleteTodoDialog } from "./delete-todo-dialog";
 import { TodoItemSummary } from "./todo-item-summary";
 import { UpdateTodoDialog } from "./update-todo-dialog";
@@ -18,6 +19,7 @@ function TodoItem({ todo, className, ...props }: TodoItemProps) {
     <Card className={cn("flex items-center justify-between p-4", className)} {...props}>
       <TodoItemSummary todo={todo} />
       <div className="flex items-center gap-1">
+        <CopyTodoButton todo={todo} />
         <UpdateTodoDialog aria-label="Edit todo" todo={todo}>
           <Pencil />
         </UpdateTodoDialog>

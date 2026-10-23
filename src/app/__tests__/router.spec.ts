@@ -3,8 +3,61 @@ import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { getRouter } from "@/app/router";
+import { DependencyError, ValidationError } from "@/shared/errors";
 
 vi.mock(import("@tanstack/react-router-ssr-query"));
+
+function getQueryRetry() {
+  const retry = getRouter().options.context.queryClient.getDefaultOptions().queries?.retry;
+  if (typeof retry !== "function") {
+    throw new TypeError("Expected a query retry policy");
+  }
+  return retry;
+}
+
+describe("query retry policy", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it.each([
+    { error: new Error("offline"), expected: false, failures: 0, server: true },
+    {
+      error: new ValidationError("INVALID", "Invalid input"),
+      expected: false,
+      failures: 0,
+      server: false,
+    },
+    { error: new Error("offline"), expected: true, failures: 0, server: false },
+    { error: new Error("offline"), expected: false, failures: 2, server: false },
+    {
+      error: new DependencyError("DB_FAILED", "Unavailable"),
+      expected: true,
+      failures: 0,
+      server: false,
+    },
+    {
+      error: new DependencyError("DB_FAILED", "Unavailable"),
+      expected: false,
+      failures: 2,
+      server: false,
+    },
+  ])(
+    "retries only reads that may recover: $server, $failures, $expected",
+    ({ server, failures, error, expected }) => {
+      expect.assertions(1);
+      // Arrange
+      vi.stubEnv("SSR", server);
+      const retry = getQueryRetry();
+
+      // Act
+      const result = retry(failures, error);
+
+      // Assert
+      expect(result).toBe(expected);
+    },
+  );
+});
 
 describe("router route matching", () => {
   it("matches the home page within the root document", () => {
