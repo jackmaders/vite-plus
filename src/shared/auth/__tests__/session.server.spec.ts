@@ -7,8 +7,6 @@ import { TEST_SESSION } from "@test/vitest/fixtures/session";
 
 vi.mock(import("@tanstack/react-start/server"));
 
-vi.mock(import("@/shared/auth/auth.server"));
-
 describe("session.server getSession", () => {
   afterEach(() => {
     vi.clearAllMocks();

@@ -6,8 +6,6 @@ import { useUpdateTodo } from "@/pages/todos/api/use-update-todo";
 import { UpdateTodoDialog } from "@/pages/todos/ui/update-todo-dialog";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
 
-vi.mock(import("@/shared/auth/auth.server"));
-vi.mock(import("@/shared/db/db.server"));
 vi.mock(import("@/pages/todos/api/use-update-todo"));
 
 const mockTodo = TEST_TODO;

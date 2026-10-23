@@ -35,6 +35,9 @@ release. Add a tool name to select part of the graph. For example, run
 - When designing module interfaces, adapting vendor SDKs, adding routes, placing
   UI or form primitives, or changing route authentication, loader prefetching,
   or server functions, read [architecture](docs/engineering/ARCHITECTURE.md).
+- When working with TanStack Start, Router, Query, or Form, first read
+  [architecture](docs/engineering/ARCHITECTURE.md). Follow its integration
+  guidance when managed skills conflict.
 - When implementing new behavior or writing, reviewing, or organizing tests, read
   [testing](docs/engineering/TESTING.md).
 - When organizing FSD layers, slices, or segments, defining slice public APIs,

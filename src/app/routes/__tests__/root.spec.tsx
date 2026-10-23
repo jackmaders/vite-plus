@@ -10,7 +10,6 @@ vi.mock(import("@/app/styles/styles.css?url"), () => ({ default: "/styles.css" }
 vi.mock(import("@tanstack/react-devtools"));
 vi.mock(import("@tanstack/react-router-devtools"));
 vi.mock(import("@tanstack/react-query-devtools"));
-vi.mock(import("@/shared/auth/auth.server"));
 
 describe("root route document metadata", () => {
   afterEach(() => {
