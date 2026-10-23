@@ -40,12 +40,8 @@ vp dev
 ```
 
 ```bash
-# Build the app and align the local auth URL with the preview server.
-vp build
-printf 'BETTER_AUTH_URL="http://localhost:4173"\n' >> dist/server/.dev.vars
-
-# Start the compiled app locally.
-vp preview
+# Build and preview the compiled app locally.
+vp build && vp preview
 ```
 
 ## Cloudflare Workers production setup
