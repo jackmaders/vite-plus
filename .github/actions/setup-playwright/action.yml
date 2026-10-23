@@ -9,12 +9,16 @@ inputs:
 runs:
   using: composite
   steps:
+    - name: Get installed Playwright version
+      id: playwright-version
+      shell: bash
+      run: echo "version=$(node -p 'require("@playwright/test/package.json").version')" >> "$GITHUB_OUTPUT"
     - name: Cache Playwright browser
       id: playwright-cache
       uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
       with:
         path: ~/.cache/ms-playwright
-        key: ${{ runner.os }}-playwright-${{ inputs.browser }}-${{ hashFiles('pnpm-lock.yaml') }}
+        key: ${{ runner.os }}-${{ runner.arch }}-playwright-${{ inputs.browser }}-${{ steps.playwright-version.outputs.version }}
     - name: Install Playwright system dependencies
       shell: bash
       run: vpx playwright install-deps ${{ inputs.browser }}
