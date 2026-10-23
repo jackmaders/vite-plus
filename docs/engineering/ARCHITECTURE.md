@@ -59,51 +59,126 @@ loader data fetching, or server functions.
 
 ## TanStack integration in this repository
 
-Use this section as the authority for repository conventions; consult managed
-skills and first-party docs for vendor API details. Check `pnpm-lock.yaml` and
-the installed package source for version-sensitive behavior.
+Use these repository conventions and first-party documentation checked against
+installed package versions. When managed skill examples differ, verify the API
+in the lockfile and installed package source before using them.
 
-### Setup and data flow
+### Setup
 
-- Configure TanStack Start through its Vite plugin in `vite.config.ts` with
-  `srcDirectory: "src/app"`; `src/app/router.tsx` creates the router.
-- `getRouter()` creates a `QueryClient` for each router.
-  `setupRouterSsrQueryIntegration` provides the Query context and handles SSR
+- Configure Start through its Vite plugin and the Cloudflare Vite integration.
+  Start owns route generation; the separate Router plugin is for standalone
+  Router applications. Follow the [Cloudflare Start guide](https://developers.cloudflare.com/workers/framework-guides/web-apps/tanstack-start/).
+- Create a `QueryClient` inside `getRouter()`: each SSR request gets its own
+  router and cache; the browser retains its router's cache during navigation.
+  `setupRouterSsrQueryIntegration` supplies the Query provider and handles SSR
   dehydration, hydration, and streaming.
-- Share query options between the route loader and page. For initial data, use
-  `context.queryClient.query(options)` in the loader and
-  `useSuspenseQuery(options)` in the page, as in the
-  [Start and Query guide](https://tanstack.com/start/latest/docs/framework/react/guide/tanstack-query).
-  Follow this loader method for the repository's installed Query API when
-  managed skills show a different method.
+- Use Start server routes with `createFileRoute` and `server.handlers` for
+  externally addressed HTTP endpoints. Follow the [server routes guide](https://tanstack.com/start/latest/docs/framework/react/guide/server-routes).
+- For streaming, await critical loader data and return promises for secondary
+  data rendered through Suspense and Await. Follow the [Start and Query guide](https://tanstack.com/start/latest/docs/framework/react/guide/tanstack-query).
+- Check migrations against installed versions, including the supported
+  `.validator(schema)` API. Follow the [stable migration guide](https://tanstack.com/start/latest/docs/framework/react/migrate-from-release-candidate).
 
-  ```tsx
-  const Route = createFileRoute("/_authenticated/todos")({
-    loader: ({ context }) => context.queryClient.query(todosQueryOptions()),
-    component: TodosPage,
+### Authenticated reads and writes
+
+The following fragments use a hypothetical records domain. Keep the thin route
+in the routing layer; the page, query options, mutation hooks, schemas, and
+operations belong to the owning page slice. The route imports through the
+slice's public API. Schemas, operations, and presentation components are
+supplied by the application.
+
+**Server functions** attach authentication and validation before delegating to
+Drizzle/D1 operations. The middleware supplies the session; reads and writes
+use its user ID to scope database access. Derive ownership fields from this
+context, including on inserts.
+
+```ts
+const getRecordsFn = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => await getRecords({ userId: context.session.user.id }));
+
+const createRecordFn = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator(createRecordInputSchema)
+  .handler(
+    async ({ context, data }) => await createRecord(data, { userId: context.session.user.id }),
+  );
+```
+
+**Shared query options** keep the key and server-function call together.
+Loaders also run in the browser during navigation, so privileged operations
+stay behind server functions.
+
+```ts
+function recordsQueryOptions() {
+  return queryOptions({
+    queryFn: () => getRecordsFn(),
+    queryKey: ["records"],
   });
+}
+```
 
-  function TodosPage() {
-    const { data: todos } = useSuspenseQuery(todosQueryOptions());
-    return <TodoList todos={todos} />;
-  }
-  ```
+**The route** awaits initial data in the router's cache and delegates rendering
+to the page. Personalized HTML uses `private, no-store` to prevent HTTP caching;
+this is separate from the in-memory Query cache and server-function responses.
 
-- For authenticated read/write examples, follow the [todo server functions](../../src/pages/todos/api/todos.functions.ts)
-  and [Drizzle operations](../../src/pages/todos/api/todos-operations.ts).
-- Router owns navigation and loader errors; Query owns cached data and mutation
-  invalidation. Await critical reads in the loader and invalidate the query key
-  after a mutation.
-- Use Start server routes for externally addressed HTTP endpoints.
+```tsx
+const Route = createFileRoute("/_authenticated/records")({
+  loader: async ({ context }) => {
+    await context.queryClient.query(recordsQueryOptions());
+  },
+  headers: () => ({ "Cache-Control": "private, no-store" }),
+  component: RecordsPage,
+});
+
+export { Route };
+```
+
+**The page**, in a separate module, reads the same query options and composes
+the domain UI.
+
+```tsx
+function RecordsPage() {
+  const { data: records } = useSuspenseQuery(recordsQueryOptions());
+  return <RecordList records={records} />;
+}
+
+export { RecordsPage };
+```
+
+**The mutation hook** calls the server function through `useServerFn` and
+invalidates the query that owns the displayed data. Return the invalidation
+promise to keep the mutation pending until the active query has refreshed.
+Forms await `mutateAsync` so submission failures reach their error UI.
+
+```ts
+function useCreateRecord() {
+  const queryClient = useQueryClient();
+  const createRecord = useServerFn(createRecordFn);
+
+  return useMutation({
+    mutationFn: (data: CreateRecordInput) => createRecord({ data }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: recordsQueryOptions().queryKey }),
+  });
+}
+```
+
+Router owns navigation and initial loader errors; Query owns cached data,
+refetching, and mutation state. Choose a Query freshness window for the
+application. On sign-out or account switching, cancel and remove the previous
+account's private queries and reload authentication context. Request-scoped
+SSR caches do not clear private browser caches. See the [Start and Query guide](https://tanstack.com/start/latest/docs/framework/react/guide/tanstack-query)
+for cache lifecycle and error recovery details.
 
 ### Validation and errors
 
-- The shared `useAppForm` hook accepts Zod validators through Standard Schema
-  support. Pass schemas directly, as in the
-  [Form submission guide](https://tanstack.com/form/latest/docs/framework/react/guides/submission-handling).
-- TanStack Form calls `onSubmit` with the original input, even when validators use a transforming schema. Call `schema.parse(value)` there when the handler needs transformed output.
+- Pass Zod schemas directly to `useAppForm` validators through Standard Schema
+  support. Follow the [Form submission guide](https://tanstack.com/form/latest/docs/framework/react/guides/submission-handling).
+- Form passes the original input to `onSubmit`, even when validators use a
+  transforming schema. Use `z.input<typeof schema>` for form values and call
+  `schema.parse(value)` in the handler when it needs transformed output.
 - A Start server-function `.validator(schema)` passes the validated schema
   result to its handler, including Standard Schema transformations.
-- The shared form exposes `<form.FormError />`, which renders the submission
-  message from `errorMap.onSubmit`. Include it where submission failures should
-  appear.
+- Render `<form.FormError />` within `<form.AppForm>` and `<form.Form>` to show
+  rejected submissions stored in `errorMap.onSubmit`. The shared wrapper uses
+  an explicit `FormSubmissionError` message or a generic fallback.
