@@ -56,3 +56,120 @@ loader data fetching, or server functions.
 
 - Place shadcn UI primitives in `src/shared/ui/shadcn`.
 - Place reusable TanStack Form components in `src/shared/ui/form`.
+
+## TanStack integration
+
+- Follow repository conventions when managed skill examples conflict.
+- Verify version-sensitive APIs against the lockfile, installed source, and
+  [first-party migration guidance](https://tanstack.com/start/latest/docs/framework/react/migrate-from-release-candidate).
+
+### Setup
+
+- Configure Start and Cloudflare through their Vite plugins. Start owns route
+  generation. Use the separate Router plugin for standalone Router apps.
+  See the [Cloudflare Start guide](https://developers.cloudflare.com/workers/framework-guides/web-apps/tanstack-start/).
+- Create a `QueryClient` inside `getRouter()` for each SSR request. The browser
+  retains its router's cache during navigation.
+- Use `setupRouterSsrQueryIntegration` for the Query provider, dehydration,
+  hydration, and streaming.
+- Use `createFileRoute` with `server.handlers` for external HTTP endpoints.
+  See the [server routes guide](https://tanstack.com/start/latest/docs/framework/react/guide/server-routes).
+
+### Authenticated reads and writes
+
+- Keep page logic, query options, mutations, schemas, and database operations
+  in the owning page slice. Import through its public API from routes.
+- Await `context.queryClient.query(options)` in the loader. Read the same
+  options with `useSuspenseQuery` in the page.
+- Keep privileged operations in server functions. Loaders also run in the browser.
+- Handle navigation and initial loader errors through Router. Use Query for
+  cached data, refetching, and mutation state.
+- Await critical data. Return promises for secondary data rendered with
+  Suspense and Await.
+- Call mutations through `useServerFn`. Return the query invalidation promise
+  from `onSuccess` to keep the mutation pending until refetching finishes.
+- Await `mutateAsync` in form submission handlers to propagate failures.
+- Set `Cache-Control: private, no-store` on personalized HTML. This controls HTTP
+  caching, separately from Query caching and server-function responses.
+- On sign-out or account switching, cancel and remove private queries and
+  reload authentication context.
+- See the [Start and Query guide](https://tanstack.com/start/latest/docs/framework/react/guide/tanstack-query)
+  for integration and cache lifecycle details.
+
+Example server functions:
+
+```ts
+const getRecordsFn = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }) => await getRecords({ userId: context.session.user.id }));
+
+const createRecordFn = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator(createRecordInputSchema)
+  .handler(
+    async ({ context, data }) => await createRecord(data, { userId: context.session.user.id }),
+  );
+```
+
+Example shared query options:
+
+```ts
+function recordsQueryOptions() {
+  return queryOptions({
+    queryFn: () => getRecordsFn(),
+    queryKey: ["records"],
+  });
+}
+```
+
+Example route:
+
+```tsx
+const Route = createFileRoute("/_authenticated/records")({
+  loader: async ({ context }) => {
+    await context.queryClient.query(recordsQueryOptions());
+  },
+  headers: () => ({ "Cache-Control": "private, no-store" }),
+  component: RecordsPage,
+});
+
+export { Route };
+```
+
+Example page, in a separate module:
+
+```tsx
+function RecordsPage() {
+  const { data: records } = useSuspenseQuery(recordsQueryOptions());
+  return <RecordList records={records} />;
+}
+
+export { RecordsPage };
+```
+
+Example mutation hook:
+
+```ts
+function useCreateRecord() {
+  const queryClient = useQueryClient();
+  const createRecord = useServerFn(createRecordFn);
+
+  return useMutation({
+    mutationFn: (data: CreateRecordInput) => createRecord({ data }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: recordsQueryOptions().queryKey }),
+  });
+}
+```
+
+### Validation and errors
+
+- Pass Zod schemas directly to `useAppForm` validators through Standard Schema.
+- Use `z.input<typeof schema>` for form values. Form passes original input to
+  `onSubmit`; call `schema.parse(value)` when transformed output is needed.
+- Start's `.validator(schema)` passes validated and transformed output to its
+  handler.
+- Render `<form.FormError />` inside `<form.AppForm>` and `<form.Form>` to show
+  `errorMap.onSubmit`. Use `FormSubmissionError` for an explicit message;
+  other failures use the generic fallback.
+- See the [Form submission guide](https://tanstack.com/form/latest/docs/framework/react/guides/submission-handling)
+  for validation and transformation behavior.

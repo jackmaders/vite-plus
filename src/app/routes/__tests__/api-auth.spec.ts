@@ -3,8 +3,6 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import { Route } from "@/app/routes/api/auth/$";
 import { auth } from "@/shared/auth/index.server";
 
-vi.mock(import("@/shared/auth/auth.server"));
-
 type AuthServerRouteHandler = ({ request }: { request: Request }) => Promise<Response>;
 
 function getHandlers() {

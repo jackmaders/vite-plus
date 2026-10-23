@@ -8,8 +8,6 @@ import { todoKeys } from "../todo-query-options";
 import { deleteTodoFn } from "../todos.functions";
 import { useDeleteTodo } from "../use-delete-todo";
 
-vi.mock(import("@/shared/auth/auth.server"));
-vi.mock(import("@/shared/db/db.server"));
 vi.mock(import("../todos.functions"));
 
 const MOCK_TODO = createTodoFixture();

@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 
-import { authMiddleware } from "@/shared/auth/index.server";
+import { authMiddleware } from "@/shared/auth";
 
 import {
   createTodoInputSchema,

@@ -6,8 +6,6 @@ import { useDeleteTodo } from "@/pages/todos/api/use-delete-todo";
 import { DeleteTodoDialog } from "@/pages/todos/ui/delete-todo-dialog";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
 
-vi.mock(import("@/shared/auth/auth.server"));
-vi.mock(import("@/shared/db/db.server"));
 vi.mock(import("@/pages/todos/api/use-delete-todo"));
 
 const mockTodo = TEST_TODO;

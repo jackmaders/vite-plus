@@ -6,8 +6,6 @@ import { useUpdateTodo } from "@/pages/todos/api/use-update-todo";
 import { TodoList } from "@/pages/todos/ui/todo-list";
 import { TEST_TODOS } from "@test/vitest/fixtures/todos";
 
-vi.mock(import("@/shared/auth/auth.server"));
-vi.mock(import("@/shared/db/db.server"));
 vi.mock(import("@/pages/todos/api/use-delete-todo"));
 vi.mock(import("@/pages/todos/api/use-update-todo"));
 

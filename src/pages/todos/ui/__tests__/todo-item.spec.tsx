@@ -8,8 +8,6 @@ import { TodoItem } from "@/pages/todos/ui/todo-item";
 import type { Todo } from "@/shared/db";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
 
-vi.mock(import("@/shared/auth/auth.server"));
-vi.mock(import("@/shared/db/db.server"));
 vi.mock(import("@/pages/todos/api/use-delete-todo"));
 vi.mock(import("@/pages/todos/api/use-update-todo"));
 

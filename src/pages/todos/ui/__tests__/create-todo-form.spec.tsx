@@ -5,8 +5,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { useCreateTodo } from "@/pages/todos/api/use-create-todo";
 import { CreateTodoForm } from "@/pages/todos/ui/create-todo-form";
 
-vi.mock(import("@/shared/auth/auth.server"));
-vi.mock(import("@/shared/db/db.server"));
 vi.mock(import("@/pages/todos/api/use-create-todo"));
 
 const mockCreateTodo = vi.fn<() => Promise<void>>();
@@ -21,6 +19,12 @@ async function fillAndSubmit(
     await user.type(screen.getByPlaceholderText("Description"), description);
   }
   await user.click(screen.getByRole("button", { name: /add todo/iu }));
+}
+
+async function fillAndSubmitInvalidTitle(user: ReturnType<typeof userEvent.setup>, title: string) {
+  const titleInput = screen.getByPlaceholderText<HTMLInputElement>("Title");
+  await user.type(titleInput, title);
+  fireEvent.submit(screen.getByRole("form", { name: "Create todo" }));
 }
 
 describe("todo form submission", () => {
@@ -41,13 +45,28 @@ describe("todo form submission", () => {
     vi.clearAllMocks();
   });
 
+  it("shows a submission error when creating a todo fails", async () => {
+    expect.assertions(1);
+
+    // Arrange
+    const user = userEvent.setup();
+    mockCreateTodo.mockRejectedValueOnce(new Error("save failed"));
+    render(<CreateTodoForm />);
+
+    // Act
+    await fillAndSubmit(user, "New Todo");
+    const error = await screen.findByText("Something went wrong. Please try again.");
+
+    // Assert
+    expect(error).toBeDefined();
+  });
+
   it("submits title and description, calls createTodo, and resets inputs", async () => {
     expect.hasAssertions();
 
     // Arrange
     const user = userEvent.setup();
-    const handleSubmit = vi.fn<(event: unknown) => void>();
-    render(<CreateTodoForm onSubmit={handleSubmit} />);
+    render(<CreateTodoForm aria-label="Create todo" />);
 
     // Act
     await fillAndSubmit(user, "New Todo", "New Description");
@@ -58,7 +77,6 @@ describe("todo form submission", () => {
       title: "New Todo",
     });
     await waitFor(() => {
-      expect(handleSubmit).toHaveBeenCalledOnce();
       expect(screen.getByPlaceholderText("Title").getAttribute("value")).toBe("");
       expect(screen.getByPlaceholderText("Description").getAttribute("value")).toBe("");
     });
@@ -69,7 +87,7 @@ describe("todo form submission", () => {
 
     // Arrange
     const user = userEvent.setup();
-    render(<CreateTodoForm />);
+    render(<CreateTodoForm aria-label="Create todo" />);
 
     // Act
     await fillAndSubmit(user, "Title Only");
@@ -79,6 +97,24 @@ describe("todo form submission", () => {
     await waitFor(() => {
       expect(screen.getByPlaceholderText("Title").getAttribute("value")).toBe("");
     });
+  });
+
+  it("preserves the draft and skips success effects when the save fails", async () => {
+    expect.hasAssertions();
+
+    // Arrange
+    const user = userEvent.setup();
+    mockCreateTodo.mockRejectedValueOnce(new Error("save failed"));
+    render(<CreateTodoForm aria-label="Create todo" />);
+
+    // Act
+    await fillAndSubmit(user, "Draft title");
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByText("Something went wrong. Please try again.")).toBeDefined();
+    });
+    expect(screen.getByPlaceholderText<HTMLInputElement>("Title").value).toBe("Draft title");
   });
 });
 
@@ -105,13 +141,30 @@ describe("todo form validation", () => {
 
     // Arrange
     const user = userEvent.setup();
-    render(<CreateTodoForm />);
+    render(<CreateTodoForm aria-label="Create todo" />);
 
     // Act
-    await user.type(screen.getByPlaceholderText("Title"), "   ");
-    fireEvent.submit(screen.getByPlaceholderText("Title"));
+    await fillAndSubmitInvalidTitle(user, "   ");
 
     // Assert
+    expect(mockCreateTodo).not.toHaveBeenCalled();
+  });
+
+  it("preserves the draft and validation feedback when submission is invalid", async () => {
+    expect.hasAssertions();
+
+    // Arrange
+    const user = userEvent.setup();
+    render(<CreateTodoForm aria-label="Create todo" />);
+
+    // Act
+    await fillAndSubmitInvalidTitle(user, "   ");
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.getByText("Title is required")).toBeDefined();
+    });
+    expect(screen.getByPlaceholderText<HTMLInputElement>("Title").value).toBe("   ");
     expect(mockCreateTodo).not.toHaveBeenCalled();
   });
 });
@@ -134,21 +187,23 @@ describe("todo form states", () => {
     vi.clearAllMocks();
   });
 
-  it("disables submit button when title is whitespace only or empty", async () => {
+  it("disables submit button after title becomes whitespace only or empty", async () => {
     expect.assertions(2);
 
     // Arrange
     const user = userEvent.setup();
-    render(<CreateTodoForm />);
+    render(<CreateTodoForm aria-label="Create todo" />);
     const submitButton = screen.getByRole("button", { name: /add todo/iu });
-
-    // Assert - initially empty
-    expect(submitButton.hasAttribute("disabled")).toBe(true);
 
     // Act
     await user.type(screen.getByPlaceholderText("Title"), "   ");
 
-    // Assert - whitespace only
+    await user.clear(screen.getByPlaceholderText("Title"));
+    const emptyTitleDisabled = submitButton.hasAttribute("disabled");
+    await user.type(screen.getByPlaceholderText("Title"), "   ");
+
+    // Assert
+    expect(emptyTitleDisabled).toBe(true);
     expect(submitButton.hasAttribute("disabled")).toBe(true);
   });
 });

@@ -7,8 +7,6 @@ import { TodoItemSummary } from "@/pages/todos/ui/todo-item-summary";
 import type { Todo } from "@/shared/db";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
 
-vi.mock(import("@/shared/auth/auth.server"));
-vi.mock(import("@/shared/db/db.server"));
 vi.mock(import("@/pages/todos/api/use-update-todo"));
 
 const mockTodo = TEST_TODO;

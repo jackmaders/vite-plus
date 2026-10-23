@@ -8,10 +8,8 @@ import { createTodo, deleteTodo, getTodos, updateTodo } from "../todos-operation
 import { createTodoFn, deleteTodoFn, getTodosFn, updateTodoFn } from "../todos.functions";
 
 vi.mock(import("@tanstack/react-start"));
-vi.mock(import("@/shared/auth/auth.server"));
 vi.mock(import("@/shared/auth/session.server"));
 vi.mock(import("../todos-operations"));
-vi.mock(import("@/shared/db/db.server"));
 
 const MOCK_TODO = TEST_TODO;
 
