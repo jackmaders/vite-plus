@@ -35,6 +35,7 @@ function CreateTodoForm(props: TodoFormProps = {}) {
           <form.AppField name="description">
             {(field) => <field.TextField label="Description" placeholder="Description" />}
           </form.AppField>
+          <form.FormError />
           <form.SubmitButton busyLabel="Adding...">Add Todo</form.SubmitButton>
         </form.Form>
       </form.AppForm>

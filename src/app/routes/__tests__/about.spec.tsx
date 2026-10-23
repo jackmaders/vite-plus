@@ -9,6 +9,7 @@ vi.mock(import("@/app/styles/styles.css?url"), () => ({ default: "/styles.css" }
 
 vi.mock(import("@tanstack/react-devtools"));
 vi.mock(import("@/shared/auth/auth.server"));
+vi.mock(import("@/shared/db/db.server"));
 
 describe("about route", () => {
   afterEach(() => {

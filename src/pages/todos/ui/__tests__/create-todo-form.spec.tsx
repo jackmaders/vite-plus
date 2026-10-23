@@ -41,6 +41,22 @@ describe("todo form submission", () => {
     vi.clearAllMocks();
   });
 
+  it("shows a submission error when creating a todo fails", async () => {
+    expect.assertions(1);
+
+    // Arrange
+    const user = userEvent.setup();
+    mockCreateTodo.mockRejectedValueOnce(new Error("save failed"));
+    render(<CreateTodoForm />);
+
+    // Act
+    await fillAndSubmit(user, "New Todo");
+    const error = await screen.findByText("Something went wrong. Please try again.");
+
+    // Assert
+    expect(error).toBeDefined();
+  });
+
   it("submits title and description, calls createTodo, and resets inputs", async () => {
     expect.hasAssertions();
 

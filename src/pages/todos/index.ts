@@ -8,4 +8,5 @@ export { DeleteTodoDialog } from "./ui/delete-todo-dialog";
 export { TodoFilters, type TodoFilter } from "./ui/todo-filters";
 export { TodoItem, type TodoItemProps } from "./ui/todo-item";
 export { TodoList, type TodoListProps } from "./ui/todo-list";
+export { TodosPage } from "./ui/todos-page";
 export { UpdateTodoDialog } from "./ui/update-todo-dialog";
