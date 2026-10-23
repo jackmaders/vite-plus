@@ -5,11 +5,8 @@ Welcome to your new TanStack Start app!
 To run this application:
 
 ```bash
-vp install
-cp .dev.vars.example .dev.vars
-# Replace the secret placeholder with: openssl rand -base64 32
-vp run db:migrate:local
-vp run dev
+pnpm install
+pnpm dev
 ```
 
 # Building For Production

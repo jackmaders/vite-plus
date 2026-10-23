@@ -48,12 +48,11 @@ jobs:
         with:
           run-install: true
           cache: true
-      - name: Build production configuration
-        run: vp run build
-      - name: Build local preview
+      - name: Build project
         run: |
           printf 'BETTER_AUTH_SECRET="%s"\n' "$(openssl rand -base64 32)" > .dev.vars
-          vp run build:preview
+          vp run build
+          printf 'BETTER_AUTH_URL="http://localhost:4173"\n' >> dist/server/.dev.vars
       - name: Verify generated routes
         run: git diff --exit-code -- src/app/routeTree.gen.ts
       - name: Verify generated types
@@ -109,8 +108,8 @@ jobs:
         with:
           name: build-output
           path: .
-      - name: Migrate local preview database
-        run: vp run db:migrate:preview
+      - name: Migrate local database
+        run: vp run db:migrate --local
       - name: Run browser tests
         uses: ./.github/actions/run-playwright
         with:

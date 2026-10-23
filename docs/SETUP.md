@@ -25,58 +25,44 @@ jq --arg name "$PROJECT_NAME" '.name = $name' package.json > package.json.tmp &&
 jq --arg name "$PROJECT_NAME" '.name = $name' wrangler.jsonc > wrangler.jsonc.tmp && mv wrangler.jsonc.tmp wrangler.jsonc
 ```
 
-## Environments and local development
+## Local development and preview
 
-Use a Bash shell for the commands in this guide. OpenSSL is required to generate
-secrets. Non-secret settings and D1 bindings live in `wrangler.jsonc`; local
-secrets live in ignored `.dev.vars` files. `.dev.vars.example` documents the
-required local secret and is safe to commit.
-
-| Target            | Wrangler configuration               | Auth origin                       | Secret source                               |
-| ----------------- | ------------------------------------ | --------------------------------- | ------------------------------------------- |
-| Local development | `env.development`                    | `http://localhost:5173`           | `.dev.vars`                                 |
-| Local preview     | `env.preview`, selected during build | `http://localhost:4173`           | `.dev.vars`, copied into build output       |
-| CI browser tests  | Same local preview build             | `http://localhost:4173`           | Disposable secret generated before building |
-| Production        | Top-level configuration              | Configured canonical HTTPS origin | Cloudflare Worker secret                    |
-
-The local environments explicitly declare their own vars, D1 binding, and required
-secret because these settings are not inherited. Both use the same local D1
-`database_name`. Neither points at the production database.
-
-Create a local secret, apply local migrations, and start development:
+Use Bash for the commands in this guide. OpenSSL is required to generate secrets.
+The top-level `wrangler.jsonc` defines production non-secret vars and bindings.
+For local development, copy `.env.example` to `.dev.vars` and replace the secret
+placeholder with the output of `openssl rand -base64 32`. Keep `.dev.vars` ignored
+by Git. Its auth URL overrides the production URL while running `vp dev`.
 
 ```bash
-cp .dev.vars.example .dev.vars
-# Replace the placeholder in .dev.vars with the output of:
+cp .env.example .dev.vars
+# Replace the secret placeholder in .dev.vars before continuing.
 openssl rand -base64 32
-vp run db:migrate:local
-vp run dev
+vp run db:migrate --local
+vp dev
 ```
 
-To run the compiled app locally:
+`vp preview` runs the compiled app locally on port 4173. Build first, then add its
+local auth URL to the generated `.dev.vars` file. The Cloudflare Vite plugin
+copies the required local secret during the build, but does not copy the auth URL
+override when `secrets.required` is configured. Adding the URL explicitly allows
+preview to use its own localhost origin:
 
 ```bash
-vp run build:preview
-vp run db:migrate:preview
-vp run preview
+vp build
+printf 'BETTER_AUTH_URL="http://localhost:4173"\n' >> dist/server/.dev.vars
+vp run db:migrate --local
+vp preview
 ```
 
-Use the package scripts: `vp dev` bypasses the script that selects the development
-configuration. `vp run build` produces the production build; `vp run build:preview`
-produces the local preview build. Both write `dist`, so rebuild when switching.
-The preview server uses the configuration and local secrets captured at build
-time. Rebuild after changing local secrets. Do not use `.dev.vars` to override
-the auth URL; keep the URL in the selected Wrangler configuration.
+Repeat the URL override after rebuilding. Changes to local secrets also require
+a rebuild. This generated `.dev.vars` file is used only by local preview and is
+not uploaded as Worker secrets. D1 uses local storage for both local commands;
+remote migrations require `--remote`.
 
-The GitHub browser-test workflow generates a disposable secret before building,
-then migrates a local D1 database in each browser job. Its artifact contains a
-local test secret and must never contain production secrets. These CI previews
-run locally on the runner; they are not deployed Cloudflare Previews.
-
-With the Cloudflare Vite plugin, select named environments using `CLOUDFLARE_ENV`
-at dev/build time. Setting it only for preview or deployment does not retarget an
-existing build. See [Cloudflare environments](https://developers.cloudflare.com/workers/vite-plugin/reference/cloudflare-environments/)
-and [local preview secrets](https://developers.cloudflare.com/workers/vite-plugin/reference/secrets/).
+The GitHub browser tests use `vp preview` on the runner. The build job generates
+a disposable test secret and adds the local preview auth URL to its build
+artifact. Production secrets are not needed for those tests.
+See [Cloudflare local preview secrets](https://developers.cloudflare.com/workers/vite-plugin/reference/secrets/).
 
 ## Cloudflare Workers production setup
 
@@ -117,7 +103,7 @@ If using a custom domain, also configure its Worker route/domain. Setting
 Create the remote production D1 database, then copy its returned database name
 and ID into the **top-level** `d1_databases` entry in `wrangler.jsonc`. Keep the
 `DB` binding, `migrations_dir`, and `migrations_pattern` aligned with the nested
-Drizzle migration files. Leave the local environment bindings unchanged.
+Drizzle migration files.
 
 ```bash
 pnpm exec wrangler d1 create "${WORKER_NAME}-db"
@@ -152,14 +138,15 @@ are not uploaded as Worker secrets.
   test -n "$BETTER_AUTH_SECRET"
   printf 'BETTER_AUTH_SECRET="%s"\n' "$BETTER_AUTH_SECRET" > "$ENV_FILE"
 
-  vp run db:migrate:production
+  vp run db:migrate --remote
   vp run deploy --secrets-file "$ENV_FILE"
 )
 ```
 
 For later deployments, apply pending production migrations with
-`vp run db:migrate:production`, then use `vp run deploy`. The deploy script
-rebuilds production before uploading, even if your last build was a local preview.
+`vp run db:migrate --remote`, then use `vp run deploy`. The deploy script
+rebuilds before uploading, replacing the local preview output with the production
+configuration.
 Cloudflare preserves existing Worker secrets on subsequent deployments. For CI
 production deployments, use a scoped Cloudflare API token and account ID in the
 CI secret store; runtime secrets remain configured on the Worker.
@@ -169,23 +156,6 @@ The compatibility date in `wrangler.jsonc` stays pinned until a deliberate
 runtime update. Before changing it, review Cloudflare's
 [compatibility changes](https://developers.cloudflare.com/workers/configuration/compatibility-dates/)
 and validate affected Worker behavior.
-
-## Optional deployed pull request previews
-
-Cloudflare Workers Previews are separate from this project's local `preview`
-Wrangler environment. To add hosted PR previews, configure Workers Builds or
-external CI to build the app and run `wrangler preview`, rather than the
-production `deploy` script. Configure a `previews` block with Preview vars and
-bindings; production settings are not inherited. Supply the Preview's exact
-auth origin and a separate auth secret using the Preview secret workflow.
-
-Point Preview D1 bindings at a non-production database and migrate that same
-database before deploying. Multiple Previews with the same database ID share
-rows; use a different database per PR when isolation is needed. Preview URLs
-are public unless you configure access controls.
-See [Preview configuration](https://developers.cloudflare.com/workers/previews/configuration/),
-[resource isolation and migrations](https://developers.cloudflare.com/workers/previews/resources/),
-and [Workers Builds preview branches](https://developers.cloudflare.com/workers/ci-cd/builds/build-branches/).
 
 ## GitHub Setup
 

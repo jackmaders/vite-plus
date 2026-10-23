@@ -3,18 +3,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "CLOUDFLARE_ENV= vp build",
-    "build:preview": "CLOUDFLARE_ENV=preview vp build",
+    "build": "vp build",
     "cf:generate": "wrangler types",
     "db:generate": "drizzle-kit generate",
-    "db:migrate:local": "wrangler d1 migrations apply DB --env development --local",
-    "db:migrate:preview": "wrangler d1 migrations apply DB --env preview --local",
-    "db:migrate:production": "CLOUDFLARE_ENV= wrangler d1 migrations apply DB --remote",
-    "deploy": "vp run build && CLOUDFLARE_ENV= wrangler deploy",
-    "dev": "CLOUDFLARE_ENV=development vp dev --port 5173 --strictPort",
+    "db:migrate": "wrangler d1 migrations apply DB",
+    "deploy": "vp build && wrangler deploy",
+    "dev": "vp dev",
     "lint:arch": "steiger ./src",
     "prepare": "vp config",
-    "preview": "vp preview --port 4173 --strictPort",
+    "preview": "vp preview",
     "test:e2e": "playwright test"
   },
   "dependencies": {

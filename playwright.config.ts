@@ -15,7 +15,7 @@ const localBaseUrl = usePreview ? PREVIEW_URL : DEV_URL;
 const baseURL = PLAYWRIGHT_BASE_URL || localBaseUrl;
 
 const webServer = {
-  command: usePreview ? "vp run preview" : "vp run dev",
+  command: usePreview ? "vp preview" : "vp dev",
   reuseExistingServer: !CI,
   url: baseURL,
 };
