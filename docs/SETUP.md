@@ -25,81 +25,167 @@ jq --arg name "$PROJECT_NAME" '.name = $name' package.json > package.json.tmp &&
 jq --arg name "$PROJECT_NAME" '.name = $name' wrangler.jsonc > wrangler.jsonc.tmp && mv wrangler.jsonc.tmp wrangler.jsonc
 ```
 
-## Cloudflare Workers production setup
+## Environments and local development
 
-The top-level Wrangler configuration is used to build and deploy the Worker.
-Configure its D1 database and canonical application origin before deploying.
-For local development, copy `.env.example` to `.dev.vars` and replace the
-secret placeholder with a generated local secret. Those values override the
-config's `vars`, including `BETTER_AUTH_URL`.
+Use a Bash shell for the commands in this guide. OpenSSL is required to generate
+secrets. Non-secret settings and D1 bindings live in `wrangler.jsonc`; local
+secrets live in ignored `.dev.vars` files. `.dev.vars.example` documents the
+required local secret and is safe to commit.
 
-If you can access multiple Cloudflare accounts, set `CLOUDFLARE_ACCOUNT_ID` to
-the intended account before running these commands. Confirm Wrangler is
-authenticated and select the account:
+| Target            | Wrangler configuration               | Auth origin                       | Secret source                               |
+| ----------------- | ------------------------------------ | --------------------------------- | ------------------------------------------- |
+| Local development | `env.development`                    | `http://localhost:5173`           | `.dev.vars`                                 |
+| Local preview     | `env.preview`, selected during build | `http://localhost:4173`           | `.dev.vars`, copied into build output       |
+| CI browser tests  | Same local preview build             | `http://localhost:4173`           | Disposable secret generated before building |
+| Production        | Top-level configuration              | Configured canonical HTTPS origin | Cloudflare Worker secret                    |
+
+The local environments explicitly declare their own vars, D1 binding, and required
+secret because these settings are not inherited. Both use the same local D1
+`database_name`. Neither points at the production database.
+
+Create a local secret, apply local migrations, and start development:
 
 ```bash
+cp .dev.vars.example .dev.vars
+# Replace the placeholder in .dev.vars with the output of:
+openssl rand -base64 32
+vp run db:migrate:local
+vp run dev
+```
+
+To run the compiled app locally:
+
+```bash
+vp run build:preview
+vp run db:migrate:preview
+vp run preview
+```
+
+Use the package scripts: `vp dev` bypasses the script that selects the development
+configuration. `vp run build` produces the production build; `vp run build:preview`
+produces the local preview build. Both write `dist`, so rebuild when switching.
+The preview server uses the configuration and local secrets captured at build
+time. Rebuild after changing local secrets. Do not use `.dev.vars` to override
+the auth URL; keep the URL in the selected Wrangler configuration.
+
+The GitHub browser-test workflow generates a disposable secret before building,
+then migrates a local D1 database in each browser job. Its artifact contains a
+local test secret and must never contain production secrets. These CI previews
+run locally on the runner; they are not deployed Cloudflare Previews.
+
+With the Cloudflare Vite plugin, select named environments using `CLOUDFLARE_ENV`
+at dev/build time. Setting it only for preview or deployment does not retarget an
+existing build. See [Cloudflare environments](https://developers.cloudflare.com/workers/vite-plugin/reference/cloudflare-environments/)
+and [local preview secrets](https://developers.cloudflare.com/workers/vite-plugin/reference/secrets/).
+
+## Cloudflare Workers production setup
+
+The top-level Wrangler configuration is the production deployment contract.
+Configure its canonical application origin and D1 database before deploying.
+Commit the non-secret URL, database name, and database ID in `wrangler.jsonc`.
+Keep the production auth secret in Cloudflare and a secure password manager;
+never put it in `.dev.vars`, source control, or CI build artifacts.
+
+Authenticate Wrangler, then inspect the available accounts:
+
+```bash
+pnpm exec wrangler login
 pnpm exec wrangler whoami
 ```
 
-Construct the Worker URL from the project name and the workers.dev subdomain
-shown in your Cloudflare account:
+Set `CLOUDFLARE_ACCOUNT_ID` to the intended account ID, especially when you can
+access multiple accounts. `whoami` reports accounts; it does not select one.
 
 ```bash
-WORKER_NAME="$(jq -er '.name' package.json)"
-read -rp "Account subdomain (without .workers.dev): " WORKERS_SUBDOMAIN
-WORKERS_URL="https://${WORKER_NAME}.${WORKERS_SUBDOMAIN}.workers.dev"
+export CLOUDFLARE_ACCOUNT_ID="<your-account-id>"
+```
+
+Set the canonical auth origin. Replace the example with your Worker's actual
+`https://<worker-name>.<account-subdomain>.workers.dev` origin or custom domain:
+
+```bash
+WORKER_NAME="$(jq -er '.name' wrangler.jsonc)"
+WORKERS_URL="https://<worker-name>.<account-subdomain>.workers.dev"
 jq --arg url "$WORKERS_URL" \
   '.vars.BETTER_AUTH_URL = $url' wrangler.jsonc \
   > wrangler.jsonc.tmp && mv wrangler.jsonc.tmp wrangler.jsonc
 ```
 
-Review `wrangler.jsonc` and confirm that the production URL points to the
-intended Worker. If deploying to a custom domain, use its canonical HTTPS
-origin instead.
+If using a custom domain, also configure its Worker route/domain. Setting
+`BETTER_AUTH_URL` alone does not configure routing.
 
 Create the remote production D1 database, then copy its returned database name
-and ID into the existing top-level `d1_databases` entry in `wrangler.jsonc`.
-Keep the `DB` binding, `migrations_dir`, and `migrations_pattern` aligned with
-the nested Drizzle migration files.
+and ID into the **top-level** `d1_databases` entry in `wrangler.jsonc`. Keep the
+`DB` binding, `migrations_dir`, and `migrations_pattern` aligned with the nested
+Drizzle migration files. Leave the local environment bindings unchanged.
 
 ```bash
 pnpm exec wrangler d1 create "${WORKER_NAME}-db"
+vp run cf:generate
 ```
 
-Regenerate Worker binding types after updating the D1 configuration:
+Build and inspect the generated deployment configuration without changing remote
+resources. Confirm the Worker name, canonical HTTPS origin, and D1 name/ID match
+the intended production resources. Replace every production placeholder and
+reject localhost origins before proceeding:
 
 ```bash
-pnpm run cf:generate
+vp run build
+jq '{name, vars, d1_databases, secrets}' dist/server/wrangler.json
+pnpm exec wrangler deploy --dry-run
 ```
 
-Use `pnpm run db:migrate` for the local D1 database. To apply migrations to the
-remote D1 database, pass Wrangler's remote flag explicitly:
+For the first deployment, generate a production auth secret with
+`openssl rand -base64 32` and save it in your password manager. The block below
+prompts for that saved secret without echoing it. It creates a temporary secrets
+file and removes it when the subshell finishes, including on failure.
+`--secrets-file` uploads the secret with the Worker code; local `.dev.vars` files
+are not uploaded as Worker secrets.
 
 ```bash
-pnpm run db:migrate --remote
+(
+  set -e
+  ENV_FILE="$(mktemp "${TMPDIR:-/tmp}/worker-secrets.XXXXXX")"
+  trap 'rm -f "$ENV_FILE"' EXIT
+  read -r -s -p "Production BETTER_AUTH_SECRET: " BETTER_AUTH_SECRET
+  printf '\n'
+  test -n "$BETTER_AUTH_SECRET"
+  printf 'BETTER_AUTH_SECRET="%s"\n' "$BETTER_AUTH_SECRET" > "$ENV_FILE"
+
+  vp run db:migrate:production
+  vp run deploy --secrets-file "$ENV_FILE"
+)
 ```
 
-For the first deployment, generate an auth secret and pass it to Wrangler using
-a temporary secrets file. The trap removes the file when the shell exits:
-
-```bash
-BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
-ENV_FILE="$(mktemp "${TMPDIR:-/tmp}/worker-secrets.XXXXXX")"
-trap 'rm -f "$ENV_FILE"' EXIT
-printf 'BETTER_AUTH_SECRET="%s"\n' "$BETTER_AUTH_SECRET" > "$ENV_FILE"
-
-pnpm run db:migrate --remote
-pnpm run deploy --secrets-file "$ENV_FILE"
-```
-
-For later deployments, use `pnpm run deploy` to build and deploy the top-level
-Worker configuration. Store the production `BETTER_AUTH_SECRET` in Cloudflare
-as a Worker secret; the local secret belongs in `.dev.vars` only.
+For later deployments, apply pending production migrations with
+`vp run db:migrate:production`, then use `vp run deploy`. The deploy script
+rebuilds production before uploading, even if your last build was a local preview.
+Cloudflare preserves existing Worker secrets on subsequent deployments. For CI
+production deployments, use a scoped Cloudflare API token and account ID in the
+CI secret store; runtime secrets remain configured on the Worker.
+See [deploying secrets](https://developers.cloudflare.com/workers/configuration/secrets/#upload-secrets-alongside-code).
 
 The compatibility date in `wrangler.jsonc` stays pinned until a deliberate
 runtime update. Before changing it, review Cloudflare's
 [compatibility changes](https://developers.cloudflare.com/workers/configuration/compatibility-dates/)
 and validate affected Worker behavior.
+
+## Optional deployed pull request previews
+
+Cloudflare Workers Previews are separate from this project's local `preview`
+Wrangler environment. To add hosted PR previews, configure Workers Builds or
+external CI to build the app and run `wrangler preview`, rather than the
+production `deploy` script. Configure a `previews` block with Preview vars and
+bindings; production settings are not inherited. Supply the Preview's exact
+auth origin and a separate auth secret using the Preview secret workflow.
+
+Point Preview D1 bindings at a non-production database and migrate that same
+database before deploying. Multiple Previews with the same database ID share
+rows; use a different database per PR when isolation is needed. Preview URLs
+are public unless you configure access controls.
+See [Preview configuration](https://developers.cloudflare.com/workers/previews/configuration/),
+[resource isolation and migrations](https://developers.cloudflare.com/workers/previews/resources/),
+and [Workers Builds preview branches](https://developers.cloudflare.com/workers/ci-cd/builds/build-branches/).
 
 ## GitHub Setup
 
