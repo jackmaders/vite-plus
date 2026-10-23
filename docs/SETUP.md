@@ -29,12 +29,12 @@ jq --arg name "$PROJECT_NAME" '.name = $name' wrangler.jsonc > wrangler.jsonc.tm
 
 Use Bash for the commands in this guide. OpenSSL is required to generate secrets.
 The top-level `wrangler.jsonc` defines production non-secret vars and bindings.
-For local development, copy `.env.example` to `.dev.vars` and replace the secret
+For local development, copy `.dev.vars.example` to `.dev.vars` and replace the secret
 placeholder with the output of `openssl rand -base64 32`. Keep `.dev.vars` ignored
 by Git. Its auth URL overrides the production URL while running `vp dev`.
 
 ```bash
-cp .env.example .dev.vars
+cp .dev.vars.example .dev.vars
 # Replace the secret placeholder in .dev.vars before continuing.
 openssl rand -base64 32
 vp run db:migrate --local
