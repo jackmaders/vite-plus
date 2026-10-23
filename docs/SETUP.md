@@ -8,6 +8,7 @@ Prerequisites:
 - [Git](https://git-scm.com/downloads) 2.28 or newer: validate with `git --version`.
 - [GitHub CLI](https://cli.github.com/) 2.x: validate with `gh --version` and authenticate with `gh auth login`.
 - [jq](https://jqlang.org/): validate with `jq --version`.
+- Bash and OpenSSL for the setup scripts below.
 
 Create the project and enter the generated directory:
 
@@ -27,136 +28,75 @@ jq --arg name "$PROJECT_NAME" '.name = $name' wrangler.jsonc > wrangler.jsonc.tm
 
 ## Local development and preview
 
-Use Bash for the commands in this guide. OpenSSL is required to generate secrets.
-The top-level `wrangler.jsonc` defines production non-secret vars and bindings.
-For local development, copy `.dev.vars.example` to `.dev.vars` and replace the secret
-placeholder with the output of `openssl rand -base64 32`. Keep `.dev.vars` ignored
-by Git. Its auth URL overrides the production URL while running `vp dev`.
+Generate a local secret, migrate local D1, and start development:
 
 ```bash
-cp .dev.vars.example .dev.vars
-# Replace the secret placeholder in .dev.vars before continuing.
-openssl rand -base64 32
+if [ ! -f .dev.vars ]; then
+  sed "s/<your-generated-secret>/$(openssl rand -hex 32)/" .dev.vars.example > .dev.vars
+fi
 vp run db:migrate --local
 vp dev
 ```
 
-`vp preview` runs the compiled app locally on port 4173. Build first, then add its
-local auth URL to the generated `.dev.vars` file. The Cloudflare Vite plugin
-copies the required local secret during the build, but does not copy the auth URL
-override when `secrets.required` is configured. Adding the URL explicitly allows
-preview to use its own localhost origin:
+After local setup, run the compiled app with `vp preview`:
 
 ```bash
 vp build
+# The build copies the local secret, but its auth URL must match the preview port.
 printf 'BETTER_AUTH_URL="http://localhost:4173"\n' >> dist/server/.dev.vars
-vp run db:migrate --local
 vp preview
 ```
 
-Repeat the URL override after rebuilding. Changes to local secrets also require
-a rebuild. This generated `.dev.vars` file is used only by local preview and is
-not uploaded as Worker secrets. D1 uses local storage for both local commands;
-remote migrations require `--remote`.
-
-The GitHub browser tests use `vp preview` on the runner. The browser-test step
-supplies a local-only test secret and `BETTER_AUTH_URL=http://localhost:4173`
-through its `env` block. The build artifact contains no test secrets, and CI does
-not edit environment files. Production secrets are not needed for those tests.
-See [Cloudflare local preview secrets](https://developers.cloudflare.com/workers/vite-plugin/reference/secrets/).
+CI supplies its local-only auth values through the browser-test step's `env` block.
 
 ## Cloudflare Workers production setup
 
-The top-level Wrangler configuration is the production deployment contract.
-Configure its canonical application origin and D1 database before deploying.
-Commit the non-secret URL, database name, and database ID in `wrangler.jsonc`.
-Keep the production auth secret in Cloudflare and a secure password manager;
-never put it in `.dev.vars`, source control, or CI build artifacts.
-
-Authenticate Wrangler, then inspect the available accounts:
-
-```bash
-pnpm exec wrangler login
-pnpm exec wrangler whoami
-```
-
-Set `CLOUDFLARE_ACCOUNT_ID` to the intended account ID, especially when you can
-access multiple accounts. `whoami` reports accounts; it does not select one.
-
-```bash
-export CLOUDFLARE_ACCOUNT_ID="<your-account-id>"
-```
-
-Set the canonical auth origin. Replace the example with your Worker's actual
-`https://<worker-name>.<account-subdomain>.workers.dev` origin or custom domain:
-
-```bash
-WORKER_NAME="$(jq -er '.name' wrangler.jsonc)"
-WORKERS_URL="https://<worker-name>.<account-subdomain>.workers.dev"
-jq --arg url "$WORKERS_URL" \
-  '.vars.BETTER_AUTH_URL = $url' wrangler.jsonc \
-  > wrangler.jsonc.tmp && mv wrangler.jsonc.tmp wrangler.jsonc
-```
-
-If using a custom domain, also configure its Worker route/domain. Setting
-`BETTER_AUTH_URL` alone does not configure routing.
-
-Create the remote production D1 database, then copy its returned database name
-and ID into the **top-level** `d1_databases` entry in `wrangler.jsonc`. Keep the
-`DB` binding, `migrations_dir`, and `migrations_pattern` aligned with the nested
-Drizzle migration files.
-
-```bash
-pnpm exec wrangler d1 create "${WORKER_NAME}-db"
-vp run cf:generate
-```
-
-Build and inspect the generated deployment configuration without changing remote
-resources. Confirm the Worker name, canonical HTTPS origin, and D1 name/ID match
-the intended production resources. Replace every production placeholder and
-reject localhost origins before proceeding:
-
-```bash
-vp run build
-jq '{name, vars, d1_databases, secrets}' dist/server/wrangler.json
-pnpm exec wrangler deploy --dry-run
-```
-
-For the first deployment, generate a production auth secret with
-`openssl rand -base64 32` and save it in your password manager. The block below
-prompts for that saved secret without echoing it. It creates a temporary secrets
-file and removes it when the subshell finishes, including on failure.
-`--secrets-file` uploads the secret with the Worker code; local `.dev.vars` files
-are not uploaded as Worker secrets.
+Run once from Bash. Enter your account ID and workers.dev subdomain when prompted:
 
 ```bash
 (
-  set -e
+  set -eu
+  pnpm exec wrangler login
+  pnpm exec wrangler whoami
+  read -rp "Cloudflare account ID: " CLOUDFLARE_ACCOUNT_ID
+  read -rp "Account subdomain (without .workers.dev): " WORKERS_SUBDOMAIN
+  export CLOUDFLARE_ACCOUNT_ID
+  WORKER_NAME="$(jq -er '.name' wrangler.jsonc)"
+  WORKERS_URL="https://${WORKER_NAME}.${WORKERS_SUBDOMAIN}.workers.dev"
+
+  jq --arg account "$CLOUDFLARE_ACCOUNT_ID" --arg url "$WORKERS_URL" \
+    '.account_id = $account | .vars.BETTER_AUTH_URL = $url' \
+    wrangler.jsonc > wrangler.jsonc.tmp
+  mv wrangler.jsonc.tmp wrangler.jsonc
+  pnpm exec wrangler d1 create "${WORKER_NAME}-db" --binding DB --update-config
+  vp run cf:generate
+
   ENV_FILE="$(mktemp "${TMPDIR:-/tmp}/worker-secrets.XXXXXX")"
   trap 'rm -f "$ENV_FILE"' EXIT
-  read -r -s -p "Production BETTER_AUTH_SECRET: " BETTER_AUTH_SECRET
-  printf '\n'
-  test -n "$BETTER_AUTH_SECRET"
-  printf 'BETTER_AUTH_SECRET="%s"\n' "$BETTER_AUTH_SECRET" > "$ENV_FILE"
+  printf 'BETTER_AUTH_SECRET="%s"\n' "$(openssl rand -hex 32)" > "$ENV_FILE"
 
+  vp build
+  pnpm exec wrangler deploy --dry-run --secrets-file "$ENV_FILE"
   vp run db:migrate --remote
-  vp run deploy --secrets-file "$ENV_FILE"
+  pnpm exec wrangler deploy --secrets-file "$ENV_FILE"
 )
 ```
 
-For later deployments, apply pending production migrations with
-`vp run db:migrate --remote`, then use `vp run deploy`. The deploy script
-rebuilds before uploading, replacing the local preview output with the production
-configuration.
-Cloudflare preserves existing Worker secrets on subsequent deployments. For CI
-production deployments, use a scoped Cloudflare API token and account ID in the
-CI secret store; runtime secrets remain configured on the Worker.
-See [deploying secrets](https://developers.cloudflare.com/workers/configuration/secrets/#upload-secrets-alongside-code).
+Wrangler updates the existing `DB` binding and preserves the nested migration
+settings. The generated production secret is stored in Cloudflare; the temporary
+file is deleted. Commit the updated `wrangler.jsonc` and generated Worker types.
 
-The compatibility date in `wrangler.jsonc` stays pinned until a deliberate
-runtime update. Before changing it, review Cloudflare's
-[compatibility changes](https://developers.cloudflare.com/workers/configuration/compatibility-dates/)
-and validate affected Worker behavior.
+For subsequent deployments, Cloudflare retains the existing secret:
+
+```bash
+vp run db:migrate --remote
+vp run deploy
+```
+
+For a custom domain, configure its Worker route/domain and set `vars.BETTER_AUTH_URL`
+to that HTTPS origin. Keep the compatibility date pinned until a deliberate runtime
+update; review [compatibility changes](https://developers.cloudflare.com/workers/configuration/compatibility-dates/)
+when updating it.
 
 ## GitHub Setup
 
@@ -174,7 +114,7 @@ gh repo edit --default-branch main \
   --enable-merge-commit=false --enable-rebase-merge=false
 ```
 
-Aapply the main-branch ruleset:
+Apply the main-branch ruleset:
 
 ```bash
 gh api --method POST 'repos/{owner}/{repo}/rulesets' \
