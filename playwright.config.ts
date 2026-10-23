@@ -11,6 +11,7 @@ const baseURL = PLAYWRIGHT_BASE_URL || PREVIEW_URL;
 
 const webServer = {
   command: "vp preview",
+  env: { BETTER_AUTH_URL: baseURL },
   reuseExistingServer: !CI,
   url: baseURL,
 };
