@@ -9,6 +9,9 @@ pnpm install
 pnpm dev
 ```
 
+Before running `vp preview`, update `BETTER_AUTH_URL` in `.dev.vars` to
+`http://localhost:4173`.
+
 # Building For Production
 
 To build this application for production:
@@ -30,17 +33,10 @@ If you prefer not to use Tailwind CSS:
 3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
 4. Remove `@tailwindcss/vite` and `tailwindcss` from `package.json`
 
-## Deploy to Cloudflare Workers
+## New Project Setup
 
-This project uses the Cloudflare Vite plugin (configured in `vite.config.ts`) and `wrangler.jsonc`:
-
-1. Install Wrangler: `npm install -g wrangler`
-2. Authenticate: `wrangler login`
-3. Deploy: `npx wrangler deploy`
-
-For production env vars, run `wrangler secret put MY_VAR` for each secret listed in `.env.example`. Public (non-secret) vars go in `wrangler.jsonc` under `vars`.
-
-KV, D1, R2, and Durable Object bindings are configured in `wrangler.jsonc` — see https://developers.cloudflare.com/workers/wrangler/configuration/.
+Follow the [new project setup guide](docs/SETUP.md) to configure the repository
+and deploy it to Cloudflare Workers.
 
 ## Routing
 
