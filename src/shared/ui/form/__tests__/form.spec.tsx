@@ -1,9 +1,10 @@
 import { cleanup, createEvent, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
 
 import { useAppForm } from "../app-form";
-import { Form, type FormProps } from "../form";
+import { Form } from "../form";
 import { FormSubmissionError } from "../form-submission-error";
 
 const defaultSave = vi.fn<() => Promise<void>>().mockResolvedValue();
@@ -11,7 +12,7 @@ const accountSchema = z.object({
   accountName: z.string().trim().min(1, "Account name is required"),
 });
 
-interface TestFormProps extends FormProps {
+interface TestFormProps extends ComponentProps<typeof Form> {
   initialName?: string;
   onSave?: () => Promise<void>;
 }
@@ -93,33 +94,30 @@ describe("form component", () => {
     });
   });
 
-  it("calls onSuccess after a successful submission", async () => {
+  it("submits valid values", async () => {
     expect.hasAssertions();
 
     // Arrange
     const onSave = vi.fn<() => Promise<void>>().mockResolvedValue();
-    const onSuccess = vi.fn<() => void>();
 
     // Act
-    render(<TestForm onSave={onSave} onSuccess={onSuccess} />);
+    render(<TestForm onSave={onSave} />);
     fireEvent.submit(screen.getByRole("form", { name: "Account form" }));
 
     // Assert
     await waitFor(() => {
       expect(onSave).toHaveBeenCalledOnce();
-      expect(onSuccess).toHaveBeenCalledOnce();
     });
   });
 
-  it("preserves validation feedback and skips onSuccess when submission is invalid", async () => {
+  it("preserves validation feedback and skips saving when submission is invalid", async () => {
     expect.hasAssertions();
 
     // Arrange
     const onSave = vi.fn<() => Promise<void>>().mockResolvedValue();
-    const onSuccess = vi.fn<() => void>();
 
     // Act
-    render(<TestForm initialName="   " onSave={onSave} onSuccess={onSuccess} />);
+    render(<TestForm initialName="   " onSave={onSave} />);
     fireEvent.submit(screen.getByRole("form", { name: "Account form" }));
 
     // Assert
@@ -128,31 +126,24 @@ describe("form component", () => {
     });
     expect(screen.getByPlaceholderText<HTMLInputElement>("Account name").value).toBe("   ");
     expect(onSave).not.toHaveBeenCalled();
-    expect(onSuccess).not.toHaveBeenCalled();
   });
 
-  it("passes rejected saves to onError and leaves the draft in place", async () => {
+  it("displays a fallback error and leaves the draft in place", async () => {
     expect.hasAssertions();
 
     // Arrange
     const error = new Error("submission failed");
     const onSave = vi.fn<() => Promise<void>>().mockRejectedValue(error);
-    const onError = vi.fn<(err: unknown) => void>();
-    const onSuccess = vi.fn<() => void>();
 
     // Act
-    render(
-      <TestForm initialName="Draft" onError={onError} onSave={onSave} onSuccess={onSuccess} />,
-    );
+    render(<TestForm initialName="Draft" onSave={onSave} />);
     fireEvent.submit(screen.getByRole("form", { name: "Account form" }));
 
     // Assert
     await waitFor(() => {
-      expect(onError).toHaveBeenCalledWith(error);
       expect(screen.getByText("Something went wrong. Please try again.")).toBeDefined();
     });
     expect(screen.getByPlaceholderText<HTMLInputElement>("Account name").value).toBe("Draft");
-    expect(onSuccess).not.toHaveBeenCalled();
   });
 
   it("displays the safe message from a submission error", async () => {

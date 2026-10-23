@@ -26,7 +26,7 @@ async function fillAndSubmit(
 async function fillAndSubmitInvalidTitle(user: ReturnType<typeof userEvent.setup>, title: string) {
   const titleInput = screen.getByPlaceholderText<HTMLInputElement>("Title");
   await user.type(titleInput, title);
-  fireEvent.submit(titleInput);
+  fireEvent.submit(screen.getByRole("form", { name: "Create todo" }));
 }
 
 describe("todo form submission", () => {
@@ -52,8 +52,7 @@ describe("todo form submission", () => {
 
     // Arrange
     const user = userEvent.setup();
-    const onSuccess = vi.fn<() => void>();
-    render(<CreateTodoForm onSuccess={onSuccess} />);
+    render(<CreateTodoForm aria-label="Create todo" />);
 
     // Act
     await fillAndSubmit(user, "New Todo", "New Description");
@@ -64,7 +63,6 @@ describe("todo form submission", () => {
       title: "New Todo",
     });
     await waitFor(() => {
-      expect(onSuccess).toHaveBeenCalledOnce();
       expect(screen.getByPlaceholderText("Title").getAttribute("value")).toBe("");
       expect(screen.getByPlaceholderText("Description").getAttribute("value")).toBe("");
     });
@@ -75,7 +73,7 @@ describe("todo form submission", () => {
 
     // Arrange
     const user = userEvent.setup();
-    render(<CreateTodoForm />);
+    render(<CreateTodoForm aria-label="Create todo" />);
 
     // Act
     await fillAndSubmit(user, "Title Only");
@@ -92,9 +90,8 @@ describe("todo form submission", () => {
 
     // Arrange
     const user = userEvent.setup();
-    const onSuccess = vi.fn<() => void>();
     mockCreateTodo.mockRejectedValueOnce(new Error("save failed"));
-    render(<CreateTodoForm onSuccess={onSuccess} />);
+    render(<CreateTodoForm aria-label="Create todo" />);
 
     // Act
     await fillAndSubmit(user, "Draft title");
@@ -104,7 +101,6 @@ describe("todo form submission", () => {
       expect(screen.getByText("Something went wrong. Please try again.")).toBeDefined();
     });
     expect(screen.getByPlaceholderText<HTMLInputElement>("Title").value).toBe("Draft title");
-    expect(onSuccess).not.toHaveBeenCalled();
   });
 });
 
@@ -131,7 +127,7 @@ describe("todo form validation", () => {
 
     // Arrange
     const user = userEvent.setup();
-    render(<CreateTodoForm />);
+    render(<CreateTodoForm aria-label="Create todo" />);
 
     // Act
     await fillAndSubmitInvalidTitle(user, "   ");
@@ -145,8 +141,7 @@ describe("todo form validation", () => {
 
     // Arrange
     const user = userEvent.setup();
-    const onSuccess = vi.fn<() => void>();
-    render(<CreateTodoForm onSuccess={onSuccess} />);
+    render(<CreateTodoForm aria-label="Create todo" />);
 
     // Act
     await fillAndSubmitInvalidTitle(user, "   ");
@@ -157,7 +152,6 @@ describe("todo form validation", () => {
     });
     expect(screen.getByPlaceholderText<HTMLInputElement>("Title").value).toBe("   ");
     expect(mockCreateTodo).not.toHaveBeenCalled();
-    expect(onSuccess).not.toHaveBeenCalled();
   });
 });
 
@@ -179,21 +173,23 @@ describe("todo form states", () => {
     vi.clearAllMocks();
   });
 
-  it("disables submit button when title is whitespace only or empty", async () => {
+  it("disables submit button after title becomes whitespace only or empty", async () => {
     expect.assertions(2);
 
     // Arrange
     const user = userEvent.setup();
-    render(<CreateTodoForm />);
+    render(<CreateTodoForm aria-label="Create todo" />);
     const submitButton = screen.getByRole("button", { name: /add todo/iu });
-
-    // Assert - initially empty
-    expect(submitButton.hasAttribute("disabled")).toBe(true);
 
     // Act
     await user.type(screen.getByPlaceholderText("Title"), "   ");
 
-    // Assert - whitespace only
+    await user.clear(screen.getByPlaceholderText("Title"));
+    const emptyTitleDisabled = submitButton.hasAttribute("disabled");
+    await user.type(screen.getByPlaceholderText("Title"), "   ");
+
+    // Assert
+    expect(emptyTitleDisabled).toBe(true);
     expect(submitButton.hasAttribute("disabled")).toBe(true);
   });
 });

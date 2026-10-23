@@ -3,7 +3,7 @@ import { useCallback, type ComponentProps, type SubmitEvent } from "react";
 import { useFormContext } from "./form-context";
 import { FormSubmissionError } from "./form-submission-error";
 
-function Form({ ...props }: ComponentProps<"form">) {
+function Form({ ...props }: Omit<ComponentProps<"form">, "onSubmit">) {
   const form = useFormContext();
 
   const handleSubmit = useCallback(
