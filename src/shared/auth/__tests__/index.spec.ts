@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 
 vi.mock(import("better-auth/react"));
-vi.mock(import("@/shared/auth/auth.server"));
 vi.mock(import("@/shared/auth/session.functions"));
 
 describe("shared/auth barrel exports", () => {

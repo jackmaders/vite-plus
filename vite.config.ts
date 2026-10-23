@@ -189,7 +189,10 @@ const lintConfig = defineConfig({
       },
       {
         files: ["src/app/routes/**"],
-        rules: { "react/only-export-components": "off" },
+        rules: {
+          "eslint/sort-keys": "off",
+          "react/only-export-components": "off",
+        },
       },
       {
         files: ["src/shared/ui/shadcn/**"],
@@ -386,6 +389,7 @@ const testConfig = defineConfig(async () => ({
           exclude: ["src/**/__tests__/workers/**"],
           include: ["src/**/__tests__/**/*.spec.{ts,tsx}"],
           name: "client",
+          setupFiles: ["tests/vitest/setup/client.ts"],
         },
       },
       await workerTestConfig(),

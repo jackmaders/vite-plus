@@ -8,8 +8,6 @@ import { todoKeys } from "../todo-query-options";
 import { updateTodoFn } from "../todos.functions";
 import { useUpdateTodo } from "../use-update-todo";
 
-vi.mock(import("@/shared/auth/auth.server"));
-vi.mock(import("@/shared/db/db.server"));
 vi.mock(import("../todos.functions"));
 
 const MOCK_TODO = createTodoFixture();

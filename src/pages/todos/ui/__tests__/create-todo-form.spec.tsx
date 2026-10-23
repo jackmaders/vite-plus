@@ -5,8 +5,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { useCreateTodo } from "@/pages/todos/api/use-create-todo";
 import { CreateTodoForm } from "@/pages/todos/ui/create-todo-form";
 
-vi.mock(import("@/shared/auth/auth.server"));
-vi.mock(import("@/shared/db/db.server"));
 vi.mock(import("@/pages/todos/api/use-create-todo"));
 
 const mockCreateTodo = vi.fn<() => Promise<void>>();
