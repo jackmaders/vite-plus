@@ -5,15 +5,12 @@ const CI_RETRIES = 2;
 const CI_WORKERS = 1;
 
 const PLAYWRIGHT_BASE_URL = (process.env["PLAYWRIGHT_BASE_URL"] ?? "").trim();
-const PLAYWRIGHT_TARGET = (process.env["PLAYWRIGHT_TARGET"] ?? "").trim();
+const PREVIEW_URL = "http://localhost:4173";
 
-const LOCAL_URL = "http://localhost:5173";
-
-const usePreview = CI || PLAYWRIGHT_TARGET === "preview";
-const baseURL = PLAYWRIGHT_BASE_URL || LOCAL_URL;
+const baseURL = PLAYWRIGHT_BASE_URL || PREVIEW_URL;
 
 const webServer = {
-  command: usePreview ? "vp run preview" : "vp dev",
+  command: "vp preview",
   reuseExistingServer: !CI,
   url: baseURL,
 };

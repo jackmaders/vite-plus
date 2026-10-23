@@ -43,9 +43,6 @@ vp run db:migrate --local
 vp dev
 ```
 
-Before running preview, update `BETTER_AUTH_URL` in `.dev.vars` to
-`http://localhost:4173`.
-
 ```bash
 # Build and run the compiled Worker.
 vp build && vp preview

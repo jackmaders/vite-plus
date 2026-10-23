@@ -9,6 +9,9 @@ pnpm install
 pnpm dev
 ```
 
+Before running `vp preview`, update `BETTER_AUTH_URL` in `.dev.vars` to
+`http://localhost:4173`.
+
 # Building For Production
 
 To build this application for production:
