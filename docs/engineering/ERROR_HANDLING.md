@@ -205,6 +205,12 @@ version. `FormSubmissionError` remains supported for existing client submissions
 new ordinary client operations should use results.
 [Form submission](https://tanstack.com/form/latest/docs/framework/react/guides/submission-handling).
 
+Shared text fields and submit buttons use Router's native `useHydrated()` hook to
+stay disabled until their client handlers are attached. This prevents input from
+being reset or submissions being missed during hydration. Browser tests hold the
+entry script to verify this state, then release it and verify that inputs enable.
+[Playwright hydration guidance](https://playwright.dev/docs/navigations#hydration).
+
 The delete dialog uses native `mutate` and the mutation's discriminated error
 state. All todo mutation hooks await query invalidation before their success
 callback. Writes have no automatic retries. Read retries are disabled during SSR;

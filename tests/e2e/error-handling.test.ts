@@ -1,4 +1,32 @@
 import { expect, test, type Page, type Response } from "@playwright/test";
+import { createControlledPromise } from "@tanstack/react-router";
+
+test.describe("before hydration", () => {
+  test("keeps form controls disabled until client handlers are ready", async ({
+    page,
+    baseURL,
+  }) => {
+    // Arrange
+    const hydration = createControlledPromise<boolean>();
+    await page.route("**/assets/index-*.js", async (route) => {
+      await hydration;
+      await route.continue();
+    });
+    await signUpForTodos(page, String(baseURL));
+
+    // Act
+    await page.goto("/todos", { waitUntil: "commit" });
+
+    // Assert
+    try {
+      await expect(page.getByRole("textbox", { exact: true, name: "Title" })).toBeDisabled();
+      await expect(page.getByRole("button", { name: "Add Todo" })).toBeDisabled();
+    } finally {
+      hydration.resolve(true);
+    }
+    await expect(page.getByRole("textbox", { exact: true, name: "Title" })).toBeEnabled();
+  });
+});
 
 test("keeps an edit draft when another tab deletes its todo", async ({ page, baseURL }) => {
   // Arrange
@@ -83,6 +111,16 @@ async function prepareDeletedTodoDraft(page: Page, origin: string) {
 }
 
 async function createTodoForNewUser(page: Page, origin: string, title: string) {
+  await signUpForTodos(page, origin);
+  await page.goto("/todos");
+  await page.getByRole("textbox", { exact: true, name: "Title" }).fill(title);
+  const creation = page.waitForResponse(isMutationResponse);
+  await page.getByRole("button", { name: "Add Todo" }).click();
+  await expect(page.getByText(title, { exact: true })).toBeVisible();
+  return await creation;
+}
+
+async function signUpForTodos(page: Page, origin: string) {
   const signup = await page.request.post("/api/auth/sign-up/email", {
     data: {
       email: `${globalThis.crypto.randomUUID()}@example.com`,
@@ -92,12 +130,6 @@ async function createTodoForNewUser(page: Page, origin: string, title: string) {
     headers: { Origin: origin },
   });
   expect(signup.ok()).toBe(true);
-  await page.goto("/todos");
-  await page.getByRole("textbox", { exact: true, name: "Title" }).fill(title);
-  const creation = page.waitForResponse(isMutationResponse);
-  await page.getByRole("button", { name: "Add Todo" }).click();
-  await expect(page.getByText(title, { exact: true })).toBeVisible();
-  return await creation;
 }
 
 function isMutationResponse(response: Response) {
