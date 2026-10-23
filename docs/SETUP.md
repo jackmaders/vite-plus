@@ -31,23 +31,22 @@ jq --arg name "$PROJECT_NAME" '.name = $name' wrangler.jsonc > wrangler.jsonc.tm
 Generate a local secret, migrate local D1, and start development:
 
 ```bash
-if [ ! -f .dev.vars ]; then
-  sed "s/<your-generated-secret>/$(openssl rand -hex 32)/" .dev.vars.example > .dev.vars
-fi
+# Generate local auth values and apply local database migrations.
+sed "s/<your-generated-secret>/$(openssl rand -hex 32)/" .dev.vars.example > .dev.vars
 vp run db:migrate --local
+
+# Start the development server.
 vp dev
 ```
 
-After local setup, run the compiled app with `vp preview`:
-
 ```bash
+# Build the app and align the local auth URL with the preview server.
 vp build
-# The build copies the local secret, but its auth URL must match the preview port.
 printf 'BETTER_AUTH_URL="http://localhost:4173"\n' >> dist/server/.dev.vars
+
+# Start the compiled app locally.
 vp preview
 ```
-
-CI supplies its local-only auth values through the browser-test step's `env` block.
 
 ## Cloudflare Workers production setup
 
@@ -56,11 +55,15 @@ Run once from Bash. Enter your account ID and workers.dev subdomain when prompte
 ```bash
 (
   set -eu
+
+  # Authenticate and select the Cloudflare account and workers.dev subdomain.
   pnpm exec wrangler login
   pnpm exec wrangler whoami
   read -rp "Cloudflare account ID: " CLOUDFLARE_ACCOUNT_ID
   read -rp "Account subdomain (without .workers.dev): " WORKERS_SUBDOMAIN
   export CLOUDFLARE_ACCOUNT_ID
+
+  # Configure the deployed Worker origin and account.
   WORKER_NAME="$(jq -er '.name' wrangler.jsonc)"
   WORKERS_URL="https://${WORKER_NAME}.${WORKERS_SUBDOMAIN}.workers.dev"
 
@@ -68,35 +71,25 @@ Run once from Bash. Enter your account ID and workers.dev subdomain when prompte
     '.account_id = $account | .vars.BETTER_AUTH_URL = $url' \
     wrangler.jsonc > wrangler.jsonc.tmp
   mv wrangler.jsonc.tmp wrangler.jsonc
+
+  # Create and bind production D1, retaining the existing migration settings.
   pnpm exec wrangler d1 create "${WORKER_NAME}-db" --binding DB --update-config
   vp run cf:generate
 
+  # Generate a production auth secret; remove the temporary file on exit.
   ENV_FILE="$(mktemp "${TMPDIR:-/tmp}/worker-secrets.XXXXXX")"
   trap 'rm -f "$ENV_FILE"' EXIT
   printf 'BETTER_AUTH_SECRET="%s"\n' "$(openssl rand -hex 32)" > "$ENV_FILE"
 
+  # Build and validate the deployment without changing remote resources.
   vp build
   pnpm exec wrangler deploy --dry-run --secrets-file "$ENV_FILE"
+
+  # Migrate production D1 and deploy code with the generated secret.
   vp run db:migrate --remote
   pnpm exec wrangler deploy --secrets-file "$ENV_FILE"
 )
 ```
-
-Wrangler updates the existing `DB` binding and preserves the nested migration
-settings. The generated production secret is stored in Cloudflare; the temporary
-file is deleted. Commit the updated `wrangler.jsonc` and generated Worker types.
-
-For subsequent deployments, Cloudflare retains the existing secret:
-
-```bash
-vp run db:migrate --remote
-vp run deploy
-```
-
-For a custom domain, configure its Worker route/domain and set `vars.BETTER_AUTH_URL`
-to that HTTPS origin. Keep the compatibility date pinned until a deliberate runtime
-update; review [compatibility changes](https://developers.cloudflare.com/workers/configuration/compatibility-dates/)
-when updating it.
 
 ## GitHub Setup
 
