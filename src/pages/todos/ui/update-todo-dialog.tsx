@@ -79,6 +79,8 @@ function UpdateTodoForm({ todo, onSuccess, onCancel }: UpdateTodoFormProps) {
           {(field) => <field.TextField label="Description" placeholder="Description" />}
         </form.AppField>
 
+        <form.FormError />
+
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           {onCancel && (
             <Button type="button" variant="ghost" onClick={onCancel}>
