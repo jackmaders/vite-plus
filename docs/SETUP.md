@@ -59,9 +59,10 @@ a rebuild. This generated `.dev.vars` file is used only by local preview and is
 not uploaded as Worker secrets. D1 uses local storage for both local commands;
 remote migrations require `--remote`.
 
-The GitHub browser tests use `vp preview` on the runner. The build job generates
-a disposable test secret and adds the local preview auth URL to its build
-artifact. Production secrets are not needed for those tests.
+The GitHub browser tests use `vp preview` on the runner. The browser-test step
+supplies a local-only test secret and `BETTER_AUTH_URL=http://localhost:4173`
+through its `env` block. The build artifact contains no test secrets, and CI does
+not edit environment files. Production secrets are not needed for those tests.
 See [Cloudflare local preview secrets](https://developers.cloudflare.com/workers/vite-plugin/reference/secrets/).
 
 ## Cloudflare Workers production setup

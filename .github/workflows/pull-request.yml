@@ -49,10 +49,7 @@ jobs:
           run-install: true
           cache: true
       - name: Build project
-        run: |
-          printf 'BETTER_AUTH_SECRET="%s"\n' "$(openssl rand -base64 32)" > .dev.vars
-          vp run build
-          printf 'BETTER_AUTH_URL="http://localhost:4173"\n' >> dist/server/.dev.vars
+        run: vp run build
       - name: Verify generated routes
         run: git diff --exit-code -- src/app/routeTree.gen.ts
       - name: Verify generated types
@@ -112,6 +109,9 @@ jobs:
         run: vp run db:migrate --local
       - name: Run browser tests
         uses: ./.github/actions/run-playwright
+        env:
+          BETTER_AUTH_SECRET: template-ci-local-only-secret-value
+          BETTER_AUTH_URL: http://localhost:4173
         with:
           browser: ${{ matrix.browser }}
 
