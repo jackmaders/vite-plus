@@ -11,7 +11,7 @@
     "dev": "vp dev",
     "lint:arch": "steiger ./src",
     "prepare": "vp config",
-    "preview": "vp preview",
+    "preview": "wrangler dev --config dist/server/wrangler.json --env-file ${PREVIEW_ENV_FILE:-.dev.vars.preview} --local --port 5173 --persist-to .wrangler/state",
     "test:e2e": "playwright test"
   },
   "dependencies": {

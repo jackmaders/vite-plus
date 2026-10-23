@@ -1,12 +1,7 @@
-import { appendFile } from "node:fs/promises";
-import path from "node:path";
-import { format as formatUrl } from "node:url";
-
-import { defineConfig, lazyPlugins, type Plugin } from "vite-plus";
+import { defineConfig, lazyPlugins } from "vite-plus";
 
 const FULL_CHECK = process.env["FULL_CHECK"] === "1";
 const VITEST = process.env["VITEST"] === "true";
-const PREVIEW_PORT = 4173;
 
 process.env["WRANGLER_LOG"] ??= "error";
 
@@ -15,7 +10,6 @@ export default defineConfig(async ({ mode, command }) => ({
   ...lintConfig,
   ...(VITEST ? await testConfig({ command, mode }) : {}),
   plugins: VITEST ? [] : (lazyPlugins(loadPlugins) ?? []),
-  preview: { port: PREVIEW_PORT, strictPort: true },
   resolve: { tsconfigPaths: true },
   run: {
     tasks: {
@@ -218,7 +212,6 @@ const lintConfig = defineConfig({
         rules: {
           "eslint/max-lines": "off",
           "import/no-default-export": "off",
-          "import/no-nodejs-modules": "off",
           "node/no-process-env": "off",
         },
       },
@@ -348,7 +341,6 @@ async function loadPlugins() {
     import("@vitejs/plugin-react"),
   ]);
   return [
-    previewAuthUrlPlugin(),
     devtools(),
     cloudflare({ viteEnvironment: { name: "ssr" } }),
     tailwindcss(),
@@ -358,36 +350,6 @@ async function loadPlugins() {
     }),
     viteReact(),
   ];
-}
-
-function previewAuthUrlPlugin(): Plugin {
-  return {
-    configurePreviewServer: {
-      async handler(server) {
-        const { host, port, https } = server.config.preview;
-        const hostname =
-          typeof host === "string" && !["0.0.0.0", "::"].includes(host) ? host : "localhost";
-        const origin = formatUrl({
-          hostname,
-          port,
-          protocol: https ? "https:" : "http:",
-        });
-        const localVars = [`BETTER_AUTH_URL=${JSON.stringify(origin)}`];
-        const secret = process.env["BETTER_AUTH_SECRET"];
-        if (typeof secret === "string") {
-          localVars.push(`BETTER_AUTH_SECRET=${JSON.stringify(secret)}`);
-        }
-
-        // Cloudflare loads preview bindings from the generated .dev.vars before process.env.
-        await appendFile(
-          path.resolve(server.config.root, "dist/server/.dev.vars"),
-          `\n${localVars.join("\n")}\n`,
-        );
-      },
-      order: "pre",
-    },
-    name: "preview-auth-url",
-  };
 }
 
 const fmtConfig = defineConfig({

@@ -28,11 +28,16 @@ jq --arg name "$PROJECT_NAME" '.name = $name' wrangler.jsonc > wrangler.jsonc.tm
 
 ## Local development and preview
 
+Both use `http://localhost:5173`; stop development before starting preview.
+
 Generate a local secret, migrate local D1, and start development:
 
 ```bash
-# Generate local auth values and apply local database migrations.
+# Generate local auth values for development and the explicit preview file.
 sed "s/<your-generated-secret>/$(openssl rand -hex 32)/" .dev.vars.example > .dev.vars
+cp .dev.vars .dev.vars.preview
+
+# Apply local database migrations.
 vp run db:migrate --local
 
 # Start the development server.
@@ -40,8 +45,8 @@ vp dev
 ```
 
 ```bash
-# Build and preview the compiled app locally.
-vp build && vp preview
+# Build and run the compiled Worker using .dev.vars.preview.
+vp build && vp run preview
 ```
 
 ## Cloudflare Workers production setup
