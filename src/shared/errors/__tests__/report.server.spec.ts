@@ -1,3 +1,4 @@
+import { getRequest } from "@tanstack/react-start/server";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { z } from "zod";
 
@@ -9,12 +10,31 @@ const { requestContext } = vi.hoisted(() => ({
 }));
 
 vi.mock(import("@tanstack/react-start/server"), () => ({
-  getRequest: () => requestContext.current,
+  getRequest: vi.fn<() => Request>(() => requestContext.current),
 }));
 
 describe("server error reporting", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+  });
+
+  it("reports a failure even when no Start request is active", () => {
+    expect.assertions(3);
+    // Arrange
+    const log = vi.spyOn(console, "error").mockImplementation(() => {
+      /* Expected reporting. */
+    });
+    vi.mocked(getRequest).mockImplementationOnce(() => {
+      throw new Error("No StartEvent found");
+    });
+
+    // Act
+    const reported = reportServerError(new Error("Background task failed"));
+
+    // Assert
+    expect(reported).toBeInstanceOf(UnexpectedError);
+    expect(reported.referenceId).toBeTypeOf("string");
+    expect(log).toHaveBeenCalledOnce();
   });
 
   it("reports once when the same error crosses multiple lifecycle hooks", () => {

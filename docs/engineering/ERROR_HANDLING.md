@@ -116,8 +116,9 @@ to their Standard Schema validators.
 ## Reporting and transport
 
 `reportServerError` in `src/shared/errors/report.server.ts` is the single reporting
-sink. It requires an active Start request context. The following native hooks
-feed it:
+sink. It uses the active Start request context for deduplication when one exists.
+Outside a request, it logs each call without deduplication. The following native
+hooks feed it:
 
 1. Global function middleware: handler, validation, authentication and operation
    failures, including direct server-function calls during SSR.
@@ -137,6 +138,11 @@ a future reporting integration needs a separately reviewed payload.
 Deduplication uses error identity **within each Request**. Crossing multiple hooks
 keeps the same reference ID and emits one report. Reusing an Error in another
 request produces another report. Request keys are weakly held.
+
+The server entry's outer `createServerEntry` scope remains active in its error
+catch even after the inner handler rejects asynchronously. Keep response helpers
+inside that scope so `handleStartError` preserves their state. A regression test
+uses the real Start context implementation to verify this behavior.
 
 The native serialization adapter sends only `kind`, `code`, safe `message` and
 `referenceId`. It reconstructs the category class, so `instanceof NotFoundError`

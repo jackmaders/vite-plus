@@ -22,7 +22,7 @@ const requestReports = new WeakMap<Request, WeakMap<Error, ReportedError>>();
  *
  * @param {unknown} cause - The original failure.
  *
- * @returns {AppError} A public error with a reference ID, deduplicated by error identity.
+ * @returns {AppError} A public error with a reference ID; deduplicated within an active request.
  */
 function reportServerError(cause: unknown): ReportedError {
   const reportedErrors = getRequestReports();
@@ -49,14 +49,19 @@ function createReportedError(cause: unknown) {
 }
 
 function getRequestReports() {
-  const request = getRequest();
-  const existing = requestReports.get(request);
-  if (existing) {
-    return existing;
+  try {
+    const request = getRequest();
+    const existing = requestReports.get(request);
+    if (existing) {
+      return existing;
+    }
+    const reports = new WeakMap<Error, ReportedError>();
+    requestReports.set(request, reports);
+    return reports;
+  } catch {
+    // Background tasks have no request scope in which to deduplicate reports.
+    return new WeakMap<Error, ReportedError>();
   }
-  const reports = new WeakMap<Error, ReportedError>();
-  requestReports.set(request, reports);
-  return reports;
 }
 
 function logServerError(error: AppError, cause: unknown) {
