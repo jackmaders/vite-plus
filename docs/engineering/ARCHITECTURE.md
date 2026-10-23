@@ -57,40 +57,46 @@ loader data fetching, or server functions.
 - Place shadcn UI primitives in `src/shared/ui/shadcn`.
 - Place reusable TanStack Form components in `src/shared/ui/form`.
 
-## TanStack integration in this repository
+## TanStack integration
 
-Use these repository conventions and first-party documentation checked against
-installed package versions. When managed skill examples differ, verify the API
-in the lockfile and installed package source before using them.
+- Follow repository conventions when managed skill examples conflict.
+- Verify version-sensitive APIs against the lockfile, installed source, and
+  [first-party migration guidance](https://tanstack.com/start/latest/docs/framework/react/migrate-from-release-candidate).
 
 ### Setup
 
-- Configure Start through its Vite plugin and the Cloudflare Vite integration.
-  Start owns route generation; the separate Router plugin is for standalone
-  Router applications. Follow the [Cloudflare Start guide](https://developers.cloudflare.com/workers/framework-guides/web-apps/tanstack-start/).
-- Create a `QueryClient` inside `getRouter()`: each SSR request gets its own
-  router and cache; the browser retains its router's cache during navigation.
-  `setupRouterSsrQueryIntegration` supplies the Query provider and handles SSR
-  dehydration, hydration, and streaming.
-- Use Start server routes with `createFileRoute` and `server.handlers` for
-  externally addressed HTTP endpoints. Follow the [server routes guide](https://tanstack.com/start/latest/docs/framework/react/guide/server-routes).
-- For streaming, await critical loader data and return promises for secondary
-  data rendered through Suspense and Await. Follow the [Start and Query guide](https://tanstack.com/start/latest/docs/framework/react/guide/tanstack-query).
-- Check migrations against installed versions, including the supported
-  `.validator(schema)` API. Follow the [stable migration guide](https://tanstack.com/start/latest/docs/framework/react/migrate-from-release-candidate).
+- Configure Start and Cloudflare through their Vite plugins. Start owns route
+  generation. Use the separate Router plugin for standalone Router apps.
+  See the [Cloudflare Start guide](https://developers.cloudflare.com/workers/framework-guides/web-apps/tanstack-start/).
+- Create a `QueryClient` inside `getRouter()` for each SSR request. The browser
+  retains its router's cache during navigation.
+- Use `setupRouterSsrQueryIntegration` for the Query provider, dehydration,
+  hydration, and streaming.
+- Use `createFileRoute` with `server.handlers` for external HTTP endpoints.
+  See the [server routes guide](https://tanstack.com/start/latest/docs/framework/react/guide/server-routes).
 
 ### Authenticated reads and writes
 
-The following fragments use a hypothetical records domain. Keep the thin route
-in the routing layer; the page, query options, mutation hooks, schemas, and
-operations belong to the owning page slice. The route imports through the
-slice's public API. Schemas, operations, and presentation components are
-supplied by the application.
+- Keep page logic, query options, mutations, schemas, and database operations
+  in the owning page slice. Import through its public API from routes.
+- Await `context.queryClient.query(options)` in the loader. Read the same
+  options with `useSuspenseQuery` in the page.
+- Keep privileged operations in server functions. Loaders also run in the browser.
+- Handle navigation and initial loader errors through Router. Use Query for
+  cached data, refetching, and mutation state.
+- Await critical data. Return promises for secondary data rendered with
+  Suspense and Await.
+- Call mutations through `useServerFn`. Return the query invalidation promise
+  from `onSuccess` to keep the mutation pending until refetching finishes.
+- Await `mutateAsync` in form submission handlers to propagate failures.
+- Set `Cache-Control: private, no-store` on personalized HTML. This controls HTTP
+  caching, separately from Query caching and server-function responses.
+- On sign-out or account switching, cancel and remove private queries and
+  reload authentication context.
+- See the [Start and Query guide](https://tanstack.com/start/latest/docs/framework/react/guide/tanstack-query)
+  for integration and cache lifecycle details.
 
-**Server functions** attach authentication and validation before delegating to
-Drizzle/D1 operations. The middleware supplies the session; reads and writes
-use its user ID to scope database access. Derive ownership fields from this
-context, including on inserts.
+Example server functions:
 
 ```ts
 const getRecordsFn = createServerFn({ method: "GET" })
@@ -105,9 +111,7 @@ const createRecordFn = createServerFn({ method: "POST" })
   );
 ```
 
-**Shared query options** keep the key and server-function call together.
-Loaders also run in the browser during navigation, so privileged operations
-stay behind server functions.
+Example shared query options:
 
 ```ts
 function recordsQueryOptions() {
@@ -118,9 +122,7 @@ function recordsQueryOptions() {
 }
 ```
 
-**The route** awaits initial data in the router's cache and delegates rendering
-to the page. Personalized HTML uses `private, no-store` to prevent HTTP caching;
-this is separate from the in-memory Query cache and server-function responses.
+Example route:
 
 ```tsx
 const Route = createFileRoute("/_authenticated/records")({
@@ -134,8 +136,7 @@ const Route = createFileRoute("/_authenticated/records")({
 export { Route };
 ```
 
-**The page**, in a separate module, reads the same query options and composes
-the domain UI.
+Example page, in a separate module:
 
 ```tsx
 function RecordsPage() {
@@ -146,10 +147,7 @@ function RecordsPage() {
 export { RecordsPage };
 ```
 
-**The mutation hook** calls the server function through `useServerFn` and
-invalidates the query that owns the displayed data. Return the invalidation
-promise to keep the mutation pending until the active query has refreshed.
-Forms await `mutateAsync` so submission failures reach their error UI.
+Example mutation hook:
 
 ```ts
 function useCreateRecord() {
@@ -163,22 +161,15 @@ function useCreateRecord() {
 }
 ```
 
-Router owns navigation and initial loader errors; Query owns cached data,
-refetching, and mutation state. Choose a Query freshness window for the
-application. On sign-out or account switching, cancel and remove the previous
-account's private queries and reload authentication context. Request-scoped
-SSR caches do not clear private browser caches. See the [Start and Query guide](https://tanstack.com/start/latest/docs/framework/react/guide/tanstack-query)
-for cache lifecycle and error recovery details.
-
 ### Validation and errors
 
-- Pass Zod schemas directly to `useAppForm` validators through Standard Schema
-  support. Follow the [Form submission guide](https://tanstack.com/form/latest/docs/framework/react/guides/submission-handling).
-- Form passes the original input to `onSubmit`, even when validators use a
-  transforming schema. Use `z.input<typeof schema>` for form values and call
-  `schema.parse(value)` in the handler when it needs transformed output.
-- A Start server-function `.validator(schema)` passes the validated schema
-  result to its handler, including Standard Schema transformations.
-- Render `<form.FormError />` within `<form.AppForm>` and `<form.Form>` to show
-  rejected submissions stored in `errorMap.onSubmit`. The shared wrapper uses
-  an explicit `FormSubmissionError` message or a generic fallback.
+- Pass Zod schemas directly to `useAppForm` validators through Standard Schema.
+- Use `z.input<typeof schema>` for form values. Form passes original input to
+  `onSubmit`; call `schema.parse(value)` when transformed output is needed.
+- Start's `.validator(schema)` passes validated and transformed output to its
+  handler.
+- Render `<form.FormError />` inside `<form.AppForm>` and `<form.Form>` to show
+  `errorMap.onSubmit`. Use `FormSubmissionError` for an explicit message;
+  other failures use the generic fallback.
+- See the [Form submission guide](https://tanstack.com/form/latest/docs/framework/react/guides/submission-handling)
+  for validation and transformation behavior.
