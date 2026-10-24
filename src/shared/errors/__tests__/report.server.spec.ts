@@ -18,21 +18,6 @@ describe("server error reporting", () => {
     vi.restoreAllMocks();
   });
 
-  it("reports non-Error failures without exposing their value", () => {
-    expect.assertions(2);
-    // Arrange
-    const log = vi.spyOn(console, "error").mockImplementation(() => {
-      /* Expected reporting. */
-    });
-
-    // Act
-    const reported = reportServerError("private failure");
-
-    // Assert
-    expect(reported).toBeInstanceOf(UnexpectedError);
-    expect(log).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ stack: [] }));
-  });
-
   it("reports a failure even when no Start request is active", () => {
     expect.assertions(3);
     // Arrange

@@ -1,3 +1,4 @@
+import { useHydrated } from "@tanstack/react-router";
 import type { ComponentProps } from "react";
 
 import { Button } from "@/shared/ui/shadcn/button";
@@ -19,6 +20,7 @@ function SubmitButton({
   type = "submit",
   ...props
 }: SubmitButtonProps) {
+  const hydrated = useHydrated();
   const form = useFormContext();
 
   return (
@@ -27,7 +29,7 @@ function SubmitButton({
         <Button
           {...props}
           aria-busy={isSubmitting}
-          disabled={Boolean(disabled) || !canSubmit || isSubmitting}
+          disabled={!hydrated || Boolean(disabled) || !canSubmit || isSubmitting}
           type={type}
         >
           {isSubmitting ? busyLabel : children}

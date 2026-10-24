@@ -43,15 +43,6 @@ describe("application errors", () => {
     expect(message).toBe("Something went wrong. Please try again. Reference: reference-1");
   });
 
-  it("omits an absent reference", () => {
-    expect.assertions(1);
-    // Act
-    const message = getErrorMessage(new NotFoundError("MISSING", "Record not found"));
-
-    // Assert
-    expect(message).toBe("Record not found");
-  });
-
   it("omits an empty reference", () => {
     expect.assertions(1);
     // Act

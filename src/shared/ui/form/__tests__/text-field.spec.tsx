@@ -2,6 +2,7 @@ import { createFormHookContexts } from "@tanstack/react-form";
 import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
+import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { createTextFieldFixture } from "@test/vitest/fixtures/form";
@@ -22,6 +23,18 @@ describe("text field component", () => {
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
+  });
+
+  it("disables the server-rendered input before hydration attaches its handlers", () => {
+    expect.assertions(1);
+    // Arrange
+    vi.mocked(useFieldContext<string>).mockReturnValueOnce(createTextFieldFixture() as never);
+
+    // Act
+    const view = renderToString(<TextField label="Email address" />);
+
+    // Assert
+    expect(view).toMatch(/<input[^>]* disabled=""/u);
   });
 
   it("renders a controlled text field with its label and forwarded props", () => {

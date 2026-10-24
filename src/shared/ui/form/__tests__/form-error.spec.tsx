@@ -1,5 +1,6 @@
 import { createFormHookContexts } from "@tanstack/react-form";
 import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -51,5 +52,22 @@ describe("form error component", () => {
     expect(screen.getByRole("alert").textContent).toContain("Invalid credentials");
     expect(screen.getByRole("alert").getAttribute("id")).toBe("submit-error");
     expect(screen.getByRole("alert").className).toContain("p-2");
+  });
+
+  it("clears submission feedback when retry is requested without a form element", async () => {
+    expect.assertions(1);
+    // Arrange
+    const user = userEvent.setup();
+    const form = useFormContext();
+    vi.mocked(form.Subscribe).mockImplementationOnce((({ children }: SubscribeHandlerProps) =>
+      (children as (state: unknown) => ReactElement)("Temporary failure")) as never);
+    render(<FormError />);
+
+    // Act
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+
+    // Assert
+    // eslint-disable-next-line no-undefined -- Assert the native Form API's cleared validation slot.
+    expect(form.setErrorMap).toHaveBeenCalledWith({ onSubmit: undefined });
   });
 });
