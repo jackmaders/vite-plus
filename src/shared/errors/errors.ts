@@ -1,120 +1,52 @@
-// eslint-disable-next-line max-classes-per-file -- Keep the closed error taxonomy together.
-interface AppErrorOptions extends ErrorOptions {
+interface ApplicationErrorOptions extends ErrorOptions {
   referenceId?: string | undefined;
-}
-
-/** Messages on application errors are deliberately safe for public display. */
-abstract class AppError extends Error {
-  public override name = "AppError";
-  public abstract readonly kind: ErrorKind;
-  public get status() {
-    return errorStatuses[this.kind];
-  }
-  public readonly code: string;
-  public readonly referenceId: string | undefined;
-
-  public constructor(code: string, message: string, options: AppErrorOptions = {}) {
-    super(message, options);
-    this.code = code;
-    this.referenceId = options.referenceId;
-  }
-}
-
-class ValidationError extends AppError {
-  public override name = "ValidationError";
-  public readonly kind = "validation";
-}
-
-class AuthenticationError extends AppError {
-  public override name = "AuthenticationError";
-  public readonly kind = "authentication";
-}
-
-class AuthorizationError extends AppError {
-  public override name = "AuthorizationError";
-  public readonly kind = "authorization";
-}
-
-class NotFoundError extends AppError {
-  public override name = "NotFoundError";
-  public readonly kind = "not_found";
-}
-
-class ConflictError extends AppError {
-  public override name = "ConflictError";
-  public readonly kind = "conflict";
-}
-
-class DependencyError extends AppError {
-  public override name = "DependencyError";
-  public readonly kind = "dependency";
-}
-
-class ClientOperationError extends AppError {
-  public override name = "ClientOperationError";
-  public readonly kind = "client_operation";
-}
-
-class UnexpectedError extends AppError {
-  public override name = "UnexpectedError";
-  public readonly kind = "unexpected";
+  status?: number;
 }
 
 const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again.";
+const DEFAULT_ERROR_STATUS = 500;
 
-const errorClasses = {
-  authentication: AuthenticationError,
-  authorization: AuthorizationError,
-  client_operation: ClientOperationError,
-  conflict: ConflictError,
-  dependency: DependencyError,
-  not_found: NotFoundError,
-  unexpected: UnexpectedError,
-  validation: ValidationError,
-};
+/** A failure with a stable code and a message deliberately safe for public display. */
+class ApplicationError extends Error {
+  public override name = "ApplicationError";
+  public readonly code: string;
+  public readonly referenceId: string | undefined;
+  public readonly status: number;
 
-type ErrorKind = keyof typeof errorClasses;
-
-const errorStatuses = {
-  authentication: 401,
-  authorization: 403,
-  client_operation: 500,
-  conflict: 409,
-  dependency: 503,
-  not_found: 404,
-  unexpected: 500,
-  validation: 400,
-};
-
-/** Ordinary client operations return this union; Query keeps its native result. */
-type Result<TData, TError extends Error = AppError> =
-  | { status: "success"; data: TData; error?: never }
-  | { status: "error"; data?: never; error: TError };
-
-function getErrorMessage(error: unknown): string {
-  if (!(error instanceof AppError)) {
-    return GENERIC_ERROR_MESSAGE;
+  /** Keep internal details in options.cause; the message is public. */
+  public constructor(code: string, clientMessage: string, options: ApplicationErrorOptions = {}) {
+    super(clientMessage, options);
+    this.code = code;
+    this.referenceId = options.referenceId;
+    this.status = options.status ?? DEFAULT_ERROR_STATUS;
   }
-  if ((error.referenceId?.length ?? 0) === 0) {
-    return error.message;
+
+  /**
+   * Normalize unknown failures without exposing their original messages.
+   *
+   * @param {unknown} cause - An application error or an unclassified failure.
+   *
+   * @returns {ApplicationError} The existing application error or a safe fallback retaining the
+   *   cause.
+   */
+  public static from(cause: unknown): ApplicationError {
+    if (cause instanceof ApplicationError) {
+      return cause;
+    }
+    return new ApplicationError("UNEXPECTED", GENERIC_ERROR_MESSAGE, { cause });
   }
-  return `${error.message} Reference: ${error.referenceId}`;
+
+  /**
+   * User-facing text, including a reference when the failure has been reported.
+   *
+   * @returns {string} The public message with an optional reference.
+   */
+  public get clientMessage(): string {
+    if ((this.referenceId?.length ?? 0) === 0) {
+      return this.message;
+    }
+    return `${this.message} Reference: ${this.referenceId}`;
+  }
 }
 
-export {
-  GENERIC_ERROR_MESSAGE,
-  AppError,
-  AuthenticationError,
-  AuthorizationError,
-  ClientOperationError,
-  ConflictError,
-  DependencyError,
-  NotFoundError,
-  UnexpectedError,
-  ValidationError,
-  errorClasses,
-  getErrorMessage,
-  type AppErrorOptions,
-  type ErrorKind,
-  type Result,
-};
+export { ApplicationError, GENERIC_ERROR_MESSAGE, type ApplicationErrorOptions };

@@ -1,16 +1,2 @@
-export {
-  AppError,
-  GENERIC_ERROR_MESSAGE,
-  errorClasses,
-  type ErrorKind,
-  AuthenticationError,
-  AuthorizationError,
-  ClientOperationError,
-  ConflictError,
-  DependencyError,
-  NotFoundError,
-  UnexpectedError,
-  ValidationError,
-  getErrorMessage,
-  type Result,
-} from "./errors";
+export { ApplicationError, GENERIC_ERROR_MESSAGE, type ApplicationErrorOptions } from "./errors";
+export type { Result } from "./result";
