@@ -111,8 +111,8 @@ writing comments, or applying function-level design conventions.
   return an empty collection. When absence is a distinct result callers
   must handle, use `null`.
 
-// todo: Document server-operation and TanStack Query error-handling conventions
-// after their approaches are agreed.
+- Follow [error handling](ERROR_HANDLING.md) for server exceptions, client results,
+  safe messages, reporting and TanStack integration.
 
 ## Component props
 

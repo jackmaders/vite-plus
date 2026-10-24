@@ -45,7 +45,9 @@ loader data fetching, or server functions.
 - Use `GET` for reads and `POST` for writes.
 - Keep server functions responsible for validation and middleware wiring.
   Handlers forward validated input and context to extracted server operations.
-- When a server function accepts input, validate it with `.validator(schema)`.
+- When a server function accepts input, validate it with `.validator(...)`.
+  For typed Zod failures, use a functional validator calling `schema.parse(input)`;
+  see [error handling](ERROR_HANDLING.md) for the installed-version behavior.
 - When a server function requires authentication, attach authentication
   middleware.
 - When an operation accesses user-owned data, pass the authenticated user
@@ -105,7 +107,7 @@ const getRecordsFn = createServerFn({ method: "GET" })
 
 const createRecordFn = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator(createRecordInputSchema)
+  .validator((input: CreateRecordInput) => createRecordInputSchema.parse(input))
   .handler(
     async ({ context, data }) => await createRecord(data, { userId: context.session.user.id }),
   );
@@ -166,10 +168,11 @@ function useCreateRecord() {
 - Pass Zod schemas directly to `useAppForm` validators through Standard Schema.
 - Use `z.input<typeof schema>` for form values. Form passes original input to
   `onSubmit`; call `schema.parse(value)` when transformed output is needed.
-- Start's `.validator(schema)` passes validated and transformed output to its
-  handler.
+- Start's validator passes validated and transformed output to its handler.
 - Render `<form.FormError />` inside `<form.AppForm>` and `<form.Form>` to show
   `errorMap.onSubmit`. Use `FormSubmissionError` for an explicit message;
   other failures use the generic fallback.
 - See the [Form submission guide](https://tanstack.com/form/latest/docs/framework/react/guides/submission-handling)
   for validation and transformation behavior.
+- Follow [error handling](ERROR_HANDLING.md) for the representative implementation,
+  server reporting, serialization, client results and route recovery.
