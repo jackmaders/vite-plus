@@ -223,6 +223,9 @@ importers:
       drizzle-orm:
         specifier: ^1.0.0-rc.4
         version: 1.0.0-rc.5-ab785fc(zod@4.6.7)
+      isbot:
+        specifier: ^5.2.2
+        version: 5.2.2
       lucide-react:
         specifier: ^1.59.0
         version: 1.59.0(@types/react@19.3.0)(react@19.3.1)

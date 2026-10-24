@@ -12,7 +12,7 @@
       "migrations_pattern": "drizzle/*/migration.sql"
     }
   ],
-  "main": "@tanstack/react-start/server-entry",
+  "main": "src/app/server.ts",
   "observability": {
     "enabled": true,
     "traces": {
