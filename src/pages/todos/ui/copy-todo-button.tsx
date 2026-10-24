@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import type { Todo } from "@/shared/db";
-import { getErrorMessage } from "@/shared/errors";
 import { Button } from "@/shared/ui/shadcn/button";
 import { FieldError } from "@/shared/ui/shadcn/field";
 
@@ -18,7 +17,7 @@ function CopyTodoButton({ todo }: { todo: Todo }) {
     setPending(false);
     if (result.status === "error") {
       setMessage("");
-      setError(getErrorMessage(result.error));
+      setError(result.error.clientMessage);
       return;
     }
     setError("");

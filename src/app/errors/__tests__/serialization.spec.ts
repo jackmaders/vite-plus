@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { NotFoundError } from "@/shared/errors";
+import { ApplicationError } from "@/shared/errors";
 
 import { errorSerializationAdapter } from "../serialization";
 
@@ -16,16 +16,17 @@ describe("server error serialization", () => {
     vi.restoreAllMocks();
   });
 
-  it("round trips a specific class without server details", () => {
+  it("round trips application metadata and client text without server details", () => {
     expect.hasAssertions();
 
     // Arrange
     vi.spyOn(console, "warn").mockImplementation(() => {
       /* Expected serialization reporting. */
     });
-    const error = new NotFoundError("TODO_NOT_FOUND", "Todo not found", {
+    const error = new ApplicationError("TODO_NOT_FOUND", "Todo not found", {
       cause: new Error("private database parameters"),
       referenceId: "reference-1",
+      status: 404,
     });
 
     // Act
@@ -33,8 +34,13 @@ describe("server error serialization", () => {
     const restored = errorSerializationAdapter.fromSerializable(payload);
 
     // Assert
-    expect(restored).toBeInstanceOf(NotFoundError);
-    expect(restored).toMatchObject({ code: "TODO_NOT_FOUND", referenceId: "reference-1" });
+    expect(restored).toBeInstanceOf(ApplicationError);
+    expect(restored).toMatchObject({
+      clientMessage: "Todo not found Reference: reference-1",
+      code: "TODO_NOT_FOUND",
+      referenceId: "reference-1",
+      status: 404,
+    });
     expect(JSON.stringify(payload)).not.toContain("private database parameters");
     expect(restored.cause).toBeUndefined();
   });

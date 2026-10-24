@@ -3,7 +3,7 @@ import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { getRouter } from "@/app/router";
-import { DependencyError, ValidationError } from "@/shared/errors";
+import { ApplicationError } from "@/shared/errors";
 
 vi.mock(import("@tanstack/react-router-ssr-query"));
 
@@ -23,7 +23,7 @@ describe("query retry policy", () => {
   it.each([
     { error: new Error("offline"), expected: false, failures: 0, server: true },
     {
-      error: new ValidationError("INVALID", "Invalid input"),
+      error: new ApplicationError("INVALID", "Invalid input", { status: 400 }),
       expected: false,
       failures: 0,
       server: false,
@@ -31,13 +31,13 @@ describe("query retry policy", () => {
     { error: new Error("offline"), expected: true, failures: 0, server: false },
     { error: new Error("offline"), expected: false, failures: 2, server: false },
     {
-      error: new DependencyError("DB_FAILED", "Unavailable"),
+      error: new ApplicationError("DB_FAILED", "Unavailable", { status: 503 }),
       expected: true,
       failures: 0,
       server: false,
     },
     {
-      error: new DependencyError("DB_FAILED", "Unavailable"),
+      error: new ApplicationError("DB_FAILED", "Unavailable", { status: 503 }),
       expected: false,
       failures: 2,
       server: false,

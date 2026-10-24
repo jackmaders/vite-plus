@@ -1,7 +1,7 @@
 import { useState, type ComponentProps } from "react";
 
 import type { Todo } from "@/shared/db";
-import { getErrorMessage } from "@/shared/errors";
+import { ApplicationError } from "@/shared/errors";
 import { Button } from "@/shared/ui/shadcn/button";
 import {
   Dialog,
@@ -42,7 +42,9 @@ export function DeleteTodoDialog({
           <DialogDescription>Are you sure? This action is not reversible</DialogDescription>
         </DialogHeader>
 
-        {deletion.isError && <FieldError>{getErrorMessage(deletion.error)}</FieldError>}
+        {deletion.isError && (
+          <FieldError>{ApplicationError.from(deletion.error).clientMessage}</FieldError>
+        )}
 
         <DialogFooter>
           <DialogClose render={() => <Button variant="ghost">Cancel</Button>} />

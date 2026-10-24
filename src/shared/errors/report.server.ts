@@ -3,16 +3,10 @@ import "@tanstack/react-start/server-only";
 import { getRequest } from "@tanstack/react-start/server";
 import { ZodError } from "zod";
 
-import {
-  AppError,
-  GENERIC_ERROR_MESSAGE,
-  UnexpectedError,
-  ValidationError,
-  errorClasses,
-} from "./errors";
+import { ApplicationError } from "./errors";
 
 const MIN_SERVER_ERROR_STATUS = 500;
-type ReportedError = AppError & { referenceId: string };
+type ReportedError = ApplicationError & { referenceId: string };
 
 // Request keys prevent one reused Error from suppressing reports on later requests.
 const requestReports = new WeakMap<Request, WeakMap<Error, ReportedError>>();
@@ -22,12 +16,13 @@ const requestReports = new WeakMap<Request, WeakMap<Error, ReportedError>>();
  *
  * @param {unknown} cause - The original failure.
  *
- * @returns {AppError} A public error with a reference ID; deduplicated within an active request.
+ * @returns {ApplicationError} A public error with a reference ID; deduplicated within an active
+ *   request.
  */
 function reportServerError(cause: unknown): ReportedError {
   const reportedErrors = getRequestReports();
   const previous = cause instanceof Error && reportedErrors.get(cause);
-  if (previous instanceof AppError) {
+  if (previous instanceof ApplicationError) {
     return previous;
   }
 
@@ -43,9 +38,12 @@ function reportServerError(cause: unknown): ReportedError {
 
 function createReportedError(cause: unknown) {
   const error = classifyError(cause);
-  return Object.assign(new errorClasses[error.kind](error.code, error.message, { cause }), {
-    referenceId: error.referenceId ?? crypto.randomUUID(),
-  });
+  return Object.assign(
+    new ApplicationError(error.code, error.message, { cause, status: error.status }),
+    {
+      referenceId: error.referenceId ?? crypto.randomUUID(),
+    },
+  );
 }
 
 function getRequestReports() {
@@ -64,11 +62,10 @@ function getRequestReports() {
   }
 }
 
-function logServerError(error: AppError, cause: unknown) {
+function logServerError(error: ApplicationError, cause: unknown) {
   const entry = {
     code: error.code,
     event: "application_error",
-    kind: error.kind,
     referenceId: error.referenceId,
     // Vendor messages can contain SQL, parameters or credentials. Keep frames only.
     stack:
@@ -84,16 +81,17 @@ function logServerError(error: AppError, cause: unknown) {
   }
 }
 
-function classifyError(cause: unknown): AppError {
-  if (cause instanceof AppError) {
+function classifyError(cause: unknown): ApplicationError {
+  if (cause instanceof ApplicationError) {
     return cause;
   }
   if (cause instanceof ZodError) {
-    return new ValidationError("INVALID_INPUT", "Please check your input and try again.", {
+    return new ApplicationError("INVALID_INPUT", "Please check your input and try again.", {
       cause,
+      status: 400,
     });
   }
-  return new UnexpectedError("UNEXPECTED", GENERIC_ERROR_MESSAGE, { cause });
+  return ApplicationError.from(cause);
 }
 
 function isStackFrame(line: string) {

@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import { useDeleteTodo } from "@/pages/todos/api/use-delete-todo";
 import { DeleteTodoDialog } from "@/pages/todos/ui/delete-todo-dialog";
-import { NotFoundError } from "@/shared/errors";
+import { ApplicationError } from "@/shared/errors";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
 
 vi.mock(import("@/pages/todos/api/use-delete-todo"));
@@ -37,7 +37,7 @@ describe("delete todo dialog", () => {
     // Arrange
     const user = userEvent.setup();
     vi.mocked(useDeleteTodo).mockReturnValue({
-      error: new NotFoundError("TODO_NOT_FOUND", "Todo not found"),
+      error: new ApplicationError("TODO_NOT_FOUND", "Todo not found", { status: 404 }),
       isError: true,
       isPending: false,
       mutate: mockDeleteTodo,

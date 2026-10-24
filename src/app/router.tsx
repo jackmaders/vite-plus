@@ -2,7 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 
-import { AppError, DependencyError } from "@/shared/errors";
+import { ApplicationError } from "@/shared/errors";
 
 import { RouteError } from "./errors/route-error";
 import { routeTree } from "./routeTree.gen";
@@ -34,10 +34,11 @@ export function getRouter() {
 
 function retryQuery(failureCount: number, error: Error) {
   const MAX_READ_RETRIES = 2;
+  const SERVICE_UNAVAILABLE_STATUS = 503;
   if (import.meta.env.SSR) {
     return false;
   }
-  if (error instanceof AppError && !(error instanceof DependencyError)) {
+  if (error instanceof ApplicationError && error.status !== SERVICE_UNAVAILABLE_STATUS) {
     return false;
   }
   return failureCount < MAX_READ_RETRIES;

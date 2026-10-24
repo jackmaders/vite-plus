@@ -6,7 +6,7 @@ import type {
 } from "@tanstack/react-start/server";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { UnexpectedError } from "@/shared/errors";
+import { ApplicationError } from "@/shared/errors";
 
 import entry from "../server";
 
@@ -16,7 +16,7 @@ const mocks = vi.hoisted(() => ({
   fallback: vi.fn<(error: unknown) => Response>(),
   handler: vi.fn<RequestHandler<unknown>>(),
   header: vi.fn<typeof setResponseHeader>(),
-  report: vi.fn<(error: unknown) => UnexpectedError & { referenceId: string }>(),
+  report: vi.fn<(error: unknown) => ApplicationError & { referenceId: string }>(),
   stream: vi.fn<typeof defaultStreamHandler>(),
   streamHandler: {
     current: async (_context: StreamContext) => await Promise.resolve(new Response()),
@@ -58,7 +58,7 @@ describe("server entry reporting", () => {
     expect.hasAssertions();
     // Arrange
     const error = new Error("Private initialization failure");
-    const reported = Object.assign(new UnexpectedError("UNEXPECTED", "Please try again"), {
+    const reported = Object.assign(new ApplicationError("UNEXPECTED", "Please try again"), {
       referenceId: "ref-1",
     });
     mocks.handler.mockRejectedValueOnce(error);

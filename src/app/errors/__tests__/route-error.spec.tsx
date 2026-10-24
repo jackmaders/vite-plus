@@ -4,7 +4,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { NotFoundError } from "@/shared/errors";
+import { ApplicationError } from "@/shared/errors";
 
 import { RouteError } from "../route-error";
 
@@ -28,7 +28,10 @@ describe("route error recovery", () => {
     const reset = vi.fn<() => void>();
     render(
       <QueryClientProvider client={new QueryClient()}>
-        <RouteError error={new NotFoundError("MISSING", "Record not found")} reset={reset} />
+        <RouteError
+          error={new ApplicationError("MISSING", "Record not found", { status: 404 })}
+          reset={reset}
+        />
       </QueryClientProvider>,
     );
 

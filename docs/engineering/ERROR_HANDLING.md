@@ -41,60 +41,56 @@ There are no per-operation error-handling decorators. `createServerFn` handlers
 retain their validation, authentication middleware, and direct operation calls.
 Global middleware is configured once in `src/app/start.ts`.
 
-## Error categories and codes
+## Application errors and codes
 
-Classes live in `src/shared/errors`. A category represents a recovery policy;
-codes identify cases within that category. Create new **instances**, with stable
-codes, for individual failures. A reference ID identifies one reported occurrence.
-
-| Class                  | Status | Example code                      | Typical handling                                        |
-| ---------------------- | ------ | --------------------------------- | ------------------------------------------------------- |
-| `ValidationError`      | 400    | `INVALID_INPUT`                   | Correct input                                           |
-| `AuthenticationError`  | 401    | `SESSION_REQUIRED`                | Sign in again                                           |
-| `AuthorizationError`   | 403    | `ACTION_FORBIDDEN`                | Explain unavailable access                              |
-| `NotFoundError`        | 404    | `TODO_NOT_FOUND`                  | Refresh or leave a stale record                         |
-| `ConflictError`        | 409    | `RECORD_CHANGED`                  | Refresh and reconcile                                   |
-| `DependencyError`      | 503    | `TODO_UPDATE_FAILED`              | Explain a dependency failure; inspect the server report |
-| `ClientOperationError` | 500    | `CLIPBOARD_WRITE_FAILED`          | Recover locally                                         |
-| `UnexpectedError`      | 500    | `TODO_CREATE_EMPTY`, `UNEXPECTED` | Generic message and reference ID                        |
-
-The current flow exercises validation, authentication, missing records,
-dependencies, local browser failures, and unexpected failures. Authorization and
-conflict are available categories; the todo flow does not invent those cases.
-Status describes the category. Start owns the RPC envelope and its transport
-status; callers should use the decoded error class and code.
+`ApplicationError` in `src/shared/errors` is the application failure class. Its
+stable `code` identifies the exact failure; `status` supports logging and read
+retry policy. A reference ID identifies one reported occurrence. Create a new
+instance for each failure rather than adding category subclasses.
 
 ```ts
-throw new NotFoundError("TODO_NOT_FOUND", "Todo not found");
+throw new ApplicationError("TODO_NOT_FOUND", "Todo not found", { status: 404 });
 
-throw new DependencyError("TODO_UPDATE_FAILED", "Unable to save your todo. Please try again.", {
+throw new ApplicationError("TODO_UPDATE_FAILED", "Unable to save your todo. Please try again.", {
   cause: error,
+  status: 503,
 });
 ```
 
-Every application error message is deliberately safe to display. Put vendor
-exceptions and internal details in `cause`, never interpolate them into the
-public message. Unclassified errors become `UnexpectedError` with the generic
-message. Do not instantiate the abstract `AppError` base.
+The constructor message is deliberately safe for public display. Read
+`error.clientMessage` in the UI to include the message and any reference ID.
+Put vendor exceptions and internal details in `cause`, never interpolate them
+into the public message. `ApplicationError.from(unknown)` preserves existing
+application errors and wraps unknown failures with code `UNEXPECTED`, a generic
+message, and the original cause. Status defaults to 500.
 
-`errorClasses` is the single reconstruction registry. Add a category there and
-to its status mapping when a new recovery policy warrants it; use another code
-for another instance of an existing policy.
+| Example code                      | Status | Typical handling                                      |
+| --------------------------------- | ------ | ----------------------------------------------------- |
+| `INVALID_INPUT`                   | 400    | Correct input                                         |
+| `SESSION_REQUIRED`                | 401    | Sign in again                                         |
+| `TODO_NOT_FOUND`                  | 404    | Refresh or leave a stale record                       |
+| `TODO_UPDATE_FAILED`              | 503    | Retry a dependency failure; inspect the server report |
+| `CLIPBOARD_WRITE_FAILED`          | 500    | Recover locally                                       |
+| `TODO_CREATE_EMPTY`, `UNEXPECTED` | 500    | Generic message and reference ID                      |
+
+Start owns the RPC envelope and its transport status; callers should use the
+decoded application error's code and status. `FormSubmissionError` remains a
+separate, form-specific error for existing client submission messages.
 
 ## Database and validation
 
-The todo operations translate rejected Drizzle operations into `DependencyError`,
+The todo operations translate rejected Drizzle operations into `ApplicationError` with status 503,
 preserving the original exception as `cause`. There is no driver wrapper and no
 schema migration. Empty lists remain successful empty lists. An update or delete
-that returns no owned row throws `NotFoundError`, whether the ID is absent or
+that returns no owned row throws `ApplicationError` with code `TODO_NOT_FOUND` and status 404, whether the ID is absent or
 belongs to another user. An insert that unexpectedly returns no row throws
-`UnexpectedError`.
+`ApplicationError` with code `TODO_CREATE_EMPTY`.
 
 Drizzle's `DrizzleQueryError` contains the query and parameters in its message.
 Those details must not become UI text or serialized error properties. This
 implementation does not guess SQLite constraint categories from vendor messages.
 If a future operation needs conflict recovery, translate a verified driver signal
-to `ConflictError` at that operation.
+to an `ApplicationError` with a specific code and status 409 at that operation.
 [Drizzle source](https://github.com/drizzle-team/drizzle-orm/blob/main/drizzle-orm/src/errors.ts),
 [D1 error handling](https://developers.cloudflare.com/d1/observability/debug-d1/).
 
@@ -106,7 +102,7 @@ Todo server functions use Start's native functional validator:
 
 This is intentional: the installed Start Standard Schema validator throws a plain
 `Error` containing serialized issues, while `.parse()` preserves `ZodError`.
-Global middleware can then classify it as `ValidationError("INVALID_INPUT", ...)`
+Global middleware can then classify it as `ApplicationError` with code `INVALID_INPUT` and status 400
 without parsing error-message text. Browser forms still pass Zod schemas directly
 to their Standard Schema validators.
 [Start validation](https://tanstack.com/start/latest/docs/framework/react/guide/server-functions),
@@ -129,7 +125,7 @@ hooks feed it:
 5. The serialization adapter: a final normalization point for serialized Errors,
    including errors retained in Router's hydration state.
 
-Reports include category, code, reference ID, status and stack frames. Expected
+Reports include code, reference ID, status and stack frames. Expected
 client-correctable failures log at warning level; server failures log at error
 level. Routine logs omit raw messages, request bodies, cookies, SQL, parameters
 and cause contents. The original cause remains available inside the request if
@@ -144,9 +140,9 @@ catch even after the inner handler rejects asynchronously. Keep response helpers
 inside that scope so `handleStartError` preserves their state. A regression test
 uses the real Start context implementation to verify this behavior.
 
-The native serialization adapter sends only `kind`, `code`, safe `message` and
-`referenceId`. It reconstructs the category class, so `instanceof NotFoundError`
-works after RPC and hydration. Server `stack` and `cause` never cross that adapter.
+The native serialization adapter sends only `code`, safe `message`, `status` and
+`referenceId`. It reconstructs `ApplicationError`, so `instanceof ApplicationError`
+and `clientMessage` work after RPC and hydration. Server `stack` and `cause` never cross that adapter.
 Start's default error serializer would lose custom classes and codes.
 [Native serialization adapter API](https://github.com/TanStack/router/blob/main/packages/router-core/src/ssr/serializer/transformer.ts).
 
@@ -173,16 +169,17 @@ exceptions and do not automatically pass through this sink.
 
 ## Client and React usage
 
-`Result` uses the same `data` and `error` names as Query, with two final states:
+`Result` lives in `src/shared/errors/result.ts` and is exported through the public
+index. It uses the same `data` and `error` names as Query, with two final states:
 
 ```ts
-type Result<Data, Failure extends Error = AppError> =
+type Result<Data, Failure extends Error = ApplicationError> =
   | { status: "success"; data: Data; error?: never }
   | { status: "error"; data?: never; error: Failure };
 
 const result = await copyTodo(todo);
 if (result.status === "error") {
-  setError(getErrorMessage(result.error));
+  setError(result.error.clientMessage);
   return;
 }
 // result.data is now a string, rather than string | undefined.
@@ -214,7 +211,7 @@ entry script to verify this state, then release it and verify that inputs enable
 The delete dialog uses native `mutate` and the mutation's discriminated error
 state. All todo mutation hooks await query invalidation before their success
 callback. Writes have no automatic retries. Read retries are disabled during SSR;
-in the browser, dependency and unclassified transport failures get at most two
+in the browser, status 503 application errors and unclassified transport failures get at most two
 retries. Classified application failures such as missing records and invalid
 input do not retry automatically.
 
@@ -231,7 +228,7 @@ asynchronous callbacks, which is why the clipboard operation returns a result.
 ## Applying this elsewhere
 
 1. Translate vendor failures where the vendor operation is performed. Preserve
-   `cause`, choose an existing category and a stable code, and write safe messages.
+   `cause`, choose a stable code and appropriate status, and write a safe message.
 2. Keep server functions and Query functions throwing. Global registration already
    supplies reporting and serialization; add no error decorator to an operation.
 3. Return `Result` from ordinary client operations and branch in the consuming UI.
