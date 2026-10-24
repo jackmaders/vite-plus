@@ -107,6 +107,9 @@ jobs:
           path: .
       - name: Migrate local database
         run: vp run db:migrate --local
+      - name: Configure local preview bindings
+        run: |
+          printf '%s\n' 'BETTER_AUTH_URL=http://localhost:4173' 'BETTER_AUTH_SECRET=template-ci-local-only-secret-value' > dist/server/.dev.vars
       - name: Run browser tests
         uses: ./.github/actions/run-playwright
         env:
