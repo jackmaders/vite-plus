@@ -24,6 +24,7 @@ interface MockMiddlewareBuilder {
 
 function createMockServerFn(): MockServerFnBuilder {
   const middlewares: MiddlewareOption[] = [];
+  let validate = acceptInput;
 
   const builder: MockServerFnBuilder = {
     handler: (fn) => async (opts) => {
@@ -43,13 +44,18 @@ function createMockServerFn(): MockServerFnBuilder {
           });
         }
       }
-      return fn({ context, data: opts?.data });
+      return fn({ context, data: validate(opts?.data) });
     },
     middleware: (list) => {
       middlewares.push(...list);
       return builder;
     },
-    validator: () => builder,
+    validator: (validator) => {
+      if (typeof validator === "function") {
+        validate = validator as (input: unknown) => unknown;
+      }
+      return builder;
+    },
   };
   return builder;
 }
@@ -66,3 +72,7 @@ const createMiddleware = vi.fn<() => MockMiddlewareBuilder>(() => ({
 }));
 
 export { createMiddleware, createServerFn };
+
+function acceptInput(input: unknown): unknown {
+  return input;
+}
