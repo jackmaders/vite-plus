@@ -1,6 +1,7 @@
 import { createFormHookContexts } from "@tanstack/react-form";
 import { cleanup, render, screen } from "@testing-library/react";
 import type { ReactElement } from "react";
+import { renderToString } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { SubmitButton } from "../submit-button";
@@ -18,6 +19,15 @@ describe("submit button component", () => {
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
+  });
+
+  it("disables server-rendered submission before hydration attaches its handler", () => {
+    expect.assertions(1);
+    // Act
+    const view = renderToString(<SubmitButton>Save</SubmitButton>);
+
+    // Assert
+    expect(view).toMatch(/<button[^>]* disabled=""/u);
   });
 
   it("renders an enabled submit button by default and forwards props", () => {

@@ -1,3 +1,4 @@
+import { useHydrated } from "@tanstack/react-router";
 import { useCallback, useId, type ChangeEvent, type ComponentProps } from "react";
 
 import { Field, FieldError, FieldLabel } from "@/shared/ui/shadcn/field";
@@ -17,6 +18,7 @@ function selectIsSubmitting(state: { isSubmitting: boolean }) {
 }
 
 function TextField({ disabled, label, ...props }: TextFieldProps) {
+  const hydrated = useHydrated();
   const field = useFieldContext<string>();
   const form = useFormContext();
   const id = useId();
@@ -40,7 +42,7 @@ function TextField({ disabled, label, ...props }: TextFieldProps) {
             {...props}
             {...(isInvalid ? { "aria-describedby": errorId } : {})}
             aria-invalid={isInvalid}
-            disabled={Boolean(disabled) || isSubmitting}
+            disabled={!hydrated || Boolean(disabled) || isSubmitting}
             id={id}
             name={field.name}
             onBlur={field.handleBlur}

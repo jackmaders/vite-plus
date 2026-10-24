@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 
 import { useDeleteTodo } from "@/pages/todos/api/use-delete-todo";
 import { DeleteTodoDialog } from "@/pages/todos/ui/delete-todo-dialog";
+import { NotFoundError } from "@/shared/errors";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
 
 vi.mock(import("@/pages/todos/api/use-delete-todo"));
@@ -29,6 +30,26 @@ describe("delete todo dialog", () => {
   afterEach(() => {
     cleanup();
     vi.clearAllMocks();
+  });
+
+  it("shows a typed failure while leaving the confirmation open", async () => {
+    expect.hasAssertions();
+    // Arrange
+    const user = userEvent.setup();
+    vi.mocked(useDeleteTodo).mockReturnValue({
+      error: new NotFoundError("TODO_NOT_FOUND", "Todo not found"),
+      isError: true,
+      isPending: false,
+      mutate: mockDeleteTodo,
+    } as never);
+    render(<DeleteTodoDialog todo={mockTodo} />);
+
+    // Act
+    await user.click(screen.getByRole("button", { name: "Delete Item" }));
+
+    // Assert
+    expect(screen.getByRole("alert").textContent).toBe("Todo not found");
+    expect(screen.getByRole("dialog")).toBeDefined();
   });
 
   it("renders trigger and opens dialog on click", async () => {
