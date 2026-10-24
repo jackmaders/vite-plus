@@ -72,7 +72,7 @@ describe("session.server ensureSession", () => {
     // Act & Assert
     await expect(ensureSession()).rejects.toMatchObject({
       code: "SESSION_REQUIRED",
-      name: "AuthenticationError",
+      name: "ApplicationError",
     });
   });
 });

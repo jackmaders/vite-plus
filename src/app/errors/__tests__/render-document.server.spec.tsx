@@ -6,7 +6,7 @@ import type {
 import type { renderToReadableStream } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { UnexpectedError } from "@/shared/errors";
+import { ApplicationError } from "@/shared/errors";
 
 import { renderDocument } from "../render-document.server";
 
@@ -15,7 +15,7 @@ type RenderContext = Parameters<typeof renderDocument>[0];
 const mocks = vi.hoisted(() => ({
   isbot: vi.fn<(agent?: string | null) => boolean>(),
   render: vi.fn<typeof renderToReadableStream>(),
-  report: vi.fn<(error: unknown) => UnexpectedError & { referenceId: string }>(),
+  report: vi.fn<(error: unknown) => ApplicationError & { referenceId: string }>(),
   transform: vi.fn<typeof transformReadableStreamWithRouter>(),
   wait: vi.fn<(ready: Promise<void>, signal: AbortSignal) => Promise<void>>(),
 }));
@@ -83,7 +83,7 @@ describe("workers streaming renderer", () => {
     const { context } = createRenderContext();
     const error = new Error("render failed");
     mocks.report.mockReturnValue(
-      Object.assign(new UnexpectedError("UNEXPECTED", "Please try again"), {
+      Object.assign(new ApplicationError("UNEXPECTED", "Please try again"), {
         referenceId: "ref-render",
       }),
     );

@@ -1,6 +1,6 @@
 import { getRequestHeaders } from "@tanstack/react-start/server";
 
-import { AuthenticationError } from "../errors";
+import { ApplicationError } from "../errors";
 import { auth } from "./auth.server";
 
 async function getSession() {
@@ -13,7 +13,7 @@ async function ensureSession() {
   const session = await getSession();
 
   if (!session) {
-    throw new AuthenticationError("SESSION_REQUIRED", "Please sign in to continue.");
+    throw new ApplicationError("SESSION_REQUIRED", "Please sign in to continue.", { status: 401 });
   }
 
   return session;

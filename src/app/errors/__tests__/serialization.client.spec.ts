@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 
-import { NotFoundError, UnexpectedError } from "@/shared/errors";
+import { ApplicationError } from "@/shared/errors";
 
 import { errorSerializationAdapter } from "../serialization";
 
@@ -15,13 +15,13 @@ describe("client serialization", () => {
   it("keeps typed error metadata", () => {
     expect.assertions(1);
     // Arrange
-    const error = new NotFoundError("TODO_NOT_FOUND", "Todo not found");
+    const error = new ApplicationError("TODO_NOT_FOUND", "Todo not found", { status: 404 });
 
     // Act
     const serialized = errorSerializationAdapter.toSerializable(error);
 
     // Assert
-    expect(serialized).toMatchObject({ code: "TODO_NOT_FOUND", kind: "not_found" });
+    expect(serialized).toMatchObject({ code: "TODO_NOT_FOUND", status: 404 });
   });
 
   it("hides unclassified error details", () => {
@@ -34,7 +34,7 @@ describe("client serialization", () => {
     const restored = errorSerializationAdapter.fromSerializable(serialized);
 
     // Assert
-    expect(restored).toBeInstanceOf(UnexpectedError);
+    expect(restored).toBeInstanceOf(ApplicationError);
     expect(serialized.message).toBe("Something went wrong. Please try again.");
   });
 });

@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { ClientOperationError } from "@/shared/errors";
+import { ApplicationError } from "@/shared/errors";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
 
 import { copyTodo } from "../copy-todo";
@@ -25,7 +25,7 @@ describe("copy todo client operation", () => {
 
     // Assert
     expect(result.status).toBe("error");
-    expect(result.error).toBeInstanceOf(ClientOperationError);
+    expect(result.error).toBeInstanceOf(ApplicationError);
     expect(result.error?.code).toBe("CLIPBOARD_WRITE_FAILED");
   });
 

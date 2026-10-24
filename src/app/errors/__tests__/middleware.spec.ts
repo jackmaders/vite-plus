@@ -1,7 +1,7 @@
 import { notFound, redirect } from "@tanstack/react-router";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { NotFoundError, UnexpectedError } from "@/shared/errors";
+import { ApplicationError } from "@/shared/errors";
 
 import { functionErrorMiddleware, requestErrorMiddleware } from "../middleware";
 
@@ -25,7 +25,7 @@ describe("native error middleware", () => {
     vi.spyOn(console, "warn").mockImplementation(() => {
       /* Expected reporting. */
     });
-    const error = new NotFoundError("TODO_NOT_FOUND", "Todo not found");
+    const error = new ApplicationError("TODO_NOT_FOUND", "Todo not found", { status: 404 });
     const next = vi.fn<() => Promise<never>>().mockRejectedValue(error);
 
     // Act
@@ -34,7 +34,7 @@ describe("native error middleware", () => {
     // Assert
     await expect(result).rejects.toMatchObject({
       code: "TODO_NOT_FOUND",
-      name: "NotFoundError",
+      name: "ApplicationError",
       referenceId: expect.any(String) as unknown,
     });
   });
@@ -52,7 +52,7 @@ describe("native error middleware", () => {
     const result = requestErrorMiddleware.options.server?.({ next } as never);
 
     // Assert
-    await expect(result).rejects.toBeInstanceOf(UnexpectedError);
+    await expect(result).rejects.toBeInstanceOf(ApplicationError);
   });
 
   it.each([redirect({ to: "/" }), notFound(), new Response(null, { status: 403 })])(

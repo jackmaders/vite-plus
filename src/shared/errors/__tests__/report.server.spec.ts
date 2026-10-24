@@ -2,7 +2,7 @@ import { getRequest } from "@tanstack/react-start/server";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 import { z } from "zod";
 
-import { NotFoundError, UnexpectedError, ValidationError } from "../index";
+import { ApplicationError } from "../index";
 import { reportServerError } from "../report.server";
 
 const { requestContext } = vi.hoisted(() => ({
@@ -32,7 +32,7 @@ describe("server error reporting", () => {
     const reported = reportServerError(new Error("Background task failed"));
 
     // Assert
-    expect(reported).toBeInstanceOf(UnexpectedError);
+    expect(reported).toBeInstanceOf(ApplicationError);
     expect(reported.referenceId).toBeTypeOf("string");
     expect(log).toHaveBeenCalledOnce();
   });
@@ -44,7 +44,7 @@ describe("server error reporting", () => {
     const log = vi.spyOn(console, "warn").mockImplementation(() => {
       /* Expected reporting is asserted below. */
     });
-    const error = new NotFoundError("TODO_NOT_FOUND", "Todo not found");
+    const error = new ApplicationError("TODO_NOT_FOUND", "Todo not found", { status: 404 });
 
     // Act
     const first = reportServerError(error);
@@ -52,7 +52,7 @@ describe("server error reporting", () => {
     const third = reportServerError(first);
 
     // Assert
-    expect(first).toBeInstanceOf(NotFoundError);
+    expect(first).toBeInstanceOf(ApplicationError);
     expect(second).toBe(first);
     expect(third).toBe(first);
     expect(log).toHaveBeenCalledExactlyOnceWith(
@@ -60,6 +60,7 @@ describe("server error reporting", () => {
         code: "TODO_NOT_FOUND",
         event: "application_error",
         referenceId: first.referenceId,
+        status: 404,
       }),
     );
   });
@@ -77,7 +78,7 @@ describe("server error reporting", () => {
     const reported = reportServerError(cause);
 
     // Assert
-    expect(reported).toBeInstanceOf(UnexpectedError);
+    expect(reported).toBeInstanceOf(ApplicationError);
     expect(reported.referenceId).toBeTypeOf("string");
     expect(reported.message).not.toContain("private-value");
     expect(JSON.stringify(log.mock.calls)).not.toContain("private-value");
@@ -96,8 +97,8 @@ describe("server error reporting", () => {
     const reported = reportServerError(parsed.error);
 
     // Assert
-    expect(reported).toBeInstanceOf(ValidationError);
-    expect(reported.code).toBe("INVALID_INPUT");
+    expect(reported).toBeInstanceOf(ApplicationError);
+    expect(reported).toMatchObject({ code: "INVALID_INPUT", status: 400 });
   });
 
   it("reports a reused Error separately in the next request", () => {
@@ -106,7 +107,7 @@ describe("server error reporting", () => {
     const log = vi.spyOn(console, "warn").mockImplementation(() => {
       /* Expected reporting. */
     });
-    const error = new NotFoundError("MISSING", "Record not found");
+    const error = new ApplicationError("MISSING", "Record not found", { status: 404 });
 
     // Act
     const first = reportServerError(error);

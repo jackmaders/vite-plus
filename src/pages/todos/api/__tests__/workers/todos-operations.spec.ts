@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 import { todos } from "@/shared/db";
 import { getDb } from "@/shared/db/index.server";
 import { user } from "@/shared/db/schema";
-import { DependencyError, NotFoundError } from "@/shared/errors";
+import { ApplicationError } from "@/shared/errors";
 import { createEmptyInsertMockDb } from "@test/vitest/fixtures/db";
 
 import { createTodo, deleteTodo, getTodos, updateTodo } from "../../todos-operations";
@@ -71,10 +71,11 @@ describe("todos-operations createTodo failures", () => {
     );
 
     // Assert
-    expect(failure).toBeInstanceOf(DependencyError);
+    expect(failure).toBeInstanceOf(ApplicationError);
     expect(failure).toMatchObject({
       cause: expect.any(Error) as unknown,
       code: "TODO_CREATE_FAILED",
+      status: 503,
     });
     expect(failure).toHaveProperty("message", "Unable to save your todo. Please try again.");
   });
@@ -91,7 +92,8 @@ describe("todos-operations createTodo failures", () => {
     // Assert
     await expect(action).rejects.toMatchObject({
       code: "TODO_CREATE_EMPTY",
-      name: "UnexpectedError",
+      name: "ApplicationError",
+      status: 500,
     });
   });
 });
@@ -128,8 +130,8 @@ describe("database dependency failures", () => {
     prepare.mockRestore();
 
     // Assert
-    expect(failure).toBeInstanceOf(DependencyError);
-    expect(failure).toMatchObject({ cause: expect.any(Error) as unknown, code });
+    expect(failure).toBeInstanceOf(ApplicationError);
+    expect(failure).toMatchObject({ cause: expect.any(Error) as unknown, code, status: 503 });
   });
 });
 
@@ -231,7 +233,7 @@ describe("todos-operations updateTodo error cases", () => {
     const action = updateTodo(todoB.id, { title: "Unauthorized update" }, { db, userId: "user-a" });
 
     // Assert
-    await expect(action).rejects.toBeInstanceOf(NotFoundError);
+    await expect(action).rejects.toMatchObject({ code: "TODO_NOT_FOUND", status: 404 });
   });
 
   it("throws Todo not found when attempting to update a nonexistent todo", async () => {
