@@ -154,3 +154,84 @@ MutationCache callbacks provide the equivalent global mutation seam and can be
 awaited. User-facing recovery remains local to the form/dialog; global logging
 does not substitute for handling the error where the user acted.
 [MutationCacheConfig](https://tanstack.com/query/latest/docs/framework/react/reference/interfaces/MutationCacheConfig).
+
+## React, Router, and forms
+
+Start uses Router's route error components: configure a default fallback and
+override locally where recovery differs. Use those existing components for
+unexpected render and loader failures rather than building a second routing
+error framework.
+[Start error boundaries](https://tanstack.com/start/latest/docs/framework/react/guide/error-boundaries).
+
+React error boundaries catch render failures but do not catch ordinary event
+handlers, arbitrary asynchronous callbacks, or server rendering. Event failures
+must update local state/results or be handled by a library such as Query.
+Boundaries should cover useful UI regions and expose a recovery action.
+[React error boundaries](https://react.dev/reference/react/Component#catching-rendering-errors-with-an-error-boundary).
+
+With suspense queries, Query normally throws when no cached data exists;
+background failures can retain stale data. Reset Query's error boundary before
+retrying. Router's integration example resets with
+`useQueryErrorResetBoundary` when its error component mounts and invalidates the
+router when retry is requested.
+[Query suspense](https://tanstack.com/query/latest/docs/framework/react/guides/suspense),
+[Router external data](https://tanstack.com/router/latest/docs/framework/react/guide/external-data-loading).
+
+TanStack Form supports form and field validation errors through native
+validators and error maps. The installed Form 1.33.5 `handleSubmit` rethrows
+exceptions from `onSubmit`; a resolved result alone does not tell it submission
+failed. Preserve that semantic when designing the template's form integration.
+Current alpha Form documents different submission utilities; do not copy those
+into this installed stable version. Verify the installed API instead.
+[Stable Form validation](https://tanstack.com/form/latest/docs/framework/react/guides/validation),
+installed `@tanstack/form-core/src/FormApi.ts` at `_handleSubmit`.
+
+## Proposed taxonomy and observability policy
+
+These categories are application design recommendations, not upstream classes.
+Use roughly eight subclasses of one application base error; use codes for cases
+within a category rather than classes per operation:
+
+| Class                  | Example code             | Handling                                        |
+| ---------------------- | ------------------------ | ----------------------------------------------- |
+| `ValidationError`      | `INVALID_TODO_INPUT`     | Correct input                                   |
+| `AuthenticationError`  | `SESSION_EXPIRED`        | Authenticate                                    |
+| `AuthorizationError`   | `ACTION_FORBIDDEN`       | Explain access policy                           |
+| `NotFoundError`        | `TODO_NOT_FOUND`         | Refresh or navigate                             |
+| `ConflictError`        | `TODO_ALREADY_CHANGED`   | Refresh and reconcile                           |
+| `DependencyError`      | `TODO_UPDATE_FAILED`     | Generic safe message; inspect cause server-side |
+| `ClientOperationError` | `CLIPBOARD_WRITE_FAILED` | Recover in the browser                          |
+| `UnexpectedError`      | `UNEXPECTED_FAILURE`     | Generic safe message and reference ID           |
+
+`DependencyError` covers both database failures and unavailable external services.
+Keep classes and transport reconstruction in one cohesive module so categories
+cannot drift between dispatch sites. Add a separate rate-limit category only
+when the application needs a distinct recovery policy for it.
+
+One reporter should emit structured records with category, code, reference ID,
+operation, and an allowlisted description of the failure. Keep request bodies,
+cookies, secrets, and SQL parameters out of routine logs. Preserve diagnostic
+causes server-side for a future reporting integration. Record once per failure
+per request; a process-global WeakSet is insufficient if an Error is reused
+across requests. Expected failures can have lower severity.
+[Start observability](https://tanstack.com/start/latest/docs/framework/react/guide/observability).
+
+No single middleware catch sees every possible server failure. Router can
+consume loader/render failures before request middleware sees them. The native
+server entry can catch failures escaping Start, but cannot change a streamed
+response after return. Route error hooks, global middleware, and a custom native
+server entry can all call the same reporter. Platform boot failures and detached
+background tasks require their own platform/task hooks. Preserve Start's
+`createServerEntry` request context and `handleStartError` behavior when adding
+entry reporting; calling the already wrapped default entry hides original errors
+from an outer catch.
+[Server entry error handling](https://tanstack.com/start/latest/docs/framework/react/guide/server-entry-point#error-handling).
+
+## Verification targets
+
+The representative implementation should prove: subclass identity and safe
+metadata survive actual RPC; vendor details do not leak; invalid server input
+becomes a typed validation failure; rejected server calls enter Query error
+state; client results require narrowing; mutation failure keeps the form/dialog
+open; retry refetches after a route failure; redirects retain framework behavior;
+and the same failure is reported once with the displayed reference ID.
