@@ -1,10 +1,11 @@
 import { env } from "cloudflare:workers";
 import { eq } from "drizzle-orm";
-import { beforeEach, describe, expect, it } from "vite-plus/test";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { todos } from "@/shared/db";
 import { getDb } from "@/shared/db/index.server";
 import { user } from "@/shared/db/schema";
+import { DependencyError, NotFoundError } from "@/shared/errors";
 import { createEmptyInsertMockDb } from "@test/vitest/fixtures/db";
 
 import { createTodo, deleteTodo, getTodos, updateTodo } from "../../todos-operations";
@@ -58,6 +59,26 @@ describe("todos-operations createTodo creation", () => {
 });
 
 describe("todos-operations createTodo failures", () => {
+  it("translates a real D1 constraint failure and retains its cause", async () => {
+    expect.assertions(3);
+
+    // Arrange
+    const db = getDb(env.DB);
+
+    // Act
+    const failure = await createTodo({ title: "Orphan" }, { db, userId: "missing-user" }).catch(
+      (error: unknown) => error,
+    );
+
+    // Assert
+    expect(failure).toBeInstanceOf(DependencyError);
+    expect(failure).toMatchObject({
+      cause: expect.any(Error) as unknown,
+      code: "TODO_CREATE_FAILED",
+    });
+    expect(failure).toHaveProperty("message", "Unable to save your todo. Please try again.");
+  });
+
   it("throws an error when insert returning array is empty", async () => {
     expect.assertions(1);
 
@@ -68,7 +89,47 @@ describe("todos-operations createTodo failures", () => {
     const action = createTodo({ title: "Test" }, { db: mockDb, userId: "user-a" });
 
     // Assert
-    await expect(action).rejects.toThrow("Failed to create todo");
+    await expect(action).rejects.toMatchObject({
+      code: "TODO_CREATE_EMPTY",
+      name: "UnexpectedError",
+    });
+  });
+});
+
+describe("database dependency failures", () => {
+  it.each([
+    {
+      code: "TODOS_READ_FAILED",
+      operation: "list",
+      run: async (db: ReturnType<typeof getDb>) => await getTodos({ db, userId: "user-a" }),
+    },
+    {
+      code: "TODO_UPDATE_FAILED",
+      operation: "update",
+      run: async (db: ReturnType<typeof getDb>) =>
+        await updateTodo("missing", { completed: true }, { db, userId: "user-a" }),
+    },
+    {
+      code: "TODO_DELETE_FAILED",
+      operation: "delete",
+      run: async (db: ReturnType<typeof getDb>) =>
+        await deleteTodo("missing", { db, userId: "user-a" }),
+    },
+  ])("translates a real D1 failure during $operation", async ({ code, run }) => {
+    expect.assertions(2);
+    // Arrange
+    const db = getDb(env.DB);
+    const prepare = vi.spyOn(env.DB, "prepare").mockImplementationOnce(() => {
+      throw new Error("D1 driver failed");
+    });
+
+    // Act
+    const failure = await run(db).catch((error: unknown) => error);
+    prepare.mockRestore();
+
+    // Assert
+    expect(failure).toBeInstanceOf(DependencyError);
+    expect(failure).toMatchObject({ cause: expect.any(Error) as unknown, code });
   });
 });
 
@@ -170,7 +231,7 @@ describe("todos-operations updateTodo error cases", () => {
     const action = updateTodo(todoB.id, { title: "Unauthorized update" }, { db, userId: "user-a" });
 
     // Assert
-    await expect(action).rejects.toThrow("Todo not found");
+    await expect(action).rejects.toBeInstanceOf(NotFoundError);
   });
 
   it("throws Todo not found when attempting to update a nonexistent todo", async () => {

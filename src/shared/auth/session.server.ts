@@ -1,5 +1,6 @@
 import { getRequestHeaders } from "@tanstack/react-start/server";
 
+import { AuthenticationError } from "../errors";
 import { auth } from "./auth.server";
 
 async function getSession() {
@@ -12,7 +13,7 @@ async function ensureSession() {
   const session = await getSession();
 
   if (!session) {
-    throw new Error("Unauthorized");
+    throw new AuthenticationError("SESSION_REQUIRED", "Please sign in to continue.");
   }
 
   return session;
