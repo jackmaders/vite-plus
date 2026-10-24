@@ -4,8 +4,11 @@ import { authMiddleware } from "@/shared/auth";
 
 import {
   createTodoInputSchema,
+  type CreateTodoInput,
   deleteTodoInputSchema,
+  type DeleteTodoInput,
   updateTodoInputSchema,
+  type UpdateTodoInput,
 } from "../model/todo-schema";
 import { createTodo, deleteTodo, getTodos, updateTodo } from "./todos-operations";
 
@@ -15,14 +18,14 @@ const getTodosFn = createServerFn({ method: "GET" })
 
 const createTodoFn = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator(createTodoInputSchema)
+  .validator((input: CreateTodoInput) => createTodoInputSchema.parse(input))
   .handler(
     async ({ context, data }) => await createTodo(data, { userId: context.session.user.id }),
   );
 
 const updateTodoFn = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator(updateTodoInputSchema)
+  .validator((input: UpdateTodoInput) => updateTodoInputSchema.parse(input))
   .handler(
     async ({ context, data }) =>
       await updateTodo(data.id, data.data, { userId: context.session.user.id }),
@@ -30,7 +33,7 @@ const updateTodoFn = createServerFn({ method: "POST" })
 
 const deleteTodoFn = createServerFn({ method: "POST" })
   .middleware([authMiddleware])
-  .validator(deleteTodoInputSchema)
+  .validator((input: DeleteTodoInput) => deleteTodoInputSchema.parse(input))
   .handler(
     async ({ context, data }) => await deleteTodo(data.id, { userId: context.session.user.id }),
   );

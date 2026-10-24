@@ -2,6 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 
 import { todos } from "@/shared/db";
 import { getDb, type DbContext } from "@/shared/db/index.server";
+import { DependencyError, NotFoundError, UnexpectedError } from "@/shared/errors";
 
 import type { CreateTodoInput, UpdateTodoData } from "../model/todo-schema";
 
@@ -14,7 +15,14 @@ async function getTodos({ db = getDb(), userId }: TodoContext) {
     .select()
     .from(todos)
     .where(eq(todos.userId, userId))
-    .orderBy(desc(todos.createdAt));
+    .orderBy(desc(todos.createdAt))
+    .catch((error: unknown) => {
+      throw new DependencyError(
+        "TODOS_READ_FAILED",
+        "Unable to load your todos. Please try again.",
+        { cause: error },
+      );
+    });
   return result;
 }
 
@@ -26,9 +34,16 @@ async function createTodo(input: CreateTodoInput, { db = getDb(), userId }: Todo
       title: input.title.trim(),
       userId,
     })
-    .returning();
+    .returning()
+    .catch((error: unknown) => {
+      throw new DependencyError(
+        "TODO_CREATE_FAILED",
+        "Unable to save your todo. Please try again.",
+        { cause: error },
+      );
+    });
   if (!created) {
-    throw new Error("Failed to create todo");
+    throw new UnexpectedError("TODO_CREATE_EMPTY", "Something went wrong. Please try again.");
   }
   return created;
 }
@@ -42,9 +57,16 @@ async function updateTodo(
     .update(todos)
     .set(input)
     .where(and(eq(todos.id, id), eq(todos.userId, userId)))
-    .returning();
+    .returning()
+    .catch((error: unknown) => {
+      throw new DependencyError(
+        "TODO_UPDATE_FAILED",
+        "Unable to save your todo. Please try again.",
+        { cause: error },
+      );
+    });
   if (!updated) {
-    throw new Error("Todo not found");
+    throw new NotFoundError("TODO_NOT_FOUND", "Todo not found");
   }
   return updated;
 }
@@ -53,9 +75,16 @@ async function deleteTodo(id: string, { db = getDb(), userId }: TodoContext) {
   const [deleted] = await db
     .delete(todos)
     .where(and(eq(todos.id, id), eq(todos.userId, userId)))
-    .returning();
+    .returning()
+    .catch((error: unknown) => {
+      throw new DependencyError(
+        "TODO_DELETE_FAILED",
+        "Unable to delete your todo. Please try again.",
+        { cause: error },
+      );
+    });
   if (!deleted) {
-    throw new Error("Todo not found");
+    throw new NotFoundError("TODO_NOT_FOUND", "Todo not found");
   }
   return deleted;
 }
