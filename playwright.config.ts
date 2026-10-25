@@ -26,7 +26,6 @@ export default defineConfig({
   ],
   reporter: CI ? [["github"], ["html", { open: "never" }]] : [["list"], ["html"]],
   testDir: "./tests/e2e",
-  testIgnore: "**/error-transport.test.ts",
   testMatch: "**/*.test.ts",
   use: {
     baseURL,

@@ -12,8 +12,7 @@
     "lint:arch": "steiger ./src",
     "prepare": "vp config",
     "preview": "vp preview",
-    "test:e2e": "playwright test",
-    "test:transport": "playwright test --config playwright.transport.config.ts"
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
