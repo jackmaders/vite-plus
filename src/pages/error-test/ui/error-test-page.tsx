@@ -54,10 +54,7 @@ function MutationErrorControls() {
   const unexpectedError = useServerFn(unexpectedErrorFn);
   const defaultError = useMutation({ mutationFn: knownError });
   const defaultUnexpectedError = useMutation({ mutationFn: unexpectedError });
-  const inlineError = useMutation({
-    meta: { errorHandling: "inline" },
-    mutationFn: knownError,
-  });
+  const inlineError = useMutation({ mutationFn: knownError });
 
   return (
     <section aria-label="Mutation errors">

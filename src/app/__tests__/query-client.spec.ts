@@ -1,3 +1,4 @@
+import { CancelledError } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { ApplicationError } from "@/shared/errors";
@@ -33,7 +34,24 @@ describe("api failure notifications", () => {
     expect(toast.add).toHaveBeenCalledExactlyOnceWith({ title: apiError.message, type: "error" });
   });
 
-  it("toasts initial query errors and preserves rejection", async () => {
+  it("does not toast cancelled mutation errors", async () => {
+    expect.hasAssertions();
+    // Arrange
+    const client = getRouter().options.context.queryClient;
+    const cancellation = new CancelledError();
+    const mutation = client.getMutationCache().build(client, {
+      mutationFn: vi.fn<() => Promise<never>>().mockRejectedValue(cancellation),
+    });
+
+    // Act
+    const failure = await mutation.execute({}).catch((error: unknown) => error);
+
+    // Assert
+    expect(failure).toBe(cancellation);
+    expect(toast.add).not.toHaveBeenCalled();
+  });
+
+  it("leaves initial query errors to the route error boundary", async () => {
     expect.hasAssertions();
     // Arrange
     const client = getRouter().options.context.queryClient;
@@ -50,7 +68,7 @@ describe("api failure notifications", () => {
 
     // Assert
     expect(failure).toBe(apiError);
-    expect(toast.add).toHaveBeenCalledExactlyOnceWith({ title: apiError.message, type: "error" });
+    expect(toast.add).not.toHaveBeenCalled();
   });
 
   it("toasts background query errors while preserving cached data", async () => {
@@ -62,7 +80,7 @@ describe("api failure notifications", () => {
     const apiError = new Error("Refetch failed");
 
     // Act
-    await client
+    const failure = await client
       .query({
         queryFn: vi.fn<() => Promise<never>>().mockRejectedValue(apiError),
         queryKey,
@@ -72,7 +90,11 @@ describe("api failure notifications", () => {
       .catch((error: unknown) => error);
 
     // Assert
+    expect(failure).toBeInstanceOf(Error);
     expect(client.getQueryData(queryKey)).toStrictEqual(["saved"]);
-    expect(toast.add).toHaveBeenCalledExactlyOnceWith({ title: apiError.message, type: "error" });
+    expect(toast.add).toHaveBeenCalledExactlyOnceWith({
+      title: apiError.message,
+      type: "error",
+    });
   });
 });

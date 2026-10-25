@@ -1,9 +1,16 @@
 import { QueryClient } from "@tanstack/react-query";
-import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  RouterProvider,
+} from "@tanstack/react-router";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { routeTree } from "@/app/routeTree.gen";
+import { ServerErrorPage } from "@/pages/server-error";
 
 vi.mock(import("@/app/styles/styles.css?url"), () => ({ default: "/styles.css" }));
 
@@ -120,3 +127,42 @@ describe("root route notFoundComponent", () => {
     expect(screen.getByRole("link", { name: "Return Home" }).getAttribute("href")).toBe("/");
   });
 });
+
+describe("route error boundary", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("shows generic messaging without exposing the route error", async () => {
+    expect.assertions(2);
+
+    // Arrange
+    const { router } = createFailedRoute();
+
+    // Act
+    await router.load();
+    render(<RouterProvider router={router} />);
+
+    // Assert
+    expect(screen.getByText("Something went wrong. Please try again.")).toBeDefined();
+    expect(screen.queryByText("private server detail")).toBeNull();
+  });
+});
+
+function createFailedRoute() {
+  const loader = vi.fn<() => Promise<void>>().mockRejectedValue(new Error("private server detail"));
+  const rootRoute = createRootRoute({ errorComponent: ServerErrorPage });
+  const indexRoute = createRoute({
+    component: () => <p>Page loaded</p>,
+    getParentRoute: () => rootRoute,
+    loader,
+    path: "/",
+  });
+
+  return {
+    router: createRouter({
+      history: createMemoryHistory({ initialEntries: ["/"] }),
+      routeTree: rootRoute.addChildren([indexRoute]),
+    }),
+  };
+}

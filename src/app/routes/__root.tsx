@@ -4,6 +4,7 @@ import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { HeadContent, Link, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
+import { ServerErrorPage } from "@/pages/server-error";
 import { Toaster } from "@/shared/ui/shadcn/toast";
 
 import { Footer } from "../layouts/footer";
@@ -12,6 +13,7 @@ import { Header } from "../layouts/header";
 import appCss from "../styles/styles.css?url";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  errorComponent: ServerErrorPage,
   head: () => ({
     links: [
       {

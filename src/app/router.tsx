@@ -1,5 +1,15 @@
-import { MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
-import { createRouter as createTanStackRouter } from "@tanstack/react-router";
+import {
+  CancelledError,
+  MutationCache,
+  QueryCache,
+  QueryClient,
+  type Query,
+} from "@tanstack/react-query";
+import {
+  createRouter as createTanStackRouter,
+  isNotFound,
+  isRedirect,
+} from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 
 import { toast } from "@/shared/ui/shadcn/toast";
@@ -10,12 +20,12 @@ export function getRouter() {
   const queryClient = new QueryClient({
     mutationCache: new MutationCache({
       onError: (error) => {
-        toast.add({ title: error.message, type: "error" });
+        showServerErrorToast(error);
       },
     }),
     queryCache: new QueryCache({
-      onError: (error) => {
-        toast.add({ title: error.message, type: "error" });
+      onError: (error, query) => {
+        showServerErrorToast(error, { query });
       },
     }),
   });
@@ -34,6 +44,20 @@ export function getRouter() {
   });
 
   return router;
+}
+
+function showServerErrorToast(error: Error, { query }: { query?: Query<unknown, unknown> } = {}) {
+  if (
+    typeof window === "undefined" ||
+    query?.state.dataUpdatedAt === 0 ||
+    error instanceof CancelledError ||
+    isNotFound(error) ||
+    isRedirect(error)
+  ) {
+    return;
+  }
+
+  toast.add({ title: error.message, type: "error" });
 }
 
 declare module "@tanstack/react-router" {

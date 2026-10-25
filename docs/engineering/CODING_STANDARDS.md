@@ -127,9 +127,8 @@ writing comments, or applying function-level design conventions.
 - Do not replace a failed request with `null` or an empty collection. Use those
   values for successful outcomes defined by the operation's contract. Handle
   failures at the owning Router, query, mutation, or form UI boundary.
-- When an owning UI displays a query or mutation failure inline, set
-  `meta: { errorHandling: "inline" }` to suppress the default error toast.
-  Use configured public error messages or a generic fallback for unknown failures.
+- Use configured public error messages or a generic fallback for unknown
+  failures displayed in the owning UI.
 
 ## Component props
 
