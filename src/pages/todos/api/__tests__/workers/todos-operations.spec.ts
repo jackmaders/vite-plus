@@ -5,9 +5,10 @@ import { beforeEach, describe, expect, it } from "vite-plus/test";
 import { todos } from "@/shared/db";
 import { getDb } from "@/shared/db/index.server";
 import { user } from "@/shared/db/schema";
+import { ApplicationError } from "@/shared/errors";
 import { createEmptyInsertMockDb } from "@test/vitest/fixtures/db";
 
-import { createTodo, deleteTodo, getTodos, updateTodo } from "../../todos-operations";
+import { createTodo, deleteTodo, getTodos, updateTodo } from "../../todos-service";
 
 beforeEach(async () => {
   const db = getDb(env.DB);
@@ -68,7 +69,7 @@ describe("todos-operations createTodo failures", () => {
     const action = createTodo({ title: "Test" }, { db: mockDb, userId: "user-a" });
 
     // Assert
-    await expect(action).rejects.toThrow("Failed to create todo");
+    await expect(action).rejects.toThrow(new ApplicationError("TODO_CREATE_FAILED"));
   });
 });
 
@@ -170,7 +171,7 @@ describe("todos-operations updateTodo error cases", () => {
     const action = updateTodo(todoB.id, { title: "Unauthorized update" }, { db, userId: "user-a" });
 
     // Assert
-    await expect(action).rejects.toThrow("Todo not found");
+    await expect(action).rejects.toThrow(new ApplicationError("TODO_NOT_FOUND"));
   });
 
   it("throws Todo not found when attempting to update a nonexistent todo", async () => {
@@ -187,7 +188,7 @@ describe("todos-operations updateTodo error cases", () => {
     );
 
     // Assert
-    await expect(action).rejects.toThrow("Todo not found");
+    await expect(action).rejects.toThrow(new ApplicationError("TODO_NOT_FOUND"));
   });
 });
 
@@ -232,7 +233,7 @@ describe("todos-operations deleteTodo", () => {
     const action = deleteTodo(todoB.id, { db, userId: "user-a" });
 
     // Assert
-    await expect(action).rejects.toThrow("Todo not found");
+    await expect(action).rejects.toThrow(new ApplicationError("TODO_NOT_FOUND"));
   });
 
   it("throws Todo not found when attempting to delete a nonexistent todo", async () => {
@@ -245,6 +246,6 @@ describe("todos-operations deleteTodo", () => {
     const action = deleteTodo("non-existent-id", { db, userId: "user-a" });
 
     // Assert
-    await expect(action).rejects.toThrow("Todo not found");
+    await expect(action).rejects.toThrow(new ApplicationError("TODO_NOT_FOUND"));
   });
 });

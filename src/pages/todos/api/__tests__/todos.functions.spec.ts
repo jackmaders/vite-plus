@@ -4,12 +4,12 @@ import { ensureSession } from "@/shared/auth/session.server";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
 
-import { createTodo, deleteTodo, getTodos, updateTodo } from "../todos-operations";
+import { createTodo, deleteTodo, getTodos, updateTodo } from "../todos-service";
 import { createTodoFn, deleteTodoFn, getTodosFn, updateTodoFn } from "../todos.functions";
 
 vi.mock(import("@tanstack/react-start"));
 vi.mock(import("@/shared/auth/session.server"));
-vi.mock(import("../todos-operations"));
+vi.mock(import("../todos-service"));
 
 const MOCK_TODO = TEST_TODO;
 

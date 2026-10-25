@@ -2,6 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 
 import { todos } from "@/shared/db";
 import { getDb, type DbContext } from "@/shared/db/index.server";
+import { ApplicationError } from "@/shared/errors";
 
 import type { CreateTodoInput, UpdateTodoData } from "../model/todo-schema";
 
@@ -27,9 +28,11 @@ async function createTodo(input: CreateTodoInput, { db = getDb(), userId }: Todo
       userId,
     })
     .returning();
+
   if (!created) {
-    throw new Error("Failed to create todo");
+    throw new ApplicationError("TODO_CREATE_FAILED");
   }
+
   return created;
 }
 
@@ -43,9 +46,11 @@ async function updateTodo(
     .set(input)
     .where(and(eq(todos.id, id), eq(todos.userId, userId)))
     .returning();
+
   if (!updated) {
-    throw new Error("Todo not found");
+    throw new ApplicationError("TODO_NOT_FOUND");
   }
+
   return updated;
 }
 
@@ -54,9 +59,11 @@ async function deleteTodo(id: string, { db = getDb(), userId }: TodoContext) {
     .delete(todos)
     .where(and(eq(todos.id, id), eq(todos.userId, userId)))
     .returning();
+
   if (!deleted) {
-    throw new Error("Todo not found");
+    throw new ApplicationError("TODO_NOT_FOUND");
   }
+
   return deleted;
 }
 
