@@ -44,8 +44,7 @@ vp dev
 ```
 
 ```bash
-# Give preview its own local secret.
-printf 'BETTER_AUTH_SECRET="%s"\n' "$(openssl rand -hex 32)" > .dev.vars.preview
+# The local secret in .dev.vars is shared by development and preview.
 
 # Build for the local preview origin and migrate its local D1 binding.
 CLOUDFLARE_ENV=preview vp run build
@@ -70,28 +69,30 @@ Run once from Bash. Enter your account ID and workers.dev subdomain when prompte
 
   # Configure the deployed Worker origin and account.
   WORKER_NAME="$(jq -er '.name' wrangler.jsonc)"
-  WORKERS_URL="https://${WORKER_NAME}.${WORKERS_SUBDOMAIN}.workers.dev"
+  PRODUCTION_WORKER_NAME="${WORKER_NAME}-production"
+  WORKERS_URL="https://${PRODUCTION_WORKER_NAME}.${WORKERS_SUBDOMAIN}.workers.dev"
 
   jq --arg account "$CLOUDFLARE_ACCOUNT_ID" --arg url "$WORKERS_URL" \
-    '.account_id = $account | .vars.BETTER_AUTH_URL = $url' \
+    '.account_id = $account | .env.production.vars.BETTER_AUTH_URL = $url' \
     wrangler.jsonc > wrangler.jsonc.tmp
   mv wrangler.jsonc.tmp wrangler.jsonc
 
   # Create and bind production D1, retaining the existing migration settings.
-  pnpm exec wrangler d1 create "${WORKER_NAME}-db" --binding DB --update-config
+  pnpm exec wrangler d1 create "${WORKER_NAME}-db" --binding DB --update-config --env production
   vp run cf:generate
 
   # Generate a production auth secret; remove the temporary file on exit.
   ENV_FILE="$(mktemp "${TMPDIR:-/tmp}/worker-secrets.XXXXXX")"
   trap 'rm -f "$ENV_FILE"' EXIT
   printf 'BETTER_AUTH_SECRET="%s"\n' "$(openssl rand -hex 32)" > "$ENV_FILE"
+  install -m 600 "$ENV_FILE" .dev.vars
 
   # Build and validate the deployment without changing remote resources.
-  vp build
+  CLOUDFLARE_ENV=production vp run build
   pnpm exec wrangler deploy --dry-run --secrets-file "$ENV_FILE"
 
   # Migrate production D1 and deploy code with the generated secret.
-  vp run db:migrate --remote
+  vp run db:migrate --remote --env production
   pnpm exec wrangler deploy --secrets-file "$ENV_FILE"
 )
 ```

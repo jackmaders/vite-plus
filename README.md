@@ -17,7 +17,7 @@ vp run db:migrate --local --env preview
 vp preview
 ```
 
-Provide `BETTER_AUTH_SECRET` through `.dev.vars.preview` or the process environment.
+Provide `BETTER_AUTH_SECRET` through `.dev.vars` or the process environment.
 
 # Building For Production
 
