@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 
-import { ApplicationError, getErrorMessage } from "@/shared/errors";
+import { ApplicationError } from "@/shared/errors";
 
 import { knownErrorFn, unexpectedErrorFn } from "../api/error-test.functions";
 
@@ -85,7 +85,7 @@ function MutationErrorControls() {
       >
         Trigger inline mutation error
       </button>
-      {inlineError.error && <p role="alert">{getErrorMessage(inlineError.error)}</p>}
+      {inlineError.error && <p role="alert">{inlineError.error.message}</p>}
     </section>
   );
 }

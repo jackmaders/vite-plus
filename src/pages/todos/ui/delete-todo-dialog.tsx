@@ -54,7 +54,7 @@ function DeleteTodoDialog({ children = "Delete Item", todo, ...props }: DeleteTo
         {error && <FieldError>{getTodoErrorMessage(error)}</FieldError>}
 
         <DialogFooter>
-          <DialogClose render={() => <Button variant="ghost">Cancel</Button>} />
+          <DialogClose render={cancelButton}>Cancel</DialogClose>
           <Button
             disabled={isPending}
             variant="destructive"
@@ -69,5 +69,7 @@ function DeleteTodoDialog({ children = "Delete Item", todo, ...props }: DeleteTo
     </Dialog>
   );
 }
+
+const cancelButton = <Button variant="ghost" />;
 
 export { DeleteTodoDialog };

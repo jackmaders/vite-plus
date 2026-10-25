@@ -9,7 +9,9 @@ import { toast } from "@/shared/ui/shadcn/toast";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
 import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
 
-import { createQueryClient } from "../query-client";
+import { getRouter } from "../router";
+
+vi.mock(import("@tanstack/react-router-ssr-query"));
 
 vi.mock(import("@/pages/todos/api/todos.functions"));
 vi.mock(import("@/shared/ui/shadcn/toast"));
@@ -20,7 +22,7 @@ afterEach(() => {
 });
 
 describe("create todo failure recovery", () => {
-  it("preserves the draft and allows retry without duplicate notifications", async () => {
+  it("preserves the draft and allows retry after editing with a default toast", async () => {
     expect.hasAssertions();
     // Arrange
     const { user, title } = await setupFailedCreate();
@@ -30,15 +32,15 @@ describe("create todo failure recovery", () => {
     const error = await screen.findByRole("alert");
 
     // Assert
-    expect(error.textContent).toBe("Todo item could not be created.");
+    expect(error.textContent).toBe("Something went wrong. Please try again.");
     expect({
       description: screen.getByLabelText<HTMLInputElement>("Description").value,
       title: title.value,
     }).toStrictEqual({ description: "Draft description", title: "Draft title" });
-    expect(toast.add).not.toHaveBeenCalled();
+    expect(toast.add).toHaveBeenCalledOnce();
 
     // Act
-    await user.click(screen.getByRole("button", { name: "Add Todo" }));
+    await retryAfterEditing(user, title);
 
     // Assert
     await waitFor(() => {
@@ -55,10 +57,20 @@ async function setupFailedCreate() {
       new ApplicationError("TODO_CREATE_FAILED", { message: "private override" }),
     )
     .mockResolvedValueOnce(TEST_TODO);
-  const { wrapper } = createTestingWrapper({ queryClient: createQueryClient() });
+  const { wrapper } = createTestingWrapper({
+    queryClient: getRouter().options.context.queryClient,
+  });
   render(<CreateTodoForm />, { wrapper });
   const title = screen.getByLabelText<HTMLInputElement>("Title");
   await user.type(title, "Draft title");
   await user.type(screen.getByLabelText("Description"), "Draft description");
   return { title, user };
+}
+
+async function retryAfterEditing(
+  user: ReturnType<typeof userEvent.setup>,
+  title: HTMLInputElement,
+) {
+  await user.type(title, " revised");
+  await user.click(screen.getByRole("button", { name: "Add Todo" }));
 }

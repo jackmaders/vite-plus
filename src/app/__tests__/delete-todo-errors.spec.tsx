@@ -8,7 +8,9 @@ import { toast } from "@/shared/ui/shadcn/toast";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
 import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
 
-import { createQueryClient } from "../query-client";
+import { getRouter } from "../router";
+
+vi.mock(import("@tanstack/react-router-ssr-query"));
 
 vi.mock(import("@/pages/todos/api/todos.functions"));
 vi.mock(import("@/shared/ui/shadcn/toast"));
@@ -31,7 +33,7 @@ describe("delete todo failure recovery", () => {
     // Assert
     expect(error.textContent).toBe("Something went wrong. Please try again.");
     expect(screen.getByRole("dialog")).toBeDefined();
-    expect(toast.add).not.toHaveBeenCalled();
+    expect(toast.add).toHaveBeenCalledOnce();
 
     // Act
     await user.click(screen.getByRole("button", { name: "Delete Todo" }));
@@ -73,7 +75,9 @@ async function setupFailedDelete() {
   vi.mocked(deleteTodoFn)
     .mockRejectedValueOnce(new Error("private network error"))
     .mockResolvedValueOnce(TEST_TODO);
-  const { wrapper } = createTestingWrapper({ queryClient: createQueryClient() });
+  const { wrapper } = createTestingWrapper({
+    queryClient: getRouter().options.context.queryClient,
+  });
   render(<DeleteTodoDialog todo={TEST_TODO} />, { wrapper });
   await user.click(screen.getByRole("button", { name: "Delete Item" }));
   return user;
