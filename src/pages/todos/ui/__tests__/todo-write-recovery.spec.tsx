@@ -44,7 +44,7 @@ describe("todo write recovery", () => {
     expect(feedback.textContent).toBe("Todo item could not be created.");
   });
 
-  it("retries a failed create with its retained draft without editing", async () => {
+  it("retries a failed create after editing its description while retaining the title", async () => {
     expect.hasAssertions();
 
     // Arrange
@@ -59,17 +59,21 @@ describe("todo write recovery", () => {
 
     // Assert
     expect(failure).toStrictEqual({
+      feedbackVisibleAfterEdit: false,
       message: "Something went wrong. Please try again.",
       retainedTitle: "Draft title",
-      retryDisabled: false,
+      retryDisabled: true,
+      retryDisabledAfterEdit: false,
     });
     await waitFor(() => {
       expect(title.value).toBe("");
     });
-    expect(createTodoFn).toHaveBeenCalledTimes(2);
+    expect(createTodoFn).toHaveBeenLastCalledWith({
+      data: { description: " revised", title: "Draft title" },
+    });
   });
 
-  it("retries a failed update without editing and closes only after success", async () => {
+  it("retries a failed update after editing its description and closes only after success", async () => {
     expect.hasAssertions();
 
     // Arrange
@@ -85,14 +89,21 @@ describe("todo write recovery", () => {
 
     // Assert
     expect(failure).toStrictEqual({
+      feedbackVisibleAfterEdit: false,
       message: "Something went wrong. Please try again.",
       retainedTitle: "Edited draft",
-      retryDisabled: false,
+      retryDisabled: true,
+      retryDisabledAfterEdit: false,
     });
     await waitFor(() => {
       expect(screen.queryByRole("heading", { name: "Update Todo Item?" })).toBeNull();
     });
-    expect(updateTodoFn).toHaveBeenCalledTimes(2);
+    expect(updateTodoFn).toHaveBeenLastCalledWith({
+      data: {
+        data: { description: "Test Description revised", title: "Edited draft" },
+        id: "todo-1",
+      },
+    });
   });
 
   it("keeps a failed delete visible until retry succeeds", async () => {
@@ -201,6 +212,19 @@ async function retryFailedSave(
     retainedTitle: title.value,
     retryDisabled: retry.disabled,
   };
+  const recovery = await retryAfterDescriptionEdit(user, retry);
+  return { ...failure, ...recovery };
+}
+
+async function retryAfterDescriptionEdit(
+  user: ReturnType<typeof userEvent.setup>,
+  retry: HTMLButtonElement,
+) {
+  await user.type(screen.getByRole("textbox", { name: "Description" }), " revised");
+  const recovery = {
+    feedbackVisibleAfterEdit: Boolean(screen.queryByRole("alert")),
+    retryDisabledAfterEdit: retry.disabled,
+  };
   await user.click(retry);
-  return failure;
+  return recovery;
 }

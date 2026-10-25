@@ -2,7 +2,7 @@ import { expect, test, type Locator, type Page } from "@playwright/test";
 
 const EXISTING_TITLE = "Shared title";
 
-test("retries an unchanged create draft after a real duplicate-title failure", async ({
+test("retries a create draft after editing a field following a real duplicate-title failure", async ({
   page,
   baseURL,
 }) => {
@@ -19,15 +19,15 @@ test("retries an unchanged create draft after a real duplicate-title failure", a
   await expect(form.getByRole("textbox", { exact: true, name: "Title" })).toHaveValue(
     EXISTING_TITLE,
   );
-  await expect(form.getByRole("button", { name: "Add Todo" })).toBeEnabled();
+  await expect(form.getByRole("button", { name: "Add Todo" })).toBeDisabled();
 
-  // Act: remove the conflict, then retry without editing the failed draft.
+  // Act: remove the conflict, then edit the description before retrying.
   await deleteOriginalTodo(page);
-  await form.getByRole("button", { name: "Add Todo" }).click();
+  await retryCreate(form);
 
   // Assert
   await expect(
-    page.getByRole("region", { name: "Your todos" }).getByText("Keep this draft", { exact: true }),
+    page.getByRole("region", { name: "Your todos" }).getByText("Revised draft", { exact: true }),
   ).toBeVisible();
 });
 
@@ -49,7 +49,7 @@ test("keeps an update draft open after a real constraint failure and allows reco
   await expect(dialog.getByRole("textbox", { exact: true, name: "Title" })).toHaveValue(
     EXISTING_TITLE,
   );
-  await expect(dialog.getByRole("button", { exact: true, name: "Update" })).toBeEnabled();
+  await expect(dialog.getByRole("button", { exact: true, name: "Update" })).toBeDisabled();
 
   // Act
   await retryUpdate(dialog);
@@ -130,4 +130,9 @@ async function deleteOriginalTodo(page: Page) {
 async function retryUpdate(dialog: Locator) {
   await dialog.getByRole("textbox", { exact: true, name: "Title" }).fill("Recovered todo");
   await dialog.getByRole("button", { exact: true, name: "Update" }).click();
+}
+
+async function retryCreate(form: Locator) {
+  await form.getByRole("textbox", { name: "Description" }).fill("Revised draft");
+  await form.getByRole("button", { name: "Add Todo" }).click();
 }

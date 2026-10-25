@@ -196,9 +196,8 @@ function useCreateRecord() {
   submit validation messages and submission failures. Public `ApplicationError`
   and explicit `FormSubmissionError` messages are shown; other failures use the
   generic fallback.
-- Keep caught submission failures in the Form's local feedback context rather
-  than its validation `errorMap`. This lets valid drafts retry without editing
-  while `canSubmit` continues to reflect validation. Clear submission feedback
-  before the next attempt.
+- Store submission failures in `errorMap.onSubmit` while preserving draft values.
+  Editing a field reruns validation, clears submission feedback, and enables
+  valid forms to retry. Keep submit readiness based on `canSubmit`.
 - See the [Form submission guide](https://tanstack.com/form/latest/docs/framework/react/guides/submission-handling)
   for validation and transformation behavior.
