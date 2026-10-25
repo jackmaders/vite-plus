@@ -66,7 +66,7 @@ test("uses the safe generic message for an unexpected API failure", async ({ pag
   await expect(page.getByRole("dialog")).not.toContainText("private");
 });
 
-test("does not duplicate an inline API failure with a toast", async ({ page }) => {
+test("shows the default toast alongside inline API feedback", async ({ page }) => {
   // Arrange
   await page.goto("/error-test");
 
@@ -75,5 +75,6 @@ test("does not duplicate an inline API failure with a toast", async ({ page }) =
 
   // Assert
   await expect(page.getByRole("alert")).toHaveText("Todo item not found.");
-  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.getByRole("dialog", { name: "Todo item not found." })).toBeVisible();
+  await expect(page.getByRole("dialog")).toHaveCount(1);
 });

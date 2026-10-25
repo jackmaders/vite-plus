@@ -18,7 +18,7 @@ function SubmitButton({
   const form = useFormContext();
 
   return (
-    <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting]}>
+    <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting] as const}>
       {([canSubmit, isSubmitting]) => (
         <Button
           {...props}

@@ -15,7 +15,6 @@ import {
 import { FieldError } from "@/shared/ui/shadcn/field";
 
 import { useDeleteTodo } from "../api/use-delete-todo";
-import { getTodoErrorMessage } from "../model/mutation-error";
 
 interface DeleteTodoDialogProps extends ComponentProps<typeof DialogTrigger> {
   todo: Todo;
@@ -51,7 +50,7 @@ function DeleteTodoDialog({ children = "Delete Item", todo, ...props }: DeleteTo
           <DialogDescription>Are you sure? This action is not reversible</DialogDescription>
         </DialogHeader>
 
-        {error && <FieldError>{getTodoErrorMessage(error)}</FieldError>}
+        {error && <FieldError>{error.message}</FieldError>}
 
         <DialogFooter>
           <DialogClose render={cancelButton}>Cancel</DialogClose>

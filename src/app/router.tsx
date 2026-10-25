@@ -9,10 +9,14 @@ import { routeTree } from "./routeTree.gen";
 export function getRouter() {
   const queryClient = new QueryClient({
     mutationCache: new MutationCache({
-      onError: (error) => toast.add({ title: error.message, type: "error" }),
+      onError: (error) => {
+        toast.add({ title: error.message, type: "error" });
+      },
     }),
     queryCache: new QueryCache({
-      onError: (error) => toast.add({ title: error.message, type: "error" }),
+      onError: (error) => {
+        toast.add({ title: error.message, type: "error" });
+      },
     }),
   });
 

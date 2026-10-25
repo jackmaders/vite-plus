@@ -31,7 +31,7 @@ describe("delete todo failure recovery", () => {
     const error = await screen.findByRole("alert");
 
     // Assert
-    expect(error.textContent).toBe("Something went wrong. Please try again.");
+    expect(error.textContent).toBe("Network unavailable");
     expect(screen.getByRole("dialog")).toBeDefined();
     expect(toast.add).toHaveBeenCalledOnce();
 
@@ -73,7 +73,7 @@ describe("delete todo failure recovery", () => {
 async function setupFailedDelete() {
   const user = userEvent.setup();
   vi.mocked(deleteTodoFn)
-    .mockRejectedValueOnce(new Error("private network error"))
+    .mockRejectedValueOnce(new Error("Network unavailable"))
     .mockResolvedValueOnce(TEST_TODO);
   const { wrapper } = createTestingWrapper({
     queryClient: getRouter().options.context.queryClient,
