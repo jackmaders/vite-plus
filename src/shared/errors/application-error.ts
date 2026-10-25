@@ -1,7 +1,5 @@
 import { HttpStatusCodes, type HttpStatusCode } from "../lib/http-status-codes";
 
-const GENERIC_ERROR_MESSAGE = "Something went wrong. Please try again.";
-
 const ErrorCodes = {
   INTERNAL_SERVER_ERROR: "INTERNAL_SERVER_ERROR",
   TODO_CREATE_FAILED: "TODO_CREATE_FAILED",
@@ -31,7 +29,7 @@ class ApplicationError extends Error {
     options?: { message?: string; details?: Record<string, unknown>; cause?: unknown },
   ) {
     const config = ErrorConfig[code];
-    const message = options?.message || config.message || GENERIC_ERROR_MESSAGE;
+    const message = options?.message === "" ? config.message : (options?.message ?? config.message);
     super(message, { cause: options?.cause });
 
     this.code = code;

@@ -1,3 +1,4 @@
+import { isNotFound, isRedirect } from "@tanstack/react-router";
 import { createMiddleware } from "@tanstack/react-start";
 
 import { HttpStatusCodes } from "../lib/http-status-codes";
@@ -8,14 +9,12 @@ const errorMiddleware = createMiddleware({ type: "function" }).server(async ({ n
   try {
     return await next();
   } catch (error: unknown) {
-    if (error instanceof ApplicationError) {
-      const isRoutineError = error.statusCode < HttpStatusCodes.INTERNAL_SERVER_ERROR;
+    if (isRedirect(error) || isNotFound(error)) {
+      throw error;
+    }
 
-      if (isRoutineError) {
-        logger.warn(`[${error.code}] ${error.message}`, error.details);
-      } else {
-        logger.error(`[${error.code}] ${error.message}`, error);
-      }
+    if (error instanceof ApplicationError) {
+      logApplicationError(error);
 
       throw error;
     }
@@ -24,5 +23,13 @@ const errorMiddleware = createMiddleware({ type: "function" }).server(async ({ n
     throw new ApplicationError("INTERNAL_SERVER_ERROR", { cause: error });
   }
 });
+
+function logApplicationError(error: ApplicationError) {
+  if (error.statusCode < HttpStatusCodes.INTERNAL_SERVER_ERROR) {
+    logger.warn(`[${error.code}] ${error.message}`, error.details);
+  } else {
+    logger.error(`[${error.code}] ${error.message}`, error);
+  }
+}
 
 export { errorMiddleware };
