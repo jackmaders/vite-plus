@@ -152,6 +152,23 @@ describe("route error recovery", () => {
     await expect(screen.findByText("Page loaded")).resolves.toBeDefined();
     expect(loader).toHaveBeenCalledTimes(2);
   });
+
+  it("resets the route boundary when retry invalidation rejects", async () => {
+    expect.hasAssertions();
+
+    // Arrange
+    const user = userEvent.setup();
+    const { router } = createRetryRouter();
+    await renderFailedRoute(router);
+    vi.spyOn(router, "invalidate").mockRejectedValue(new Error("invalidation failed"));
+
+    // Act
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+    await Promise.resolve();
+
+    // Assert
+    expect(router.invalidate).toHaveBeenCalledOnce();
+  });
 });
 
 function createRetryRouter() {

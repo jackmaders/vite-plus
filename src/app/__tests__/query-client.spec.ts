@@ -1,3 +1,4 @@
+import { CancelledError } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { ApplicationError } from "@/shared/errors";
@@ -31,6 +32,23 @@ describe("api failure notifications", () => {
     expect(failure).toBe(apiError);
     expect(onError).toHaveBeenCalledOnce();
     expect(toast.add).toHaveBeenCalledExactlyOnceWith({ title: apiError.message, type: "error" });
+  });
+
+  it("does not toast cancelled mutation errors", async () => {
+    expect.hasAssertions();
+    // Arrange
+    const client = getRouter().options.context.queryClient;
+    const cancellation = new CancelledError();
+    const mutation = client.getMutationCache().build(client, {
+      mutationFn: vi.fn<() => Promise<never>>().mockRejectedValue(cancellation),
+    });
+
+    // Act
+    const failure = await mutation.execute({}).catch((error: unknown) => error);
+
+    // Assert
+    expect(failure).toBe(cancellation);
+    expect(toast.add).not.toHaveBeenCalled();
   });
 
   it("leaves initial query errors to the route error boundary", async () => {
