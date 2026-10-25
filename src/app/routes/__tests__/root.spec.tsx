@@ -7,12 +7,10 @@ import {
   RouterProvider,
 } from "@tanstack/react-router";
 import { cleanup, render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
+import { RouteError } from "@/app/routes/-route-error";
 import { routeTree } from "@/app/routeTree.gen";
-
-import { RouteError } from "../-route-error";
 
 vi.mock(import("@/app/styles/styles.css?url"), () => ({ default: "/styles.css" }));
 
@@ -130,52 +128,29 @@ describe("root route notFoundComponent", () => {
   });
 });
 
-describe("route error recovery", () => {
+describe("route error boundary", () => {
   afterEach(() => {
     cleanup();
   });
 
-  it("shows a safe error and retries the failed loader", async () => {
-    expect.assertions(4);
+  it("shows generic messaging without exposing the route error", async () => {
+    expect.assertions(2);
 
     // Arrange
-    const user = userEvent.setup();
-    const { loader, router } = createRetryRouter();
-    const { privateDetailVisible, safeMessageVisible } = await renderFailedRoute(router);
+    const { router } = createFailedRoute();
 
     // Act
-    await user.click(screen.getByRole("button", { name: "Try again" }));
+    await router.load();
+    render(<RouterProvider router={router} />);
 
     // Assert
-    expect(safeMessageVisible).toBe(true);
-    expect(privateDetailVisible).toBe(false);
-    await expect(screen.findByText("Page loaded")).resolves.toBeDefined();
-    expect(loader).toHaveBeenCalledTimes(2);
-  });
-
-  it("resets the route boundary when retry invalidation rejects", async () => {
-    expect.hasAssertions();
-
-    // Arrange
-    const user = userEvent.setup();
-    const { router } = createRetryRouter();
-    await renderFailedRoute(router);
-    vi.spyOn(router, "invalidate").mockRejectedValue(new Error("invalidation failed"));
-
-    // Act
-    await user.click(screen.getByRole("button", { name: "Try again" }));
-    await Promise.resolve();
-
-    // Assert
-    expect(router.invalidate).toHaveBeenCalledOnce();
+    expect(screen.getByText("Something went wrong. Please try again.")).toBeDefined();
+    expect(screen.queryByText("private server detail")).toBeNull();
   });
 });
 
-function createRetryRouter() {
-  const loader = vi
-    .fn<() => Promise<void>>()
-    .mockRejectedValueOnce(new Error("private server detail"))
-    .mockResolvedValueOnce();
+function createFailedRoute() {
+  const loader = vi.fn<() => Promise<void>>().mockRejectedValue(new Error("private server detail"));
   const rootRoute = createRootRoute({ errorComponent: RouteError });
   const indexRoute = createRoute({
     component: () => <p>Page loaded</p>,
@@ -185,20 +160,9 @@ function createRetryRouter() {
   });
 
   return {
-    loader,
     router: createRouter({
       history: createMemoryHistory({ initialEntries: ["/"] }),
       routeTree: rootRoute.addChildren([indexRoute]),
     }),
-  };
-}
-
-async function renderFailedRoute(router: ReturnType<typeof createRetryRouter>["router"]) {
-  await router.load();
-  render(<RouterProvider router={router} />);
-
-  return {
-    privateDetailVisible: screen.queryByText("private server detail") !== null,
-    safeMessageVisible: screen.queryByText("Something went wrong. Please try again.") !== null,
   };
 }

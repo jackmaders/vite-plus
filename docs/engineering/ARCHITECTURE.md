@@ -180,10 +180,10 @@ function useCreateRecord() {
 - Set `meta: { errorHandling: "inline" }` on queries or mutations whose owning
   UI displays the failure locally. Custom error callbacks alone do not suppress
   the default toast. Keep mutation callbacks and awaited invalidation intact.
-- Use `getErrorMessage` for configured public messages and the generic fallback;
-  never display an unknown error's diagnostic message. Todo forms translate
-  these messages to `FormSubmissionError`, and delete confirmation displays them
-  inline while keeping the dialog open for retry.
+- Show `error.message` from server-function failures in toasts. Keep route
+  boundary messaging generic so loader diagnostics do not reach the page. Todo
+  forms display `FormSubmissionError` messages, and delete confirmation displays
+  mutation messages inline while keeping the dialog open for retry.
 - Use `/error-test` to trigger known and unexpected failures with buttons.
   `tests/e2e/error-response.test.ts` verifies the actual server-function responses
   through the normal browser test suite. This diagnostic page is excluded from

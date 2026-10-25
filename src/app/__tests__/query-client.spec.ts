@@ -93,7 +93,7 @@ describe("api failure notifications", () => {
     expect(failure).toBeInstanceOf(Error);
     expect(client.getQueryData(queryKey)).toStrictEqual(["saved"]);
     expect(toast.add).toHaveBeenCalledExactlyOnceWith({
-      title: "Something went wrong. Please try again.",
+      title: apiError.message,
       type: "error",
     });
   });

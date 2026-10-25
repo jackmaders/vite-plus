@@ -13,6 +13,7 @@ import { RouteError } from "./-route-error";
 import appCss from "../styles/styles.css?url";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  errorComponent: RouteError,
   head: () => ({
     links: [
       {
@@ -33,7 +34,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
     ],
   }),
-  errorComponent: RouteError,
   notFoundComponent: NotFound,
   shellComponent: RootDocument,
 });

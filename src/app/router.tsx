@@ -6,7 +6,6 @@ import {
 } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 
-import { getErrorMessage } from "@/shared/errors";
 import { toast } from "@/shared/ui/shadcn/toast";
 
 import { routeTree } from "./routeTree.gen";
@@ -14,26 +13,15 @@ import { routeTree } from "./routeTree.gen";
 export function getRouter() {
   const queryClient = new QueryClient({
     mutationCache: new MutationCache({
-      onError: (error) => {
-        if (typeof window === "undefined" || isIgnoredError(error)) {
-          return;
-        }
-
-        toast.add({ title: getErrorMessage(error), type: "error" });
-      },
+      onError: showServerFunctionToast,
     }),
     queryCache: new QueryCache({
       onError: (error, query) => {
-        if (
-          typeof window === "undefined" ||
-          isIgnoredError(error) ||
-          query.state.dataUpdatedAt === 0 ||
-          query.meta?.["errorHandling"] === "inline"
-        ) {
+        if (query.state.dataUpdatedAt === 0 || query.meta?.["errorHandling"] === "inline") {
           return;
         }
 
-        toast.add({ title: getErrorMessage(error), type: "error" });
+        showServerFunctionToast(error);
       },
     }),
   });
@@ -52,6 +40,14 @@ export function getRouter() {
   });
 
   return router;
+}
+
+function showServerFunctionToast(error: Error) {
+  if (typeof window === "undefined" || isIgnoredError(error)) {
+    return;
+  }
+
+  toast.add({ title: error.message, type: "error" });
 }
 
 function isIgnoredError(error: unknown): boolean {
