@@ -7,8 +7,15 @@ import { user } from "./auth";
 const TITLE_MIN_LENGTH = 1;
 const TITLE_MAX_LENGTH = 256;
 const DESCRIPTION_MAX_LENGTH = 1024;
-const ID_MIN_LENGTH = 1;
 
+/**
+ * Todo database schema table definition.
+ *
+ * NOTE on $defaultFn and $onUpdate: In Drizzle ORM, `$defaultFn` and `$onUpdate` are evaluated
+ * exclusively within Drizzle ORM query builders (e.g. `db.insert()` and `db.update()`). They do not
+ * create SQLite database triggers or native DEFAULT expressions in generated D1 SQL migrations. Any
+ * external or non-Drizzle SQL writers must explicitly supply id, createdAt, and updatedAt.
+ */
 const todos = sqliteTable(
   "todos",
   {
@@ -35,32 +42,41 @@ const todos = sqliteTable(
   ],
 );
 
-const refinements = {
+/**
+ * Raw persisted-record schema. Preserves stored values as-is without write-time string
+ * transformations or trimming.
+ */
+const selectTodoSchema = createSelectSchema(todos);
+
+/**
+ * Write refinements applied to input schemas. Title and description are trimmed and constrained to
+ * valid length.
+ */
+const writeRefinements = {
   description: (schema: z.ZodString) =>
     schema
       .trim()
       .max(DESCRIPTION_MAX_LENGTH, "Description must not exceed 1024 characters")
       .nullable()
       .optional(),
-  id: (schema: z.ZodString) => schema.trim().min(ID_MIN_LENGTH),
   title: (schema: z.ZodString) =>
     schema.trim().min(TITLE_MIN_LENGTH, "Title is required").max(TITLE_MAX_LENGTH),
 };
 
-const selectTodoSchema = createSelectSchema(todos, refinements);
-
-const insertTodoSchema = createInsertSchema(todos, refinements).omit({
-  createdAt: true,
-  id: true,
-  updatedAt: true,
-  userId: true,
+const insertTodoSchema = createInsertSchema(todos, writeRefinements).pick({
+  description: true,
+  title: true,
 });
 
-const updateTodoSchema = createUpdateSchema(todos, refinements).omit({
-  createdAt: true,
-  id: true,
-  updatedAt: true,
-  userId: true,
+/**
+ * Update schema strictly allowlisting client-writable fields: title, description, completed.
+ * Excludes server-owned identity, ownership, and timestamp fields (id, userId, createdAt,
+ * updatedAt) as well as any future database columns.
+ */
+const updateTodoSchema = createUpdateSchema(todos, writeRefinements).pick({
+  completed: true,
+  description: true,
+  title: true,
 });
 
 type Todo = typeof todos.$inferSelect;

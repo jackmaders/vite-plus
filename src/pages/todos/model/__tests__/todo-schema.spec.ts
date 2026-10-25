@@ -1,11 +1,36 @@
 import { describe, expect, it } from "vite-plus/test";
 
+import { selectTodoSchema } from "@/shared/db";
+
 import {
   createTodoInputSchema,
   deleteTodoInputSchema,
   updateTodoInputSchema,
 } from "../todo-schema";
 
+describe("select todo schema persisted-record semantics", () => {
+  it("preserves whitespace on persisted records without trim refinement", () => {
+    expect.assertions(2);
+
+    // Arrange
+    const record = {
+      completed: false,
+      createdAt: new Date(),
+      description: "  whitespace description  ",
+      id: "  padded-id  ",
+      title: "  padded title  ",
+      updatedAt: new Date(),
+      userId: "user-1",
+    };
+
+    // Act
+    const parsed = selectTodoSchema.parse(record);
+
+    // Assert
+    expect(parsed.title).toBe("  padded title  ");
+    expect(parsed.description).toBe("  whitespace description  ");
+  });
+});
 describe("create todo input schema valid inputs", () => {
   it("parses valid input and trims title", () => {
     expect.assertions(2);
@@ -37,49 +62,52 @@ describe("create todo input schema valid inputs", () => {
 });
 
 describe("create todo input schema invalid inputs", () => {
-  it("throws when title is empty", () => {
-    expect.assertions(1);
+  it("fails with too_small code on path ['title'] when title is empty", () => {
+    expect.assertions(3);
 
     // Arrange
     const invalidInput = { title: "" };
 
     // Act
-    function parse() {
-      createTodoInputSchema.parse(invalidInput);
-    }
+    const result = createTodoInputSchema.safeParse(invalidInput);
+    const issue = result.error?.issues[0];
 
     // Assert
-    expect(parse).toThrow("Title is required");
+    expect(result.success).toBe(false);
+    expect(issue?.code).toBe("too_small");
+    expect(issue?.path).toStrictEqual(["title"]);
   });
 
-  it("throws when title is only whitespace", () => {
-    expect.assertions(1);
+  it("fails with too_small code on path ['title'] when title is only whitespace", () => {
+    expect.assertions(3);
 
     // Arrange
     const invalidInput = { title: "   " };
 
     // Act
-    function parse() {
-      createTodoInputSchema.parse(invalidInput);
-    }
+    const result = createTodoInputSchema.safeParse(invalidInput);
+    const issue = result.error?.issues[0];
 
     // Assert
-    expect(parse).toThrow("Title is required");
+    expect(result.success).toBe(false);
+    expect(issue?.code).toBe("too_small");
+    expect(issue?.path).toStrictEqual(["title"]);
   });
 
-  it("throws when description exceeds 1024 characters", () => {
-    expect.assertions(1);
+  it("fails with too_big code on path ['description'] when description exceeds 1024 characters", () => {
+    expect.assertions(3);
 
     // Arrange
     const invalidInput = { description: "a".repeat(1025), title: "Valid title" };
 
     // Act
-    function parse() {
-      createTodoInputSchema.parse(invalidInput);
-    }
+    const result = createTodoInputSchema.safeParse(invalidInput);
+    const issue = result.error?.issues[0];
 
     // Assert
-    expect(parse).toThrow("Description must not exceed 1024 characters");
+    expect(result.success).toBe(false);
+    expect(issue?.code).toBe("too_big");
+    expect(issue?.path).toStrictEqual(["description"]);
   });
 });
 
@@ -124,66 +152,88 @@ describe("update todo input schema valid inputs", () => {
   });
 });
 
-describe("update todo input schema toggle completed", () => {
-  it("parses valid toggle update input", () => {
-    expect.assertions(2);
+describe("update todo input schema strips server-owned fields", () => {
+  it("strips id, userId, createdAt, updatedAt from data payload", () => {
+    expect.assertions(5);
 
     // Arrange
-    const rawInput = { data: { completed: true }, id: "todo-1" };
+    const rawInput = {
+      data: {
+        completed: true,
+        createdAt: new Date(),
+        description: "Valid desc",
+        id: "server-id",
+        title: "Valid title",
+        unknownField: "malicious",
+        updatedAt: new Date(),
+        userId: "server-user",
+      },
+      id: "todo-1",
+    };
 
     // Act
     const parsed = updateTodoInputSchema.parse(rawInput);
 
     // Assert
-    expect(parsed.id).toBe("todo-1");
-    expect(parsed.data.completed).toBe(true);
+    expect(parsed.data).toStrictEqual({
+      completed: true,
+      description: "Valid desc",
+      title: "Valid title",
+    });
+    expect("id" in parsed.data).toBe(false);
+    expect("userId" in parsed.data).toBe(false);
+    expect("createdAt" in parsed.data).toBe(false);
+    expect("updatedAt" in parsed.data).toBe(false);
   });
 });
 
 describe("update todo input schema invalid inputs", () => {
-  it("throws when id is empty", () => {
-    expect.assertions(1);
+  it("fails with too_small code on path ['id'] when id is empty", () => {
+    expect.assertions(3);
 
     // Arrange
     const invalidInput = { data: {}, id: "" };
 
     // Act
-    function parse() {
-      updateTodoInputSchema.parse(invalidInput);
-    }
+    const result = updateTodoInputSchema.safeParse(invalidInput);
+    const issue = result.error?.issues[0];
 
     // Assert
-    expect(parse).toThrow(/too_small/iu);
+    expect(result.success).toBe(false);
+    expect(issue?.code).toBe("too_small");
+    expect(issue?.path).toStrictEqual(["id"]);
   });
 
-  it("throws when title is empty string", () => {
-    expect.assertions(1);
+  it("fails with too_small code on path ['data', 'title'] when title is empty string", () => {
+    expect.assertions(3);
 
     // Arrange
     const invalidInput = { data: { title: "" }, id: "todo-1" };
 
     // Act
-    function parse() {
-      updateTodoInputSchema.parse(invalidInput);
-    }
+    const result = updateTodoInputSchema.safeParse(invalidInput);
+    const issue = result.error?.issues[0];
 
     // Assert
-    expect(parse).toThrow(/too_small/iu);
+    expect(result.success).toBe(false);
+    expect(issue?.code).toBe("too_small");
+    expect(issue?.path).toStrictEqual(["data", "title"]);
   });
 
-  it("throws when completed is invalid", () => {
-    expect.assertions(1);
+  it("fails with invalid_type code on path ['data', 'completed'] when completed is invalid", () => {
+    expect.assertions(3);
 
     // Arrange
     const invalidInput = { data: { completed: "yes" }, id: "todo-1" };
 
     // Act
-    function parse() {
-      updateTodoInputSchema.parse(invalidInput);
-    }
+    const result = updateTodoInputSchema.safeParse(invalidInput);
+    const issue = result.error?.issues[0];
 
     // Assert
-    expect(parse).toThrow(/invalid_type/iu);
+    expect(result.success).toBe(false);
+    expect(issue?.code).toBe("invalid_type");
+    expect(issue?.path).toStrictEqual(["data", "completed"]);
   });
 });
 
@@ -201,18 +251,19 @@ describe("delete todo input schema", () => {
     expect(parsed.id).toBe("todo-1");
   });
 
-  it("throws a validation error when id is empty", () => {
-    expect.assertions(1);
+  it("fails with too_small code on path ['id'] when id is empty", () => {
+    expect.assertions(3);
 
     // Arrange
     const invalidInput = { id: "" };
 
     // Act
-    function parse() {
-      deleteTodoInputSchema.parse(invalidInput);
-    }
+    const result = deleteTodoInputSchema.safeParse(invalidInput);
+    const issue = result.error?.issues[0];
 
     // Assert
-    expect(parse).toThrow(/too_small/iu);
+    expect(result.success).toBe(false);
+    expect(issue?.code).toBe("too_small");
+    expect(issue?.path).toStrictEqual(["id"]);
   });
 });

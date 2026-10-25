@@ -19,6 +19,11 @@ async function getTodos({ db = getDb(), userId }: TodoContext) {
   return result;
 }
 
+// Normalization contract:
+// Expects input conforming to `CreateTodoInput` (as validated and normalized by `createTodoInputSchema`).
+// Direct operations callers must provide a trimmed title. A defensive `title.trim()` is preserved here
+// So that callers invoking `createTodo` directly outside of the validated server function pipeline
+// Also get normalized titles and consistent unique index conflict behavior.
 async function createTodo(input: CreateTodoInput, { db = getDb(), userId }: TodoContext) {
   const [created] = await db
     .insert(todos)
