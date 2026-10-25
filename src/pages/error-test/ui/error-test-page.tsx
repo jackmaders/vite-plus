@@ -1,7 +1,8 @@
+import { useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 
-import { ApplicationError } from "@/shared/errors";
+import { ApplicationError, getErrorMessage } from "@/shared/errors";
 
 import { knownErrorFn, unexpectedErrorFn } from "../api/error-test.functions";
 
@@ -42,8 +43,50 @@ function ErrorTestPage() {
       >
         Trigger unexpected error
       </button>
-      <output>{result}</output>
+      <output aria-label="Server error response">{result}</output>
+      <MutationErrorControls />
     </main>
+  );
+}
+
+function MutationErrorControls() {
+  const knownError = useServerFn(knownErrorFn);
+  const unexpectedError = useServerFn(unexpectedErrorFn);
+  const defaultError = useMutation({ mutationFn: knownError });
+  const defaultUnexpectedError = useMutation({ mutationFn: unexpectedError });
+  const inlineError = useMutation({
+    meta: { errorHandling: "inline" },
+    mutationFn: knownError,
+  });
+
+  return (
+    <section aria-label="Mutation errors">
+      <button
+        type="button"
+        onClick={() => {
+          defaultError.mutate();
+        }}
+      >
+        Trigger default error toast
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          defaultUnexpectedError.mutate();
+        }}
+      >
+        Trigger unexpected error toast
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          inlineError.mutate();
+        }}
+      >
+        Trigger inline mutation error
+      </button>
+      {inlineError.error && <p role="alert">{getErrorMessage(inlineError.error)}</p>}
+    </section>
   );
 }
 

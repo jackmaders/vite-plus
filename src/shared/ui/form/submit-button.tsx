@@ -4,8 +4,22 @@ import { Button } from "@/shared/ui/shadcn/button";
 
 import { useFormContext } from "./form-context";
 
-function selectSubmitState(state: { canSubmit: boolean; isSubmitting: boolean }) {
-  return [state.canSubmit, state.isSubmitting] as const;
+interface SubmitState {
+  canSubmit: boolean;
+  errorMap: { onSubmit?: unknown };
+  errors: unknown[];
+  isFieldsValid: boolean;
+  isSubmitting: boolean;
+  isValidating: boolean;
+}
+
+function selectSubmitState(state: SubmitState) {
+  const canRetry =
+    typeof state.errorMap.onSubmit === "string" &&
+    state.isFieldsValid &&
+    !state.isValidating &&
+    state.errors.length === 1;
+  return [state.canSubmit || canRetry, state.isSubmitting] as const;
 }
 
 interface SubmitButtonProps extends ComponentProps<typeof Button> {

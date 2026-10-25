@@ -4,6 +4,8 @@ import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { HeadContent, Link, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
+import { Toaster } from "@/shared/ui/shadcn/toast";
+
 import { Footer } from "../layouts/footer";
 import { Header } from "../layouts/header";
 
@@ -65,6 +67,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <Header />
         {children}
         <Footer />
+        <Toaster />
         <TanStackDevtools
           config={{ position: "bottom-right" }}
           plugins={[
