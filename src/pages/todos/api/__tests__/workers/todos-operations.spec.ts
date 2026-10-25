@@ -7,7 +7,7 @@ import { getDb } from "@/shared/db/index.server";
 import { user } from "@/shared/db/schema";
 import { createEmptyInsertMockDb } from "@test/vitest/fixtures/db";
 
-import { createTodo, deleteTodo, getTodos, updateTodo } from "../../todos-operations";
+import { createTodo, deleteTodo, getTodos, updateTodo } from "../../todos-service";
 
 beforeEach(async () => {
   const db = getDb(env.DB);

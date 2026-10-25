@@ -7,7 +7,7 @@ import {
   deleteTodoInputSchema,
   updateTodoInputSchema,
 } from "../model/todo-schema";
-import { createTodo, deleteTodo, getTodos, updateTodo } from "./todos-operations";
+import { createTodo, deleteTodo, getTodos, updateTodo } from "./todos-service";
 
 const getTodosFn = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
