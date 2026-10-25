@@ -105,14 +105,28 @@ writing comments, or applying function-level design conventions.
   Keep the success path readable as sequential steps.
 - When callers need application-owned error types, translate vendor
   exceptions at the adapter boundary.
-- Represent expected alternatives with conditions, explicit results,
+- Represent expected alternatives with conditions, domain-specific data,
   or defaults. Reserve exceptions for failures.
 - When an empty value preserves the API's meaning, use it—for example,
   return an empty collection. When absence is a distinct result callers
   must handle, use `null`.
 
-// todo: Document server-operation and TanStack Query error-handling conventions
-// after their approaches are agreed.
+### Server operations and TanStack Query
+
+- Return domain data directly from successful server operations. Throw
+  `ApplicationError` for failures with a known application code. Let unexpected
+  failures propagate to the global server-function error middleware for logging
+  and normalization.
+- Model expected alternatives in the operation's data contract. A lookup may
+  return `null` when a record is absent; an update that requires an existing
+  record fails when that record is absent.
+- Let `queryFn` and `mutationFn` return successful data and propagate rejected
+  server-function calls. Do not return a generic success/error `Result` envelope:
+  Query treats a resolved error envelope as successful data and runs success
+  handlers.
+- Do not replace a failed request with `null` or an empty collection. Use those
+  values for successful outcomes defined by the operation's contract. Handle
+  failures at the owning Router, query, mutation, or form UI boundary.
 
 ## Component props
 
