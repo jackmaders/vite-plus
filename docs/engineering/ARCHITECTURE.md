@@ -180,9 +180,9 @@ function useCreateRecord() {
 - Keep mutation callbacks and awaited invalidation intact when displaying
   failures in the owning UI.
 - Show `error.message` from server-function failures in toasts. Keep route
-  boundary messaging generic so loader diagnostics do not reach the page. Todo
-  forms display `FormSubmissionError` messages, and delete confirmation displays
-  mutation messages inline while keeping the dialog open for retry.
+  boundary messaging generic so loader diagnostics do not reach the page.
+- Keep failed confirmation dialogs open with inline mutation feedback so users
+  can retry.
 - Use `/error-test` to trigger known and unexpected failures with buttons.
   `tests/e2e/error-response.test.ts` verifies the actual server-function responses
   through the normal browser test suite. This diagnostic page is excluded from
@@ -193,9 +193,9 @@ function useCreateRecord() {
 - Start's `.validator(schema)` passes validated and transformed output to its
   handler.
 - Render `<form.FormError />` inside `<form.AppForm>` and `<form.Form>` to show
-  `errorMap.onSubmit`. Use `FormSubmissionError` for an explicit message;
-  other failures use the generic fallback.
-- Allow a valid form with only a submission error to retry without editing its
-  values. The form clears that error before validating the next submission.
+  submit validation messages and `error.message` from failed submissions.
+- Store submission failures in `errorMap.onSubmit` while preserving draft values.
+  Editing a field reruns validation, clears submission feedback, and enables
+  valid forms to retry. Keep submit readiness based on `canSubmit`.
 - See the [Form submission guide](https://tanstack.com/form/latest/docs/framework/react/guides/submission-handling)
   for validation and transformation behavior.

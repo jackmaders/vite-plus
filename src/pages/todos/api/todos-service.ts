@@ -27,6 +27,7 @@ async function createTodo(input: CreateTodoInput, { db = getDb(), userId }: Todo
       title: input.title.trim(),
       userId,
     })
+    .onConflictDoNothing({ target: [todos.userId, todos.title] })
     .returning();
 
   if (!created) {

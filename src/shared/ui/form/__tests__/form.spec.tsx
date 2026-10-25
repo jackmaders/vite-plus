@@ -128,7 +128,7 @@ describe("form component", () => {
     expect(onSave).not.toHaveBeenCalled();
   });
 
-  it("displays a fallback error and leaves the draft in place", async () => {
+  it("displays the error message and leaves the draft in place", async () => {
     expect.hasAssertions();
 
     // Arrange
@@ -141,12 +141,30 @@ describe("form component", () => {
 
     // Assert
     await waitFor(() => {
-      expect(screen.getByText("Something went wrong. Please try again.")).toBeDefined();
+      expect(screen.getByText("submission failed")).toBeDefined();
     });
     expect(screen.getByPlaceholderText<HTMLInputElement>("Account name").value).toBe("Draft");
   });
 
-  it("displays the safe message from a submission error", async () => {
+  it("preserves the draft when a rejection has no Error message", async () => {
+    expect.hasAssertions();
+
+    // Arrange
+    const onSave = vi.fn<() => Promise<void>>().mockRejectedValue("request unavailable");
+
+    // Act
+    render(<TestForm initialName="Draft" onSave={onSave} />);
+    fireEvent.submit(screen.getByRole("form", { name: "Account form" }));
+
+    // Assert
+    await waitFor(() => {
+      expect(onSave).toHaveBeenCalledOnce();
+    });
+    expect(screen.queryByRole("alert")).toBeNull();
+    expect(screen.getByPlaceholderText<HTMLInputElement>("Account name").value).toBe("Draft");
+  });
+
+  it("displays the message from a submission error", async () => {
     expect.hasAssertions();
 
     // Arrange

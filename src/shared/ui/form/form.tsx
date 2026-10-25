@@ -1,7 +1,6 @@
 import { useCallback, type ComponentProps, type SubmitEvent } from "react";
 
 import { useFormContext } from "./form-context";
-import { FormSubmissionError } from "./form-submission-error";
 
 function Form({ ...props }: Omit<ComponentProps<"form">, "onSubmit">) {
   const form = useFormContext();
@@ -16,12 +15,9 @@ function Form({ ...props }: Omit<ComponentProps<"form">, "onSubmit">) {
           form.setErrorMap({ onSubmit: undefined });
           await form.handleSubmit();
         } catch (error) {
-          form.setErrorMap({
-            onSubmit:
-              error instanceof FormSubmissionError
-                ? error.message
-                : "Something went wrong. Please try again.",
-          });
+          if (error instanceof Error) {
+            form.setErrorMap({ onSubmit: error.message });
+          }
         }
       })();
     },
