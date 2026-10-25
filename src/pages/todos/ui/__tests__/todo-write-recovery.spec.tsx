@@ -60,7 +60,7 @@ describe("todo write recovery", () => {
     // Assert
     expect(failure).toStrictEqual({
       feedbackVisibleAfterEdit: false,
-      message: "Something went wrong. Please try again.",
+      message: "save failed",
       retainedTitle: "Draft title",
       retryDisabled: true,
       retryDisabledAfterEdit: false,
@@ -90,7 +90,7 @@ describe("todo write recovery", () => {
     // Assert
     expect(failure).toStrictEqual({
       feedbackVisibleAfterEdit: false,
-      message: "Something went wrong. Please try again.",
+      message: "save failed",
       retainedTitle: "Edited draft",
       retryDisabled: true,
       retryDisabledAfterEdit: false,

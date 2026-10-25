@@ -124,7 +124,7 @@ describe("update todo dialog", () => {
 
     // Assert
     await waitFor(() => {
-      expect(screen.getByText("Something went wrong. Please try again.")).toBeDefined();
+      expect(screen.getByText("save failed")).toBeDefined();
     });
     expect(titleInput.value).toBe("Draft title");
     expect(screen.getByRole("heading", { name: /update todo item\?/iu })).toBeDefined();

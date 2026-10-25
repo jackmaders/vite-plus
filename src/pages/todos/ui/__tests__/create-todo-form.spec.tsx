@@ -55,7 +55,7 @@ describe("todo form submission", () => {
 
     // Act
     await fillAndSubmit(user, "New Todo");
-    const error = await screen.findByText("Something went wrong. Please try again.");
+    const error = await screen.findByText("save failed");
 
     // Assert
     expect(error).toBeDefined();
@@ -112,7 +112,7 @@ describe("todo form submission", () => {
 
     // Assert
     await waitFor(() => {
-      expect(screen.getByText("Something went wrong. Please try again.")).toBeDefined();
+      expect(screen.getByText("save failed")).toBeDefined();
     });
     expect(screen.getByPlaceholderText<HTMLInputElement>("Title").value).toBe("Draft title");
   });

@@ -193,9 +193,7 @@ function useCreateRecord() {
 - Start's `.validator(schema)` passes validated and transformed output to its
   handler.
 - Render `<form.FormError />` inside `<form.AppForm>` and `<form.Form>` to show
-  submit validation messages and submission failures. Public `ApplicationError`
-  and explicit `FormSubmissionError` messages are shown; other failures use the
-  generic fallback.
+  submit validation messages and `error.message` from failed submissions.
 - Store submission failures in `errorMap.onSubmit` while preserving draft values.
   Editing a field reruns validation, clears submission feedback, and enables
   valid forms to retry. Keep submit readiness based on `canSubmit`.
