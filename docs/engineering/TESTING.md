@@ -14,10 +14,10 @@ Applies when implementing new behavior or writing, reviewing, or organizing test
 
 - Place complex, reusable test data and mock factories in `tests/vitest/fixtures/`
   and import them via `@test/vitest/fixtures/<fixture>`.
-- Name fixture files by domain (`session.ts`, `todos.ts`, `db.ts`) without
+- Name fixture files by domain (`session.ts`, `records.ts`, `db.ts`) without
   `test-` or `mock-` prefixes.
 - Name static reference records with `TEST_<ENTITY>` (e.g. `TEST_USER`,
-  `TEST_TODO`) and enforce deterministic timestamps and IDs.
+  `TEST_RECORD`) and enforce deterministic timestamps and IDs.
 - Provide `create<Entity>Fixture(overrides?)` factory functions when tests
   require customized copies of domain entities.
 - Provide `createMock<Service>(...)` factory functions for mocked runtimes or

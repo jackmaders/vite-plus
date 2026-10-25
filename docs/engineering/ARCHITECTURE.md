@@ -179,15 +179,10 @@ function useCreateRecord() {
   cancellation, and server rendering do not produce notifications.
 - Keep mutation callbacks and awaited invalidation intact when displaying
   failures in the owning UI.
-- Todo titles are unique within each user. Duplicate creates reject with
-  `TODO_CREATE_FAILED`; other database failures still reach the global error
-  middleware. The unique index migration requires existing duplicate titles
-  within a user to be resolved before applying it; it does not change records.
 - Show `error.message` from server-function failures in toasts. Keep route
-  boundary messaging generic so loader diagnostics do not reach the page. Todo
-  forms display public `ApplicationError` and `FormSubmissionError` messages, and
-  delete confirmation displays mutation messages inline while keeping the dialog
-  open for retry.
+  boundary messaging generic so loader diagnostics do not reach the page.
+- Keep failed confirmation dialogs open with inline mutation feedback so users
+  can retry.
 - Use `/error-test` to trigger known and unexpected failures with buttons.
   `tests/e2e/error-response.test.ts` verifies the actual server-function responses
   through the normal browser test suite. This diagnostic page is excluded from
