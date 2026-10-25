@@ -170,6 +170,9 @@ function useCreateRecord() {
   Status metadata does not set the server-function response's HTTP status.
 - Keep queries and mutations rejecting on failures. Preserve Router redirects
   and not-found signals through error middleware.
+- Follow the [server-operation and Query conventions](CODING_STANDARDS.md#error-handling):
+  return domain data on success and propagate failures. A resolved error envelope
+  is successful Query data, so it does not activate Query's failure handling.
 - Use `/error-test` to trigger known and unexpected failures with buttons.
   `tests/e2e/error-response.test.ts` verifies the actual server-function responses
   through the normal browser test suite. This diagnostic page is excluded from
