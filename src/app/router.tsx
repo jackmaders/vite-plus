@@ -1,4 +1,10 @@
-import { CancelledError, MutationCache, QueryCache, QueryClient } from "@tanstack/react-query";
+import {
+  CancelledError,
+  MutationCache,
+  QueryCache,
+  QueryClient,
+  type Query,
+} from "@tanstack/react-query";
 import {
   createRouter as createTanStackRouter,
   isNotFound,
@@ -40,10 +46,7 @@ export function getRouter() {
   return router;
 }
 
-function showServerErrorToast(
-  error: Error,
-  { query }: { query?: { state: { dataUpdatedAt: number } } } = {},
-) {
+function showServerErrorToast(error: Error, { query }: { query?: Query<unknown, unknown> } = {}) {
   if (
     typeof window === "undefined" ||
     query?.state.dataUpdatedAt === 0 ||
