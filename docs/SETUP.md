@@ -44,8 +44,13 @@ vp dev
 ```
 
 ```bash
-# Build and run the compiled Worker.
-vp build && vp preview
+# Give preview its own local secret.
+printf 'BETTER_AUTH_SECRET="%s"\n' "$(openssl rand -hex 32)" > .dev.vars.preview
+
+# Build for the local preview origin and migrate its local D1 binding.
+CLOUDFLARE_ENV=preview vp run build
+vp run db:migrate --local --env preview
+vp preview
 ```
 
 ## Cloudflare Workers production setup
