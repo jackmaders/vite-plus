@@ -8,6 +8,7 @@ import { Toaster } from "@/shared/ui/shadcn/toast";
 
 import { Footer } from "../layouts/footer";
 import { Header } from "../layouts/header";
+import { RouteError } from "./-route-error";
 
 import appCss from "../styles/styles.css?url";
 
@@ -32,6 +33,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
     ],
   }),
+  errorComponent: RouteError,
   notFoundComponent: NotFound,
   shellComponent: RootDocument,
 });

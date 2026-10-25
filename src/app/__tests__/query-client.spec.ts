@@ -33,7 +33,7 @@ describe("api failure notifications", () => {
     expect(toast.add).toHaveBeenCalledExactlyOnceWith({ title: apiError.message, type: "error" });
   });
 
-  it("toasts initial query errors and preserves rejection", async () => {
+  it("leaves initial query errors to the route error boundary", async () => {
     expect.hasAssertions();
     // Arrange
     const client = getRouter().options.context.queryClient;
@@ -50,7 +50,7 @@ describe("api failure notifications", () => {
 
     // Assert
     expect(failure).toBe(apiError);
-    expect(toast.add).toHaveBeenCalledExactlyOnceWith({ title: apiError.message, type: "error" });
+    expect(toast.add).not.toHaveBeenCalled();
   });
 
   it("toasts background query errors while preserving cached data", async () => {
@@ -62,7 +62,7 @@ describe("api failure notifications", () => {
     const apiError = new Error("Refetch failed");
 
     // Act
-    await client
+    const failure = await client
       .query({
         queryFn: vi.fn<() => Promise<never>>().mockRejectedValue(apiError),
         queryKey,
@@ -72,7 +72,35 @@ describe("api failure notifications", () => {
       .catch((error: unknown) => error);
 
     // Assert
+    expect(failure).toBeInstanceOf(Error);
     expect(client.getQueryData(queryKey)).toStrictEqual(["saved"]);
-    expect(toast.add).toHaveBeenCalledExactlyOnceWith({ title: apiError.message, type: "error" });
+    expect(toast.add).toHaveBeenCalledExactlyOnceWith({
+      title: "Something went wrong. Please try again.",
+      type: "error",
+    });
+  });
+
+  it("does not toast errors for queries handled inline", async () => {
+    expect.hasAssertions();
+    // Arrange
+    const client = getRouter().options.context.queryClient;
+    const queryKey = ["inline"];
+    client.setQueryData(queryKey, ["saved"]);
+
+    // Act
+    const failure = await client
+      .query({
+        meta: { errorHandling: "inline" },
+        queryFn: vi.fn<() => Promise<never>>().mockRejectedValue(new Error("Refetch failed")),
+        queryKey,
+        retry: false,
+        staleTime: 0,
+      })
+      .catch((error: unknown) => error);
+
+    // Assert
+    expect(failure).toBeInstanceOf(Error);
+    expect(client.getQueryData(queryKey)).toStrictEqual(["saved"]);
+    expect(toast.add).not.toHaveBeenCalled();
   });
 });

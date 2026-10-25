@@ -1,9 +1,18 @@
 import { QueryClient } from "@tanstack/react-query";
-import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
+import {
+  createMemoryHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  RouterProvider,
+} from "@tanstack/react-router";
 import { cleanup, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { routeTree } from "@/app/routeTree.gen";
+
+import { RouteError } from "../-route-error";
 
 vi.mock(import("@/app/styles/styles.css?url"), () => ({ default: "/styles.css" }));
 
@@ -120,3 +129,59 @@ describe("root route notFoundComponent", () => {
     expect(screen.getByRole("link", { name: "Return Home" }).getAttribute("href")).toBe("/");
   });
 });
+
+describe("route error recovery", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("shows a safe error and retries the failed loader", async () => {
+    expect.assertions(4);
+
+    // Arrange
+    const user = userEvent.setup();
+    const { loader, router } = createRetryRouter();
+    const { privateDetailVisible, safeMessageVisible } = await renderFailedRoute(router);
+
+    // Act
+    await user.click(screen.getByRole("button", { name: "Try again" }));
+
+    // Assert
+    expect(safeMessageVisible).toBe(true);
+    expect(privateDetailVisible).toBe(false);
+    await expect(screen.findByText("Page loaded")).resolves.toBeDefined();
+    expect(loader).toHaveBeenCalledTimes(2);
+  });
+});
+
+function createRetryRouter() {
+  const loader = vi
+    .fn<() => Promise<void>>()
+    .mockRejectedValueOnce(new Error("private server detail"))
+    .mockResolvedValueOnce();
+  const rootRoute = createRootRoute({ errorComponent: RouteError });
+  const indexRoute = createRoute({
+    component: () => <p>Page loaded</p>,
+    getParentRoute: () => rootRoute,
+    loader,
+    path: "/",
+  });
+
+  return {
+    loader,
+    router: createRouter({
+      history: createMemoryHistory({ initialEntries: ["/"] }),
+      routeTree: rootRoute.addChildren([indexRoute]),
+    }),
+  };
+}
+
+async function renderFailedRoute(router: ReturnType<typeof createRetryRouter>["router"]) {
+  await router.load();
+  render(<RouterProvider router={router} />);
+
+  return {
+    privateDetailVisible: screen.queryByText("private server detail") !== null,
+    safeMessageVisible: screen.queryByText("Something went wrong. Please try again.") !== null,
+  };
+}
