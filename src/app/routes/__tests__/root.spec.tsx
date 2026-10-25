@@ -9,8 +9,8 @@ import {
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { RouteError } from "@/app/routes/-route-error";
 import { routeTree } from "@/app/routeTree.gen";
+import { ServerErrorPage } from "@/pages/server-error";
 
 vi.mock(import("@/app/styles/styles.css?url"), () => ({ default: "/styles.css" }));
 
@@ -151,7 +151,7 @@ describe("route error boundary", () => {
 
 function createFailedRoute() {
   const loader = vi.fn<() => Promise<void>>().mockRejectedValue(new Error("private server detail"));
-  const rootRoute = createRootRoute({ errorComponent: RouteError });
+  const rootRoute = createRootRoute({ errorComponent: ServerErrorPage });
   const indexRoute = createRoute({
     component: () => <p>Page loaded</p>,
     getParentRoute: () => rootRoute,
