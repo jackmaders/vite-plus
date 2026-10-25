@@ -1,7 +1,7 @@
 import { type ComponentProps, useState } from "react";
 
 import type { Todo } from "@/shared/db";
-import { FormSubmissionError, useAppForm } from "@/shared/ui/form";
+import { useAppForm } from "@/shared/ui/form";
 import { Button } from "@/shared/ui/shadcn/button";
 import {
   Dialog,
@@ -12,7 +12,6 @@ import {
 } from "@/shared/ui/shadcn/dialog";
 
 import { useUpdateTodo } from "../api/use-update-todo";
-import { getTodoErrorMessage } from "../model/mutation-error";
 import { updateTodoDataSchema, type UpdateTodoData } from "../model/todo-schema";
 
 interface UpdateTodoDialogProps extends ComponentProps<typeof DialogTrigger> {
@@ -50,7 +49,7 @@ interface UpdateTodoFormProps {
 }
 
 function UpdateTodoForm({ todo, onSuccess, onCancel }: UpdateTodoFormProps) {
-  const { mutateAsync: updateTodo } = useUpdateTodo({ meta: { errorHandling: "inline" } });
+  const { mutateAsync: updateTodo } = useUpdateTodo();
 
   const defaultValues: UpdateTodoData = {
     description: todo.description ?? "",
@@ -60,11 +59,7 @@ function UpdateTodoForm({ todo, onSuccess, onCancel }: UpdateTodoFormProps) {
   const form = useAppForm({
     defaultValues,
     onSubmit: async ({ value }) => {
-      try {
-        await updateTodo({ data: value, id: todo.id });
-      } catch (error) {
-        throw new FormSubmissionError(getTodoErrorMessage(error));
-      }
+      await updateTodo({ data: value, id: todo.id });
       onSuccess?.();
     },
     validators: {

@@ -29,7 +29,6 @@ function DeleteTodoDialog({ children = "Delete Item", todo, ...props }: DeleteTo
     mutate: deleteTodo,
     reset,
   } = useDeleteTodo({
-    meta: { errorHandling: "inline" },
     onSuccess: () => {
       setOpen(false);
     },
@@ -55,8 +54,7 @@ function DeleteTodoDialog({ children = "Delete Item", todo, ...props }: DeleteTo
         {error && <FieldError>{getTodoErrorMessage(error)}</FieldError>}
 
         <DialogFooter>
-          <DialogClose render={cancelButton}>Cancel</DialogClose>
-
+          <DialogClose render={() => <Button variant="ghost">Cancel</Button>} />
           <Button
             disabled={isPending}
             variant="destructive"
@@ -71,7 +69,5 @@ function DeleteTodoDialog({ children = "Delete Item", todo, ...props }: DeleteTo
     </Dialog>
   );
 }
-
-const cancelButton = <Button variant="ghost" />;
 
 export { DeleteTodoDialog };

@@ -1,10 +1,9 @@
 import type { ComponentProps } from "react";
 
-import { FormSubmissionError, useAppForm, type Form } from "@/shared/ui/form";
+import { useAppForm, type Form } from "@/shared/ui/form";
 import { Card } from "@/shared/ui/shadcn/card";
 
 import { useCreateTodo } from "../api/use-create-todo";
-import { getTodoErrorMessage } from "../model/mutation-error";
 import { createTodoInputSchema, type CreateTodoInput } from "../model/todo-schema";
 
 const DEFAULT_FORM_VALUES: CreateTodoInput = {
@@ -13,16 +12,12 @@ const DEFAULT_FORM_VALUES: CreateTodoInput = {
 };
 
 function CreateTodoForm({ ...props }: ComponentProps<typeof Form> = {}) {
-  const { mutateAsync: createTodo } = useCreateTodo({ meta: { errorHandling: "inline" } });
+  const { mutateAsync: createTodo } = useCreateTodo();
 
   const form = useAppForm({
     defaultValues: DEFAULT_FORM_VALUES,
     onSubmit: async ({ value, formApi }) => {
-      try {
-        await createTodo(value);
-      } catch (error) {
-        throw new FormSubmissionError(getTodoErrorMessage(error));
-      }
+      await createTodo(value);
       formApi.reset();
     },
     validators: { onChange: createTodoInputSchema },
