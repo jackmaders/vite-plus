@@ -2,108 +2,147 @@ import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { useDeleteTodo } from "@/pages/todos/api/use-delete-todo";
-import { DeleteTodoDialog } from "@/pages/todos/ui/delete-todo-dialog";
+import { getRouter } from "@/app/router";
+import { toast } from "@/shared/ui/shadcn/toast";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
+import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
 
-vi.mock(import("@/pages/todos/api/use-delete-todo"));
+import { DeleteTodoDialog, deleteTodoFn } from "../..";
 
-const mockTodo = TEST_TODO;
-const mockDeleteTodo = vi.fn<() => void>();
+vi.mock(import("../../api/todos.functions"));
+vi.mock(import("@/shared/ui/shadcn/toast"));
+
+beforeEach(() => {
+  vi.mocked(deleteTodoFn).mockReset().mockResolvedValue(TEST_TODO);
+});
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+});
 
 describe("delete todo dialog", () => {
-  let successCallback: (() => void) | null = null;
-
-  beforeEach(() => {
-    mockDeleteTodo.mockClear();
-    successCallback = null;
-    vi.mocked(useDeleteTodo).mockImplementation((options) => {
-      successCallback = (options?.onSuccess as (() => void) | undefined) ?? null;
-      return {
-        isPending: false,
-        mutate: mockDeleteTodo,
-        reset: vi.fn<() => void>(),
-      } as never;
-    });
-  });
-
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
-  });
-
-  it("renders trigger and opens dialog on click", async () => {
-    expect.assertions(2);
-
-    // Arrange
-    const user = userEvent.setup();
-    render(<DeleteTodoDialog todo={mockTodo} />);
-
-    // Assert trigger
-    expect(screen.getByRole("button", { name: "Delete Item" })).toBeDefined();
-
-    // Act
-    await user.click(screen.getByRole("button", { name: "Delete Item" }));
-
-    // Assert dialog opened
-    expect(screen.getByRole("heading", { name: /delete todo item\?/iu })).toBeDefined();
-  });
-
-  it("calls deleteTodo when delete button is confirmed", async () => {
+  it("opens confirmation from its trigger", async () => {
     expect.assertions(1);
 
     // Arrange
-    const user = userEvent.setup();
-    render(<DeleteTodoDialog todo={mockTodo} />);
+    const { user } = renderDeleteDialog();
 
     // Act
     await user.click(screen.getByRole("button", { name: "Delete Item" }));
-    await user.click(screen.getByRole("button", { name: "Delete Todo" }));
 
     // Assert
-    expect(mockDeleteTodo).toHaveBeenCalledWith({ id: mockTodo.id });
+    expect(screen.getByRole("heading", { name: "Delete Todo Item?" })).toBeDefined();
   });
 
-  it("closes dialog when delete mutation succeeds", async () => {
+  it("deletes the selected todo and closes confirmation after success", async () => {
     expect.hasAssertions();
 
     // Arrange
-    const user = userEvent.setup();
-    render(<DeleteTodoDialog todo={mockTodo} />);
+    const { user } = renderDeleteDialog();
+    await user.click(screen.getByRole("button", { name: "Delete Item" }));
 
     // Act
-    await user.click(screen.getByRole("button", { name: "Delete Item" }));
-    expect(screen.getByRole("heading", { name: /delete todo item\?/iu })).toBeDefined();
+    await user.click(screen.getByRole("button", { name: "Delete Todo" }));
 
-    // Simulate mutation success callback
-    act(() => {
-      successCallback?.();
-    });
-
-    // Assert dialog closed
+    // Assert
+    expect(deleteTodoFn).toHaveBeenCalledWith({ data: { id: TEST_TODO.id } });
     await waitFor(() => {
-      expect(screen.queryByRole("heading", { name: /delete todo item\?/iu })).toBeNull();
+      expect(screen.queryByRole("dialog")).toBeNull();
     });
   });
 
-  it("shows deleting state and disables button when mutation is pending", async () => {
+  it("disables confirmation while deletion is pending", async () => {
+    expect.hasAssertions();
+
+    // Act
+    const pendingDisabled = await completePendingDelete();
+
+    // Assert
+    expect(pendingDisabled).toBe(true);
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).toBeNull();
+    });
+  });
+
+  it("keeps confirmation open with feedback until a retry succeeds", async () => {
+    expect.hasAssertions();
+
+    // Arrange
+    const { user } = await setupFailedDelete();
+
+    // Act
+    const failure = await retryFailedDelete(user);
+
+    // Assert
+    expect(failure).toStrictEqual({ dialogOpen: true, message: "Network unavailable" });
+    expect(toast.add).toHaveBeenCalledOnce();
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).toBeNull();
+    });
+    expect(deleteTodoFn).toHaveBeenCalledTimes(2);
+  });
+
+  it("clears previous feedback when confirmation is reopened", async () => {
     expect.assertions(2);
 
     // Arrange
-    vi.mocked(useDeleteTodo).mockReturnValue({
-      isPending: true,
-      mutate: mockDeleteTodo,
-      reset: vi.fn<() => void>(),
-    } as never);
-    const user = userEvent.setup();
-    render(<DeleteTodoDialog todo={mockTodo} />);
+    const { user } = await setupFailedDelete();
+    await user.click(screen.getByRole("button", { name: "Delete Todo" }));
+    const previousError = await screen.findByRole("alert");
+    const previousMessage = previousError.textContent;
 
     // Act
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
     await user.click(screen.getByRole("button", { name: "Delete Item" }));
 
     // Assert
-    const deleteButton = screen.getByRole("button", { name: "Deleting..." });
-    expect(deleteButton).toBeDefined();
-    expect(deleteButton.hasAttribute("disabled")).toBe(true);
+    expect(previousMessage).toBe("Network unavailable");
+    expect(screen.queryByRole("alert")).toBeNull();
   });
 });
+
+function renderDeleteDialog() {
+  const { wrapper } = createTestingWrapper({
+    queryClient: getRouter().options.context.queryClient,
+  });
+  render(<DeleteTodoDialog todo={TEST_TODO} />, { wrapper });
+  return { user: userEvent.setup() };
+}
+
+async function setupFailedDelete() {
+  vi.mocked(deleteTodoFn).mockRejectedValueOnce(new Error("Network unavailable"));
+  const { user } = renderDeleteDialog();
+  await user.click(screen.getByRole("button", { name: "Delete Item" }));
+  return { user };
+}
+
+async function retryFailedDelete(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole("button", { name: "Delete Todo" }));
+  const feedback = await screen.findByRole("alert");
+  const failure = {
+    dialogOpen: Boolean(screen.queryByRole("dialog")),
+    message: feedback.textContent,
+  };
+  await user.click(screen.getByRole("button", { name: "Delete Todo" }));
+  return failure;
+}
+
+async function completePendingDelete() {
+  const deletion: { complete?: () => void } = {};
+  const pending = new Promise<typeof TEST_TODO>((resolve) => {
+    deletion.complete = () => {
+      resolve(TEST_TODO);
+    };
+  });
+  vi.mocked(deleteTodoFn).mockReturnValueOnce(pending);
+  const { user } = renderDeleteDialog();
+  await user.click(screen.getByRole("button", { name: "Delete Item" }));
+  await user.click(screen.getByRole("button", { name: "Delete Todo" }));
+  const { disabled } = screen.getByRole<HTMLButtonElement>("button", { name: "Deleting..." });
+  await act(async () => {
+    deletion.complete?.();
+    await pending;
+  });
+  return disabled;
+}

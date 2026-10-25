@@ -1,10 +1,17 @@
-import { QueryClient } from "@tanstack/react-query";
+import { CancelledError, QueryClient } from "@tanstack/react-query";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { getRouter } from "@/app/router";
+import { ApplicationError } from "@/shared/errors";
+import { toast } from "@/shared/ui/shadcn/toast";
 
 vi.mock(import("@tanstack/react-router-ssr-query"));
+vi.mock(import("@/shared/ui/shadcn/toast"));
+
+afterEach(() => {
+  vi.clearAllMocks();
+});
 
 describe("router route matching", () => {
   it("matches the home page within the root document", () => {
@@ -91,10 +98,6 @@ describe("router instance isolation", () => {
 });
 
 describe("router query integration", () => {
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("exposes queryClient on the router context", () => {
     expect.assertions(1);
 
@@ -131,6 +134,92 @@ describe("router query integration", () => {
     expect(setupRouterSsrQueryIntegration).toHaveBeenCalledWith({
       queryClient: router.options.context.queryClient,
       router,
+    });
+  });
+});
+
+describe("api failure notifications", () => {
+  it("toasts mutation errors and preserves rejection and custom callbacks", async () => {
+    expect.hasAssertions();
+    // Arrange
+    const client = getRouter().options.context.queryClient;
+    const apiError = new ApplicationError("TODO_CREATE_FAILED");
+    const onError = vi.fn<() => void>();
+    const mutation = client.getMutationCache().build(client, {
+      mutationFn: vi.fn<() => Promise<never>>().mockRejectedValue(apiError),
+      onError,
+    });
+
+    // Act
+    const failure = await mutation.execute({}).catch((error: unknown) => error);
+
+    // Assert
+    expect(failure).toBe(apiError);
+    expect(onError).toHaveBeenCalledOnce();
+    expect(toast.add).toHaveBeenCalledExactlyOnceWith({ title: apiError.message, type: "error" });
+  });
+
+  it("does not toast cancelled mutation errors", async () => {
+    expect.hasAssertions();
+    // Arrange
+    const client = getRouter().options.context.queryClient;
+    const cancellation = new CancelledError();
+    const mutation = client.getMutationCache().build(client, {
+      mutationFn: vi.fn<() => Promise<never>>().mockRejectedValue(cancellation),
+    });
+
+    // Act
+    const failure = await mutation.execute({}).catch((error: unknown) => error);
+
+    // Assert
+    expect(failure).toBe(cancellation);
+    expect(toast.add).not.toHaveBeenCalled();
+  });
+
+  it("leaves initial query errors to the route error boundary", async () => {
+    expect.hasAssertions();
+    // Arrange
+    const client = getRouter().options.context.queryClient;
+    const apiError = new Error("Network unavailable");
+
+    // Act
+    const failure = await client
+      .query({
+        queryFn: vi.fn<() => Promise<never>>().mockRejectedValue(apiError),
+        queryKey: ["initial"],
+        retry: false,
+      })
+      .catch((error: unknown) => error);
+
+    // Assert
+    expect(failure).toBe(apiError);
+    expect(toast.add).not.toHaveBeenCalled();
+  });
+
+  it("toasts background query errors while preserving cached data", async () => {
+    expect.hasAssertions();
+    // Arrange
+    const client = getRouter().options.context.queryClient;
+    const queryKey = ["cached"];
+    client.setQueryData(queryKey, ["saved"]);
+    const apiError = new Error("Refetch failed");
+
+    // Act
+    const failure = await client
+      .query({
+        queryFn: vi.fn<() => Promise<never>>().mockRejectedValue(apiError),
+        queryKey,
+        retry: false,
+        staleTime: 0,
+      })
+      .catch((error: unknown) => error);
+
+    // Assert
+    expect(failure).toBeInstanceOf(Error);
+    expect(client.getQueryData(queryKey)).toStrictEqual(["saved"]);
+    expect(toast.add).toHaveBeenCalledExactlyOnceWith({
+      title: apiError.message,
+      type: "error",
     });
   });
 });

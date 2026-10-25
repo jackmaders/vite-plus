@@ -20,7 +20,7 @@ beforeEach(async () => {
     .onConflictDoNothing();
 });
 
-describe("todos-operations createTodo creation", () => {
+describe("todos-service createTodo creation", () => {
   it("creates a new todo with defaults and trimmed title for user", async () => {
     expect.assertions(3);
 
@@ -57,7 +57,7 @@ describe("todos-operations createTodo creation", () => {
   });
 });
 
-describe("todos-operations createTodo failures", () => {
+describe("todos-service createTodo failures", () => {
   it("rejects a duplicate title for the same user with the public creation error", async () => {
     expect.assertions(1);
 
@@ -73,7 +73,7 @@ describe("todos-operations createTodo failures", () => {
   });
 });
 
-describe("todos-operations getTodos", () => {
+describe("todos-service getTodos", () => {
   it("returns todos for user ordered by createdAt descending", async () => {
     expect.assertions(3);
 
@@ -112,7 +112,7 @@ describe("todos-operations getTodos", () => {
   });
 });
 
-describe("todos-operations updateTodo toggling completed", () => {
+describe("todos-service updateTodo toggling completed", () => {
   it("toggles the completed status of an existing todo", async () => {
     expect.assertions(2);
 
@@ -129,7 +129,7 @@ describe("todos-operations updateTodo toggling completed", () => {
   });
 });
 
-describe("todos-operations updateTodo", () => {
+describe("todos-service updateTodo", () => {
   it("updates title and description of an existing todo", async () => {
     expect.assertions(2);
 
@@ -159,7 +159,7 @@ describe("todos-operations updateTodo", () => {
   });
 });
 
-describe("todos-operations updateTodo error cases", () => {
+describe("todos-service updateTodo error cases", () => {
   it("throws Todo not found when attempting to update another user's todo", async () => {
     expect.assertions(1);
 
@@ -192,7 +192,7 @@ describe("todos-operations updateTodo error cases", () => {
   });
 });
 
-describe("todos-operations deleteTodo", () => {
+describe("todos-service deleteTodo", () => {
   it("deletes an existing todo and returns the deleted record", async () => {
     expect.assertions(1);
 
