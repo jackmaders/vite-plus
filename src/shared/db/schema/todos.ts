@@ -1,4 +1,4 @@
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema, createUpdateSchema } from "drizzle-orm/zod";
 import type * as z from "zod";
 
@@ -29,7 +29,10 @@ const todos = sqliteTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
   },
-  (table) => [index("todos_user_id_idx").on(table.userId)],
+  (table) => [
+    index("todos_user_id_idx").on(table.userId),
+    uniqueIndex("todos_user_id_title_unique").on(table.userId, table.title),
+  ],
 );
 
 const refinements = {

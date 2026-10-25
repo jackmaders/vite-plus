@@ -179,10 +179,15 @@ function useCreateRecord() {
   cancellation, and server rendering do not produce notifications.
 - Keep mutation callbacks and awaited invalidation intact when displaying
   failures in the owning UI.
+- Todo titles are unique within each user. Duplicate creates reject with
+  `TODO_CREATE_FAILED`; other database failures still reach the global error
+  middleware. The unique index migration requires existing duplicate titles
+  within a user to be resolved before applying it; it does not change records.
 - Show `error.message` from server-function failures in toasts. Keep route
   boundary messaging generic so loader diagnostics do not reach the page. Todo
-  forms display `FormSubmissionError` messages, and delete confirmation displays
-  mutation messages inline while keeping the dialog open for retry.
+  forms display public `ApplicationError` and `FormSubmissionError` messages, and
+  delete confirmation displays mutation messages inline while keeping the dialog
+  open for retry.
 - Use `/error-test` to trigger known and unexpected failures with buttons.
   `tests/e2e/error-response.test.ts` verifies the actual server-function responses
   through the normal browser test suite. This diagnostic page is excluded from
@@ -193,9 +198,12 @@ function useCreateRecord() {
 - Start's `.validator(schema)` passes validated and transformed output to its
   handler.
 - Render `<form.FormError />` inside `<form.AppForm>` and `<form.Form>` to show
-  `errorMap.onSubmit`. Use `FormSubmissionError` for an explicit message;
-  other failures use the generic fallback.
-- Allow a valid form with only a submission error to retry without editing its
-  values. The form clears that error before validating the next submission.
+  submit validation messages and submission failures. Public `ApplicationError`
+  and explicit `FormSubmissionError` messages are shown; other failures use the
+  generic fallback.
+- Keep caught submission failures in the Form's local feedback context rather
+  than its validation `errorMap`. This lets valid drafts retry without editing
+  while `canSubmit` continues to reflect validation. Clear submission feedback
+  before the next attempt.
 - See the [Form submission guide](https://tanstack.com/form/latest/docs/framework/react/guides/submission-handling)
   for validation and transformation behavior.

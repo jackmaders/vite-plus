@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { createTodoFn } from "@/pages/todos/api/todos.functions";
 import { CreateTodoForm } from "@/pages/todos/ui/create-todo-form";
-import { ApplicationError } from "@/shared/errors";
+import { ApplicationError, applicationErrorAdapter } from "@/shared/errors";
 import { toast } from "@/shared/ui/shadcn/toast";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
 import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
@@ -32,7 +32,7 @@ describe("create todo failure recovery", () => {
     const error = await screen.findByRole("alert");
 
     // Assert
-    expect(error.textContent).toBe("Something went wrong. Please try again.");
+    expect(error.textContent).toBe("Todo item could not be created.");
     expect({
       description: screen.getByLabelText<HTMLInputElement>("Description").value,
       title: title.value,
@@ -52,11 +52,12 @@ describe("create todo failure recovery", () => {
 
 async function setupFailedCreate() {
   const user = userEvent.setup();
-  vi.mocked(createTodoFn)
-    .mockRejectedValueOnce(
+  const failure = applicationErrorAdapter.fromSerializable(
+    applicationErrorAdapter.toSerializable(
       new ApplicationError("TODO_CREATE_FAILED", { message: "private override" }),
-    )
-    .mockResolvedValueOnce(TEST_TODO);
+    ),
+  );
+  vi.mocked(createTodoFn).mockRejectedValueOnce(failure).mockResolvedValueOnce(TEST_TODO);
   const { wrapper } = createTestingWrapper({
     queryClient: getRouter().options.context.queryClient,
   });

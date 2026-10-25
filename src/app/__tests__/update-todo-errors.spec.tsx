@@ -32,7 +32,7 @@ describe("update todo failure recovery", () => {
     const error = await screen.findByRole("alert");
 
     // Assert
-    expect(error.textContent).toBe("Something went wrong. Please try again.");
+    expect(error.textContent).toBe("Todo item not found.");
     expect(title.value).toBe("Edited title");
     expect(screen.getByRole("dialog")).toBeDefined();
     expect(toast.add).toHaveBeenCalledOnce();

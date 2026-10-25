@@ -6,7 +6,6 @@ import { todos } from "@/shared/db";
 import { getDb } from "@/shared/db/index.server";
 import { user } from "@/shared/db/schema";
 import { ApplicationError } from "@/shared/errors";
-import { createEmptyInsertMockDb } from "@test/vitest/fixtures/db";
 
 import { createTodo, deleteTodo, getTodos, updateTodo } from "../../todos-service";
 
@@ -59,14 +58,15 @@ describe("todos-operations createTodo creation", () => {
 });
 
 describe("todos-operations createTodo failures", () => {
-  it("throws an error when insert returning array is empty", async () => {
+  it("rejects a duplicate title for the same user with the public creation error", async () => {
     expect.assertions(1);
 
     // Arrange
-    const mockDb = createEmptyInsertMockDb();
+    const db = getDb(env.DB);
+    await createTodo({ title: "Duplicate title" }, { db, userId: "user-a" });
 
     // Act
-    const action = createTodo({ title: "Test" }, { db: mockDb, userId: "user-a" });
+    const action = createTodo({ title: " Duplicate title " }, { db, userId: "user-a" });
 
     // Assert
     await expect(action).rejects.toThrow(new ApplicationError("TODO_CREATE_FAILED"));
