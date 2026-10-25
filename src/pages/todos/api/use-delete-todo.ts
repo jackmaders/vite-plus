@@ -1,29 +1,17 @@
-import { useMutation, useQueryClient, type UseMutationOptions } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
 import type { Todo } from "@/shared/db";
 
 import type { DeleteTodoInput } from "../model/todo-schema";
-import { todoKeys } from "./todo-query-options";
 import { deleteTodoFn } from "./todos.functions";
+import { useTodoMutation, type TodoMutationOptions } from "./use-todo-mutation";
 
-type DeleteTodoMutationOptions = Omit<
-  UseMutationOptions<Todo, Error, DeleteTodoInput>,
-  "mutationFn"
->;
+type DeleteTodoMutationOptions = TodoMutationOptions<DeleteTodoInput, Todo>;
 
-function useDeleteTodo({ onSuccess, ...options }: DeleteTodoMutationOptions = {}) {
-  const queryClient = useQueryClient();
+function useDeleteTodo(options: DeleteTodoMutationOptions = {}) {
   const deleteTodo = useServerFn(deleteTodoFn);
 
-  return useMutation({
-    ...options,
-    mutationFn: async (data: DeleteTodoInput) => await deleteTodo({ data }),
-    onSuccess: async (...args) => {
-      await queryClient.invalidateQueries({ queryKey: todoKeys.all });
-      await onSuccess?.(...args);
-    },
-  });
+  return useTodoMutation(async (data: DeleteTodoInput) => await deleteTodo({ data }), options);
 }
 
 export { useDeleteTodo };
