@@ -13,15 +13,15 @@ import { routeTree } from "./routeTree.gen";
 export function getRouter() {
   const queryClient = new QueryClient({
     mutationCache: new MutationCache({
-      onError: showServerFunctionToast,
+      onError: showServerErrorToast,
     }),
     queryCache: new QueryCache({
       onError: (error, query) => {
-        if (query.state.dataUpdatedAt === 0 || query.meta?.["errorHandling"] === "inline") {
+        if (query.state.dataUpdatedAt === 0) {
           return;
         }
 
-        showServerFunctionToast(error);
+        showServerErrorToast(error);
       },
     }),
   });
@@ -42,16 +42,17 @@ export function getRouter() {
   return router;
 }
 
-function showServerFunctionToast(error: Error) {
-  if (typeof window === "undefined" || isIgnoredError(error)) {
+function showServerErrorToast(error: Error) {
+  if (
+    typeof window === "undefined" ||
+    error instanceof CancelledError ||
+    isNotFound(error) ||
+    isRedirect(error)
+  ) {
     return;
   }
 
   toast.add({ title: error.message, type: "error" });
-}
-
-function isIgnoredError(error: unknown): boolean {
-  return error instanceof CancelledError || isNotFound(error) || isRedirect(error);
 }
 
 declare module "@tanstack/react-router" {

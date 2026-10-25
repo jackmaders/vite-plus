@@ -177,9 +177,8 @@ function useCreateRecord() {
   one browser toast per failed mutation or refetch of previously successful data.
   Initial query failures remain owned by Router. Redirects, not-found signals,
   cancellation, and server rendering do not produce notifications.
-- Set `meta: { errorHandling: "inline" }` on queries or mutations whose owning
-  UI displays the failure locally. Custom error callbacks alone do not suppress
-  the default toast. Keep mutation callbacks and awaited invalidation intact.
+- Keep mutation callbacks and awaited invalidation intact when displaying
+  failures in the owning UI.
 - Show `error.message` from server-function failures in toasts. Keep route
   boundary messaging generic so loader diagnostics do not reach the page. Todo
   forms display `FormSubmissionError` messages, and delete confirmation displays

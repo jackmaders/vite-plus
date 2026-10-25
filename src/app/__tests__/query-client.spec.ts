@@ -97,28 +97,4 @@ describe("api failure notifications", () => {
       type: "error",
     });
   });
-
-  it("does not toast errors for queries handled inline", async () => {
-    expect.hasAssertions();
-    // Arrange
-    const client = getRouter().options.context.queryClient;
-    const queryKey = ["inline"];
-    client.setQueryData(queryKey, ["saved"]);
-
-    // Act
-    const failure = await client
-      .query({
-        meta: { errorHandling: "inline" },
-        queryFn: vi.fn<() => Promise<never>>().mockRejectedValue(new Error("Refetch failed")),
-        queryKey,
-        retry: false,
-        staleTime: 0,
-      })
-      .catch((error: unknown) => error);
-
-    // Assert
-    expect(failure).toBeInstanceOf(Error);
-    expect(client.getQueryData(queryKey)).toStrictEqual(["saved"]);
-    expect(toast.add).not.toHaveBeenCalled();
-  });
 });
