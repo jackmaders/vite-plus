@@ -372,6 +372,8 @@ const testConfig = defineConfig(async () => ({
     coverage: {
       exclude: [
         "src/app/routeTree.gen.ts",
+        // The diagnostic page is exercised through real requests in error-response.test.ts.
+        "src/pages/error-test/**",
         "src/shared/ui/shadcn/**",
         "src/**/__mocks__/**",
         "src/shared/db/schema/**",

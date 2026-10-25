@@ -1,7 +1,7 @@
 import { createCsrfMiddleware } from "@tanstack/react-start";
 import { describe, expect, it, vi } from "vite-plus/test";
 
-import { errorMiddleware } from "@/shared/errors";
+import { applicationErrorAdapter, errorMiddleware } from "@/shared/errors";
 
 import { startInstance } from "../start";
 
@@ -14,6 +14,16 @@ vi.mock(import("@tanstack/react-start"), async (importOriginal) => {
 });
 
 describe("start middleware configuration", () => {
+  it("registers application error transport", async () => {
+    expect.assertions(1);
+
+    // Act
+    const options = await startInstance.getOptions();
+
+    // Assert
+    expect(options.serializationAdapters).toStrictEqual([applicationErrorAdapter]);
+  });
+
   it("registers global server-function error handling", async () => {
     expect.assertions(1);
 

@@ -40,8 +40,7 @@ class ApplicationError extends Error {
   public toJSON() {
     return {
       code: this.code,
-      details: this.details,
-      message: this.message,
+      message: ErrorConfig[this.code].message,
       name: this.name,
       statusCode: this.statusCode,
     };

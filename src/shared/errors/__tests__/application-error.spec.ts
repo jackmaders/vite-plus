@@ -61,7 +61,6 @@ describe("application errors", () => {
     expect(serialized).toBe(
       JSON.stringify({
         code: "TODO_NOT_FOUND",
-        details: { todoId: "missing-todo" },
         message: "Todo item not found.",
         name: "ApplicationError",
         statusCode: 404,

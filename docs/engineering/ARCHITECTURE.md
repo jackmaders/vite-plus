@@ -163,6 +163,17 @@ function useCreateRecord() {
 
 ### Validation and errors
 
+- Register application error serialization in Start's `serializationAdapters` so
+  server-function failures reject with `ApplicationError` on the client. Transport
+  only the stable code, configured public message, name, and status metadata.
+  Custom message overrides, details, causes, and server stacks remain server-side.
+  Status metadata does not set the server-function response's HTTP status.
+- Keep queries and mutations rejecting on failures. Preserve Router redirects
+  and not-found signals through error middleware.
+- Use `/error-test` to trigger known and unexpected failures with buttons.
+  `tests/e2e/error-response.test.ts` verifies the actual server-function responses
+  through the normal browser test suite. This diagnostic page is excluded from
+  unit coverage because the E2E tests exercise it against the built application.
 - Pass Zod schemas directly to `useAppForm` validators through Standard Schema.
 - Use `z.input<typeof schema>` for form values. Form passes original input to
   `onSubmit`; call `schema.parse(value)` when transformed output is needed.
