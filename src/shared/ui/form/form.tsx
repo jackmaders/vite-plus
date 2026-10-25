@@ -12,6 +12,8 @@ function Form({ ...props }: Omit<ComponentProps<"form">, "onSubmit">) {
       event.stopPropagation();
       void (async () => {
         try {
+          // oxlint-disable-next-line no-undefined -- Form clears a validation slot with undefined.
+          form.setErrorMap({ onSubmit: undefined });
           await form.handleSubmit();
         } catch (error) {
           form.setErrorMap({

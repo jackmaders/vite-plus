@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/shared/ui/shadcn/dialog";
+import { FieldError } from "@/shared/ui/shadcn/field";
 
 import { useDeleteTodo } from "../api/use-delete-todo";
 
@@ -19,20 +20,29 @@ interface DeleteTodoDialogProps extends ComponentProps<typeof DialogTrigger> {
   todo: Todo;
 }
 
-export function DeleteTodoDialog({
-  children = "Delete Item",
-  todo,
-  ...props
-}: DeleteTodoDialogProps) {
+function DeleteTodoDialog({ children = "Delete Item", todo, ...props }: DeleteTodoDialogProps) {
   const [open, setOpen] = useState(false);
-  const { isPending, mutate: deleteTodo } = useDeleteTodo({
+  const {
+    error,
+    isPending,
+    mutate: deleteTodo,
+    reset,
+  } = useDeleteTodo({
     onSuccess: () => {
       setOpen(false);
     },
   });
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (nextOpen) {
+          reset();
+        }
+      }}
+    >
       <DialogTrigger {...props}>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -40,9 +50,10 @@ export function DeleteTodoDialog({
           <DialogDescription>Are you sure? This action is not reversible</DialogDescription>
         </DialogHeader>
 
-        <DialogFooter>
-          <DialogClose render={() => <Button variant="ghost">Cancel</Button>} />
+        {error && <FieldError>{error.message}</FieldError>}
 
+        <DialogFooter>
+          <DialogClose render={cancelButton}>Cancel</DialogClose>
           <Button
             disabled={isPending}
             variant="destructive"
@@ -57,3 +68,7 @@ export function DeleteTodoDialog({
     </Dialog>
   );
 }
+
+const cancelButton = <Button variant="ghost" />;
+
+export { DeleteTodoDialog };

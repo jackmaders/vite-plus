@@ -49,7 +49,7 @@ jobs:
           run-install: true
           cache: true
       - name: Build project
-        run: vp run build
+        run: CLOUDFLARE_ENV=preview vp run build
       - name: Verify generated routes
         run: git diff --exit-code -- src/app/routeTree.gen.ts
       - name: Verify generated types
@@ -106,12 +106,11 @@ jobs:
           name: build-output
           path: .
       - name: Migrate local database
-        run: vp run db:migrate --local
+        run: vp run db:migrate --local --env preview
       - name: Run browser tests
         uses: ./.github/actions/run-playwright
         env:
           BETTER_AUTH_SECRET: template-ci-local-only-secret-value
-          BETTER_AUTH_URL: http://localhost:5173
         with:
           browser: ${{ matrix.browser }}
 

@@ -18,11 +18,13 @@ describe("todo item display", () => {
     vi.mocked(useDeleteTodo).mockReturnValue({
       isPending: false,
       mutate: vi.fn<() => void>(),
+      reset: vi.fn<() => void>(),
     } as never);
     vi.mocked(useUpdateTodo).mockReturnValue({
       isPending: false,
       mutate: vi.fn<() => void>(),
       mutateAsync: vi.fn<() => Promise<unknown>>(),
+      reset: vi.fn<() => void>(),
     } as never);
   });
 
@@ -73,11 +75,13 @@ describe("todo item actions", () => {
     vi.mocked(useDeleteTodo).mockReturnValue({
       isPending: false,
       mutate: vi.fn<() => void>(),
+      reset: vi.fn<() => void>(),
     } as never);
     vi.mocked(useUpdateTodo).mockReturnValue({
       isPending: false,
       mutate: vi.fn<() => void>(),
       mutateAsync: vi.fn<() => Promise<unknown>>(),
+      reset: vi.fn<() => void>(),
     } as never);
   });
 

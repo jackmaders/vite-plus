@@ -4,10 +4,6 @@ import { Button } from "@/shared/ui/shadcn/button";
 
 import { useFormContext } from "./form-context";
 
-function selectSubmitState(state: { canSubmit: boolean; isSubmitting: boolean }) {
-  return [state.canSubmit, state.isSubmitting] as const;
-}
-
 interface SubmitButtonProps extends ComponentProps<typeof Button> {
   busyLabel?: string;
 }
@@ -22,7 +18,7 @@ function SubmitButton({
   const form = useFormContext();
 
   return (
-    <form.Subscribe selector={selectSubmitState}>
+    <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting] as const}>
       {([canSubmit, isSubmitting]) => (
         <Button
           {...props}

@@ -22,6 +22,7 @@ describe("delete todo dialog", () => {
       return {
         isPending: false,
         mutate: mockDeleteTodo,
+        reset: vi.fn<() => void>(),
       } as never;
     });
   });
@@ -92,6 +93,7 @@ describe("delete todo dialog", () => {
     vi.mocked(useDeleteTodo).mockReturnValue({
       isPending: true,
       mutate: mockDeleteTodo,
+      reset: vi.fn<() => void>(),
     } as never);
     const user = userEvent.setup();
     render(<DeleteTodoDialog todo={mockTodo} />);

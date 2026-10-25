@@ -173,6 +173,17 @@ function useCreateRecord() {
 - Follow the [server-operation and Query conventions](CODING_STANDARDS.md#error-handling):
   return domain data on success and propagate failures. A resolved error envelope
   is successful Query data, so it does not activate Query's failure handling.
+- Create Query clients through `src/app/query-client.ts`. Cache callbacks show
+  one browser toast per failed mutation or refetch of previously successful data.
+  Initial query failures remain owned by Router. Redirects, not-found signals,
+  cancellation, and server rendering do not produce notifications.
+- Set `meta: { errorHandling: "inline" }` on queries or mutations whose owning
+  UI displays the failure locally. Custom error callbacks alone do not suppress
+  the default toast. Keep mutation callbacks and awaited invalidation intact.
+- Use `getErrorMessage` for configured public messages and the generic fallback;
+  never display an unknown error's diagnostic message. Todo forms translate
+  these messages to `FormSubmissionError`, and delete confirmation displays them
+  inline while keeping the dialog open for retry.
 - Use `/error-test` to trigger known and unexpected failures with buttons.
   `tests/e2e/error-response.test.ts` verifies the actual server-function responses
   through the normal browser test suite. This diagnostic page is excluded from
@@ -185,5 +196,7 @@ function useCreateRecord() {
 - Render `<form.FormError />` inside `<form.AppForm>` and `<form.Form>` to show
   `errorMap.onSubmit`. Use `FormSubmissionError` for an explicit message;
   other failures use the generic fallback.
+- Allow a valid form with only a submission error to retry without editing its
+  values. The form clears that error before validating the next submission.
 - See the [Form submission guide](https://tanstack.com/form/latest/docs/framework/react/guides/submission-handling)
   for validation and transformation behavior.

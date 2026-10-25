@@ -9,8 +9,15 @@ pnpm install
 pnpm dev
 ```
 
-Before running `vp preview`, update `BETTER_AUTH_URL` in `.dev.vars` to
-`http://localhost:4173`.
+For local production preview, build with the preview configuration:
+
+```bash
+CLOUDFLARE_ENV=preview vp run build
+vp run db:migrate --local --env preview
+vp preview
+```
+
+Provide `BETTER_AUTH_SECRET` through `.dev.vars` or the process environment.
 
 # Building For Production
 

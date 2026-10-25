@@ -19,9 +19,9 @@ function useCreateTodo({ onSuccess, ...options }: CreateTodoMutationOptions = {}
   return useMutation({
     ...options,
     mutationFn: async (data: CreateTodoInput) => await createTodo({ data }),
-    onSuccess: (...args) => {
-      void queryClient.invalidateQueries({ queryKey: todoKeys.all });
-      onSuccess?.(...args);
+    onSuccess: async (...args) => {
+      await queryClient.invalidateQueries({ queryKey: todoKeys.all });
+      await onSuccess?.(...args);
     },
   });
 }

@@ -52,7 +52,7 @@ describe("submit button component", () => {
     >(({ children, selector }): ReactElement | null => {
       const renderContent = children as (state: unknown) => ReactElement;
       const selectState = selector as (state: unknown) => unknown;
-      return renderContent(selectState({ canSubmit: false, isSubmitting: false }));
+      return renderContent(selectState({ canSubmit: false, errorMap: {}, isSubmitting: false }));
     });
     vi.mocked(form.Subscribe).mockImplementationOnce(mockFormCannotSubmit as never);
 
@@ -100,7 +100,7 @@ describe("submit button component", () => {
     >(({ children, selector }): ReactElement | null => {
       const renderContent = children as (state: unknown) => ReactElement;
       const selectState = selector as (state: unknown) => unknown;
-      return renderContent(selectState({ canSubmit: true, isSubmitting: true }));
+      return renderContent(selectState({ canSubmit: true, errorMap: {}, isSubmitting: true }));
     });
     vi.mocked(form.Subscribe).mockImplementationOnce(mockFormSubmitting as never);
 
