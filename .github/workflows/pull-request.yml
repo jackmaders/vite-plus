@@ -115,6 +115,10 @@ jobs:
         with:
           browser: ${{ matrix.browser }}
 
+      - name: Verify production error transport
+        if: matrix.browser == 'chromium'
+        run: vp run test:transport
+
   status:
     name: ✅ Status Checks
     if: ${{ always() }}

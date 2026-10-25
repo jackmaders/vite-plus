@@ -163,6 +163,15 @@ function useCreateRecord() {
 
 ### Validation and errors
 
+- Register application error serialization in Start's `serializationAdapters` so
+  server-function failures reject with `ApplicationError` on the client. Transport
+  only the stable code, configured public message, name, and status metadata.
+  Custom message overrides, details, causes, and server stacks remain server-side.
+  Status metadata does not set the server-function response's HTTP status.
+- Keep queries and mutations rejecting on failures. Preserve Router redirects
+  and not-found signals through error middleware.
+- Run `vp run test:transport` to verify production server-function transport in
+  an isolated Cloudflare fixture that imports the application's Start configuration.
 - Pass Zod schemas directly to `useAppForm` validators through Standard Schema.
 - Use `z.input<typeof schema>` for form values. Form passes original input to
   `onSubmit`; call `schema.parse(value)` when transformed output is needed.
