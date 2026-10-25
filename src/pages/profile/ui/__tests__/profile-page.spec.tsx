@@ -15,7 +15,26 @@ describe("profile page component", () => {
     vi.clearAllMocks();
   });
 
-  it("renders user information when session is loaded", () => {
+  it("renders user information immediately when initial session is provided", () => {
+    expect.assertions(3);
+
+    // Arrange
+    vi.mocked(useSession).mockReturnValue({
+      data: null,
+      error: null,
+      isPending: true,
+    } as unknown as SessionHookResult);
+
+    // Act
+    render(<ProfilePage initialSession={TEST_SESSION} />);
+
+    // Assert
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("User Profile");
+    expect(screen.getByText(/Name: Test User/u)).toBeDefined();
+    expect(screen.getByText(/Email: test@example.com/u)).toBeDefined();
+  });
+
+  it("renders user information when session is loaded via hook without initial session", () => {
     expect.assertions(3);
 
     // Arrange
@@ -34,20 +53,37 @@ describe("profile page component", () => {
     expect(screen.getByText(/Email: test@example.com/u)).toBeDefined();
   });
 
-  it("renders loading message when session details are not yet available", () => {
+  it("renders signed-out message instead of loading when session is confirmed null and not pending", () => {
     expect.assertions(1);
 
     // Arrange
     vi.mocked(useSession).mockReturnValue({
       data: null,
       error: null,
-      isPending: true,
+      isPending: false,
     } as unknown as SessionHookResult);
 
     // Act
     render(<ProfilePage />);
 
     // Assert
-    expect(screen.getByText("Loading session details...")).toBeDefined();
+    expect(screen.getByText("You are not signed in.")).toBeDefined();
+  });
+
+  it("renders error message when session fetch fails", () => {
+    expect.assertions(1);
+
+    // Arrange
+    vi.mocked(useSession).mockReturnValue({
+      data: null,
+      error: new Error("Network error"),
+      isPending: false,
+    } as unknown as SessionHookResult);
+
+    // Act
+    render(<ProfilePage />);
+
+    // Assert
+    expect(screen.getByText("Failed to load session details.")).toBeDefined();
   });
 });
