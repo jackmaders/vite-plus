@@ -11,22 +11,19 @@ test("retries a create draft after editing a field following a real duplicate-ti
   // Arrange
   const todosPage = new TodosPage(page);
   await signUpAndVisitTodos(page, baseURL);
-  await todosPage.createTodo(EXISTING_TITLE);
-  await todosPage.fillCreateDraft(EXISTING_TITLE, "Keep this draft");
+  const form = await fillCreateDraft(todosPage);
 
   // Act
   const body = await todosPage.submitCreate();
 
   // Assert
   expect(body).toContain("TODO_CREATE_FAILED");
-  await expect(todosPage.createForm.alert).toHaveText("Todo item could not be created.");
-  await expect(todosPage.createForm.titleInput).toHaveValue(EXISTING_TITLE);
-  await expect(todosPage.createForm.submitButton).toBeDisabled();
+  await expect(form.alert).toHaveText("Todo item could not be created.");
+  await expect(form.titleInput).toHaveValue(EXISTING_TITLE);
+  await expect(form.submitButton).toBeDisabled();
 
-  // Act: remove the conflict, then edit the description before retrying.
-  await todosPage.deleteTodo(EXISTING_TITLE);
-  await todosPage.createForm.descriptionInput.fill("Revised draft");
-  await todosPage.createForm.submitButton.click();
+  // Act
+  await retryCreateAfterConflictResolved(todosPage);
 
   // Assert
   await expect(todosPage.getTodoItemText("Revised draft")).toBeVisible();
@@ -39,23 +36,19 @@ test("keeps an update draft open after a real constraint failure and allows reco
   // Arrange: another user can create the same title used by the other test.
   const todosPage = new TodosPage(page);
   await signUpAndVisitTodos(page, baseURL);
-  await todosPage.createTodo("Editable todo");
-  await todosPage.openUpdateDialog();
-  await createConflictInAnotherPage(page);
-  await todosPage.fillUpdateDraft(EXISTING_TITLE, "Keep this draft");
+  const dialog = await prepareUpdateWithConflict(page, todosPage);
 
   // Act
   const body = await todosPage.submitUpdate();
 
   // Assert
   expect(body).toContain("INTERNAL_SERVER_ERROR");
-  await expect(todosPage.updateDialog.alert).toHaveText("Something went wrong.");
-  await expect(todosPage.updateDialog.titleInput).toHaveValue(EXISTING_TITLE);
-  await expect(todosPage.updateDialog.submitButton).toBeDisabled();
+  await expect(dialog.alert).toHaveText("Something went wrong.");
+  await expect(dialog.titleInput).toHaveValue(EXISTING_TITLE);
+  await expect(dialog.submitButton).toBeDisabled();
 
   // Act
-  await todosPage.updateDialog.titleInput.fill("Recovered todo");
-  await todosPage.updateDialog.submitButton.click();
+  await retryUpdate(dialog);
 
   // Assert
   await expect(todosPage.getTodoItemText("Keep this draft")).toBeVisible();
@@ -76,10 +69,35 @@ async function signUpAndVisitTodos(page: Page, baseURL: string | undefined) {
   await todosPage.goto();
 }
 
+async function fillCreateDraft(todosPage: TodosPage) {
+  await todosPage.createTodo(EXISTING_TITLE);
+  await todosPage.fillCreateDraft(EXISTING_TITLE, "Keep this draft");
+  return todosPage.createForm;
+}
+
+async function retryCreateAfterConflictResolved(todosPage: TodosPage) {
+  await todosPage.deleteTodo(EXISTING_TITLE);
+  await todosPage.createForm.descriptionInput.fill("Revised draft");
+  await todosPage.createForm.submitButton.click();
+}
+
+async function prepareUpdateWithConflict(page: Page, todosPage: TodosPage) {
+  await todosPage.createTodo("Editable todo");
+  await todosPage.openUpdateDialog();
+  await createConflictInAnotherPage(page);
+  await todosPage.fillUpdateDraft(EXISTING_TITLE, "Keep this draft");
+  return todosPage.updateDialog;
+}
+
 async function createConflictInAnotherPage(page: Page) {
   const otherPage = await page.context().newPage();
   const otherTodosPage = new TodosPage(otherPage);
   await otherTodosPage.goto();
   await otherTodosPage.createTodo(EXISTING_TITLE);
   await otherPage.close();
+}
+
+async function retryUpdate(dialog: TodosPage["updateDialog"]) {
+  await dialog.titleInput.fill("Recovered todo");
+  await dialog.submitButton.click();
 }

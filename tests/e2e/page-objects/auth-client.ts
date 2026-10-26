@@ -1,16 +1,16 @@
 import type { APIResponse, Page } from "@playwright/test";
 
 interface SignUpOptions {
-  baseURL?: string;
-  email?: string;
-  name?: string;
-  password?: string;
+  baseURL?: string | undefined;
+  email?: string | undefined;
+  name?: string | undefined;
+  password?: string | undefined;
 }
 
 interface SignInOptions {
-  baseURL?: string;
-  email?: string;
-  password?: string;
+  baseURL?: string | undefined;
+  email?: string | undefined;
+  password?: string | undefined;
 }
 
 class AuthClient {
@@ -26,7 +26,7 @@ class AuthClient {
     name = "Test User",
     password = "test-password-1234",
   }: SignUpOptions = {}): Promise<APIResponse> {
-    const headers = baseURL ? { Origin: String(baseURL) } : {};
+    const headers = typeof baseURL === "string" && baseURL.length > 0 ? { Origin: baseURL } : {};
     return await this.page.request.post("/api/auth/sign-up/email", {
       data: { email, name, password },
       headers,
@@ -38,7 +38,7 @@ class AuthClient {
     email = "missing-user@example.com",
     password = "invalid-test-password",
   }: SignInOptions = {}): Promise<APIResponse> {
-    const headers = baseURL ? { Origin: String(baseURL) } : {};
+    const headers = typeof baseURL === "string" && baseURL.length > 0 ? { Origin: baseURL } : {};
     return await this.page.request.post("/api/auth/sign-in/email", {
       data: { email, password },
       headers,
