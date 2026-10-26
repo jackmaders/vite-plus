@@ -42,6 +42,9 @@ writing comments, or applying function-level design conventions.
   modules.
 - When a slice needs separate barrel files for server and client exports,
   use `index.server.ts` and `index.client.ts`.
+- Only export from the slice root (`index.ts` or `index.{client,server}.ts`).
+  Do not create internal segment barrel files (`api/index.ts`, `ui/index.ts`,
+  `model/index.ts`); import directly from segment files within the slice.
 - When an export is created with `createServerFn`, suffix its name with `Fn`.
 
 ### Framework conventions
