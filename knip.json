@@ -13,7 +13,7 @@
     "tests/vitest/wrappers/**/*.{ts,tsx}"
   ],
   "project": ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"],
-  "ignore": ["src/shared/ui/shadcn/**"],
+  "ignore": ["src/shared/lib/utils.ts", "src/shared/ui/shadcn/**"],
   "ignoreDependencies": ["cloudflare"],
   "ignoreExportsUsedInFile": {
     "interface": true,
@@ -21,13 +21,18 @@
   },
   "rules": {
     "binaries": "error",
+    "catalog": "error",
+    "catalogReferences": "error",
+    "cycles": "error",
     "dependencies": "off",
     "devDependencies": "off",
     "duplicates": "error",
     "enumMembers": "error",
     "exports": "error",
-    "files": "off",
+    "files": "error",
     "namespaceMembers": "error",
+    "nsExports": "error",
+    "nsTypes": "error",
     "types": "error",
     "unlisted": "error",
     "unresolved": "error"
