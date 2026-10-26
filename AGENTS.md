@@ -20,7 +20,7 @@ release. Add a tool name to select part of the graph. For example, run
 ## Review Checklist
 
 - [ ] Run `vp install` after pulling remote changes, switching worktrees, or if project-local vite-plus is missing.
-- [ ] Run `vp check --fix` and `vp test` to format, lint, type check and test changes.
+- [ ] Run `vp run check:full` and `vp test` before pushing to run full CI-parity checks. Note that warnings are denied in CI (`denyWarnings: true` under `FULL_CHECK=1`) and must be treated as blocking.
 - [ ] If tests fail or need detailed traces, rerun with explicit reporter: `vp test <filter> --reporter=default`.
 - [ ] Check if there are `vite.config.ts` tasks or `package.json` scripts necessary for validation, run via `vp run <script>`.
 - [ ] If setup, runtime, or package-manager behavior looks wrong, run `vp env doctor` and include its output when asking for help.
