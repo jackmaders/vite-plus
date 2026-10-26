@@ -1,5 +1,4 @@
-import { expect, test } from "@playwright/test";
-
+import { expect, test } from "./fixtures";
 import { ErrorTestPage } from "./page-objects";
 
 test("returns a safe known error from the actual server function", async ({ page }) => {

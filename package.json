@@ -7,7 +7,7 @@
     "cf:generate": "wrangler types",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "wrangler d1 migrations apply DB",
-    "deploy": "vp build && wrangler deploy",
+    "deploy": "wrangler deploy",
     "dev": "vp dev",
     "lint:arch": "steiger ./src",
     "lint:exports": "knip",
