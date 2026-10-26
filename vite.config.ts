@@ -72,6 +72,7 @@ const lintConfig = defineConfig({
           "eslint/max-statements": "off",
           "eslint/no-magic-numbers": "off",
           "import/group-exports": "off",
+          "import/max-dependencies": "off",
           "promise/avoid-new": "off",
           "testing-library/await-async-events": "error",
           "testing-library/await-async-queries": "error",

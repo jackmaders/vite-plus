@@ -4,16 +4,24 @@ import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { env } from "cloudflare:workers";
 
 import { getDb } from "../db/index.server";
-import { account, session, user, verification } from "../db/schema";
+import { account, rateLimit, session, user, verification } from "../db/schema";
 
 const auth = betterAuth({
+  advanced: {
+    ipAddress: {
+      ipAddressHeaders: ["cf-connecting-ip"],
+    },
+  },
   baseURL: env.BETTER_AUTH_URL,
   database: drizzleAdapter(getDb(), {
     provider: "sqlite",
-    schema: { account, session, user, verification },
+    schema: { account, rateLimit, session, user, verification },
   }),
   emailAndPassword: { enabled: true },
   plugins: [tanstackStartCookies()],
+  rateLimit: {
+    storage: "database",
+  },
   secret: env.BETTER_AUTH_SECRET,
 });
 

@@ -1,0 +1,40 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/app/start.ts",
+    "src/app/router.tsx",
+    "src/app/routes/**/*.{ts,tsx}",
+    "tests/e2e/**/*.test.ts",
+    "tests/vitest/worker-entry.ts",
+    "tests/vitest/setup/*.ts",
+    "src/**/__tests__/**/*.{ts,tsx}",
+    "src/**/__mocks__/**/*.{ts,tsx}",
+    "tests/vitest/fixtures/**/*.{ts,tsx}",
+    "tests/vitest/wrappers/**/*.{ts,tsx}"
+  ],
+  "project": ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"],
+  "ignore": ["src/shared/lib/utils.ts", "src/shared/ui/shadcn/**"],
+  "ignoreDependencies": ["cloudflare"],
+  "ignoreExportsUsedInFile": {
+    "interface": true,
+    "type": true
+  },
+  "rules": {
+    "binaries": "error",
+    "catalog": "error",
+    "catalogReferences": "error",
+    "cycles": "error",
+    "dependencies": "off",
+    "devDependencies": "off",
+    "duplicates": "error",
+    "enumMembers": "error",
+    "exports": "error",
+    "files": "error",
+    "namespaceMembers": "error",
+    "nsExports": "error",
+    "nsTypes": "error",
+    "types": "error",
+    "unlisted": "error",
+    "unresolved": "error"
+  }
+}

@@ -10,6 +10,7 @@
     "deploy": "vp build && wrangler deploy",
     "dev": "vp dev",
     "lint:arch": "steiger ./src",
+    "lint:exports": "knip",
     "prepare": "vp config",
     "preview": "vp preview",
     "test:e2e": "playwright test"
@@ -62,6 +63,7 @@
     "eslint-plugin-tailwindcss": "^4.4.0",
     "eslint-plugin-testing-library": "^7.16.2",
     "happy-dom": "^21.0.3",
+    "knip": "^6.43.0",
     "steiger": "^0.7.0",
     "typescript": "^6.0.2",
     "vite": "catalog:",

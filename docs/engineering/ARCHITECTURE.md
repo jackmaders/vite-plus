@@ -84,7 +84,7 @@ loader data fetching, or server functions.
 ### Authenticated reads and writes
 
 - Keep page logic, query options, mutations, schemas, and database operations
-  in the owning page slice. Import through its public API from routes.
+  in the owning page slice.
 - Await `context.queryClient.query(options)` in the loader. Read the same
   options with `useSuspenseQuery` in the page.
 - Keep privileged operations in server functions. Loaders also run in the browser.
@@ -205,3 +205,12 @@ function useCreateRecord() {
   valid forms to retry. Keep submit readiness based on `canSubmit`.
 - See the [Form submission guide](https://tanstack.com/form/latest/docs/framework/react/guides/submission-handling)
   for validation and transformation behavior.
+
+## Authentication and rate limiting
+
+- Consistency and atomicity: Rate limiting in D1 relies on SQLite single-writer
+  semantics per database. Cloudflare D1 provides read-replication with primary writes;
+  counter increments execute against the database. Under concurrent distributed
+  requests across global edges, rate limiting offers per-database serialization
+  without requiring a distributed global lock or promising unsupported strict cross-region
+  linearizability.

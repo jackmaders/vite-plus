@@ -9,7 +9,8 @@ import { retryFailedSave } from "@test/vitest/fixtures/form-submissions";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
 import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
 
-import { UpdateTodoDialog, updateTodoFn } from "../..";
+import { updateTodoFn } from "../../api/todos.functions";
+import { UpdateTodoDialog } from "../update-todo-dialog";
 
 vi.mock(import("../../api/todos.functions"));
 vi.mock(import("@/shared/ui/shadcn/toast"));
