@@ -3,9 +3,9 @@ import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { HeadContent, Link, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { useEffect } from "react";
 
 import { ServerErrorPage } from "@/pages/server-error";
-import { useHydrated } from "@/shared/lib/use-hydrated";
 import { Toaster } from "@/shared/ui/shadcn/toast";
 
 import { Footer, Header } from "../layouts";
@@ -60,7 +60,9 @@ function NotFound() {
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  const isHydrated = useHydrated();
+  useEffect(() => {
+    document.body.dataset["hydrated"] = "true";
+  }, []);
 
   return (
     <html lang="en">
@@ -69,7 +71,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body
         className="font-sans wrap-anywhere antialiased selection:bg-teal-500/25"
-        data-hydrated={isHydrated ? "true" : "false"}
+        data-hydrated="false"
       >
         <Header />
         {children}
