@@ -1,0 +1,41 @@
+name: "Check Environment"
+description: "Checks required environment variables without logging their values"
+
+inputs:
+  required-variables:
+    description: "Newline-separated environment variable names to check; pass secret or variable values through env"
+    required: true
+
+outputs:
+  available:
+    description: "Whether every required environment variable has a non-empty value"
+    value: ${{ steps.check.outputs.available }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: 🔎 Check Required Environment Variables
+      id: check
+      shell: bash
+      env:
+        REQUIRED_VARIABLES: ${{ inputs.required-variables }}
+      run: |
+        available=true
+
+        while IFS= read -r name; do
+          if [[ -z "$name" ]]; then
+            continue
+          fi
+
+          if [[ ! "$name" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+            printf '::error::Invalid required environment variable name.\n'
+            exit 1
+          fi
+
+          if [[ -z "${!name:-}" ]]; then
+            printf '::notice::Required environment variable %s is missing; dependent steps will be skipped.\n' "$name"
+            available=false
+          fi
+        done <<< "$REQUIRED_VARIABLES"
+
+        printf 'available=%s\n' "$available" >> "$GITHUB_OUTPUT"
