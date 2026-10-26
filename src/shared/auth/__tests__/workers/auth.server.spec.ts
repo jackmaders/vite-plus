@@ -13,7 +13,7 @@ function createSessionRequest(connectingIp: string, forwardedIp?: string) {
     "cf-connecting-ip": connectingIp,
   });
 
-  if (forwardedIp) {
+  if (typeof forwardedIp === "string" && forwardedIp.length > 0) {
     headers.set("x-forwarded-for", forwardedIp);
   }
 
@@ -65,7 +65,7 @@ describe("auth server worker configuration", () => {
     expect(auth.options.rateLimit).toMatchObject({
       storage: "database",
     });
-    expect(auth.options.advanced?.ipAddress?.ipAddressHeaders).toStrictEqual(["cf-connecting-ip"]);
+    expect(auth.options.advanced.ipAddress.ipAddressHeaders).toStrictEqual(["cf-connecting-ip"]);
     expect(auth.handler).toBeTypeOf("function");
     expect(auth.api.getSession).toBeTypeOf("function");
   });
