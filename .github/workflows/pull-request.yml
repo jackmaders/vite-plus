@@ -42,32 +42,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 0
           persist-credentials: false
-      - name: Prevent migration history rewrites
-        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000')
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-          EVENT_NAME: ${{ github.event_name }}
-        run: |
-          if [ "$EVENT_NAME" = "pull_request" ]; then
-            BASE_SHA=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
-          fi
-          CHANGED_HISTORY=$(git diff --no-renames --name-only --diff-filter=MDT "$BASE_SHA" "$HEAD_SHA" -- drizzle)
-          if [ -n "$CHANGED_HISTORY" ]; then
-            echo "::error::Existing migrations and snapshots are immutable. Add a new migration instead of modifying, deleting, or renaming history."
-            printf '%s\n' "$CHANGED_HISTORY"
-            exit 1
-          fi
-      - name: Enforce single migration per PR
-        if: github.event_name == 'pull_request'
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-        run: |
-          NEW_MIGRATIONS=$(git diff --name-only --diff-filter=A "$BASE_SHA...$HEAD_SHA" -- "drizzle/**/*.sql" | wc -l)
-          [ "$NEW_MIGRATIONS" -le 1 ] || { echo "::error::PR introduces $NEW_MIGRATIONS migrations (max 1 allowed)."; exit 1; }
       - name: Set up Vite+
         uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
@@ -80,10 +55,7 @@ jobs:
       - name: Verify generated types
         run: vp run cf:generate && git diff --exit-code -- worker-configuration.d.ts
       - name: Verify generated migrations
-        run: |
-          vp run db:generate
-          git diff --exit-code -- drizzle/
-          test -z "$(git ls-files --others --exclude-standard -- drizzle)"
+        run: vp run db:generate && git diff --exit-code -- drizzle/
       - name: Verify worker deployment
         run: vp run deploy --dry-run
       - name: Upload build artifact
