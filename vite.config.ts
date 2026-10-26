@@ -65,8 +65,10 @@ const lintConfig = defineConfig({
           "**/__mocks__/**",
         ],
         rules: {
+          "eslint/complexity": "off",
           "eslint/max-lines": "off",
           "eslint/max-lines-per-function": "off",
+          "eslint/max-statements": "off",
           "eslint/no-magic-numbers": "off",
           "import/group-exports": "off",
           "promise/avoid-new": "off",
@@ -396,6 +398,7 @@ const testConfig = defineConfig(async () => ({
       },
       await workerTestConfig(),
     ],
+    reporters: [process.env["CI"] ? "default" : "dot"],
   },
 }));
 
