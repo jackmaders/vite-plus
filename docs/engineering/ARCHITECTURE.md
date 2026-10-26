@@ -4,6 +4,51 @@ Applies when designing modules or their public interfaces, integrating vendor SD
 adding routes, placing UI or form primitives, or changing route authentication,
 loader data fetching, or server functions.
 
+## Project structure
+
+Representative layout following Feature-Sliced Design (FSD) and repository conventions:
+
+```text
+src/
+├── app/
+│   ├── layouts/                  # Shared layouts (header, footer, theme-toggle)
+│   ├── routes/                   # File-based routes (thin wrappers over pages)
+│   │   ├── _authenticated/       # Authenticated route group
+│   │   │   └── <entity>.tsx      # Thin route delegating to page
+│   │   ├── __root.tsx            # Root route with layout and error boundary
+│   │   └── index.tsx             # Public landing route
+│   ├── router.tsx                # TanStack Router instance & route tree binding
+│   └── routeTree.gen.ts          # Auto-generated route tree
+├── pages/                        # Page slices composed of views and features
+│   └── <entity>/
+│       ├── api/                  # Server functions, query options, and mutation hooks
+│       │   ├── <entity>.functions.ts
+│       │   ├── <entity>-query-options.ts
+│       │   └── use-<action>-<entity>.ts
+│       ├── model/                # Domain schemas and client-safe validation types
+│       │   └── <entity>-schema.ts
+│       ├── ui/                   # Entity page view and decomposed form/dialog components
+│       │   └── <entity>-page.tsx
+│       └── index.ts              # Public API barrel exporting page component
+└── shared/                       # Shared reusable infrastructure and primitives
+    ├── auth/                     # Better Auth client, server, and session middleware
+    ├── db/                       # Drizzle client, connection runtime, and table schemas
+    │   └── schema/               # Table definitions (<entity>.ts, auth.ts)
+    ├── errors/                   # ApplicationError, transport serialization, and logging
+    ├── lib/                      # Pure utilities and constants
+    └── ui/                       # Reusable UI component libraries
+        ├── form/                 # TanStack Form wrappers and validation components
+        └── shadcn/               # Headless shadcn/ui primitives
+
+tests/
+├── e2e/                          # Playwright end-to-end tests and page objects
+│   ├── page-objects/             # Page Object Models for routes and views
+│   │   └── components/           # Sub-component objects for dialogs and forms
+│   └── <entity>-<scenario>.test.ts
+└── vitest/                       # Shared Vitest setup and global fixtures
+    └── fixtures/                 # Reusable test fixtures and mock factories
+```
+
 ## Module design
 
 - Group operations that serve the same purpose. When behaviors change for
