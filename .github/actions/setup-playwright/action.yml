@@ -15,10 +15,14 @@ runs:
       with:
         path: ~/.cache/ms-playwright
         key: ${{ runner.os }}-playwright-${{ inputs.browser }}-${{ hashFiles('pnpm-lock.yaml') }}
-    - name: Install Playwright system dependencies
-      shell: bash
-      run: vpx playwright install-deps ${{ inputs.browser }}
-    - name: Install Playwright browser
+    - name: Install Playwright browser and system dependencies
       if: steps.playwright-cache.outputs.cache-hit != 'true'
       shell: bash
-      run: vpx playwright install ${{ inputs.browser }}
+      run: vpx playwright install --with-deps ${{ inputs.browser }}
+    - name: Install missing system dependencies
+      if: steps.playwright-cache.outputs.cache-hit == 'true'
+      shell: bash
+      run: |
+        if ! vpx playwright install-deps --dry-run ${{ inputs.browser }} > /dev/null 2>&1; then
+          vpx playwright install-deps ${{ inputs.browser }}
+        fi
