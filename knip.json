@@ -4,7 +4,7 @@
     "src/app/start.ts",
     "src/app/router.tsx",
     "src/app/routes/**/*.{ts,tsx}",
-    "tests/e2e/**/*.test.ts",
+    "tests/browser/**/*.test.ts",
     "tests/vitest/worker-entry.ts",
     "tests/vitest/setup/*.ts",
     "src/**/__tests__/**/*.{ts,tsx}",

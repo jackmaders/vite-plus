@@ -49,11 +49,5 @@ schema and narrowed for the fields a caller may supply.
 ### Tests
 
 **Browser test**:
-A Playwright test that exercises the application through a browser. The tests
-under `tests/e2e/` run against the built application in Chromium, Firefox, and
-WebKit.
-
-**End-to-end test**:
-A test of behavior across the integrated application. The repository’s browser
-tests are end-to-end tests; “browser” describes how they run, while “end-to-end”
-describes their scope.
+A Playwright test that exercises the built application through a browser. The
+suite lives under `tests/browser/` and runs in Chromium, Firefox, and WebKit.

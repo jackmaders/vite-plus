@@ -100,8 +100,8 @@ release. Add a tool name to select part of the graph. For example, run
   [wrangler](.agents/skills/wrangler/SKILL.md).
 - When writing or configuring Vitest tests, mocks, fixtures, filtering, or
   coverage, read [vitest](.agents/skills/vitest/SKILL.md).
-- When writing, debugging, or configuring Playwright E2E, component, API,
-  visual, accessibility, or security tests, read
+- When writing, debugging, or configuring Playwright browser tests, component
+  tests, API tests, visual tests, accessibility tests, or security tests, read
   [playwright-best-practices](.agents/skills/playwright-best-practices/SKILL.md).
 - When automating browser interactions or inspecting live web pages from the
   CLI, read [playwright-cli](.agents/skills/playwright-cli/SKILL.md).

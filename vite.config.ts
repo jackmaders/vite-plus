@@ -119,7 +119,7 @@ const lintConfig = defineConfig({
         rules: { "react/only-export-components": "off" },
       },
       {
-        files: ["tests/e2e/**"],
+        files: ["tests/browser/**"],
         rules: {
           "playwright/consistent-spacing-between-blocks": "warn",
           "playwright/expect-expect": "error",

@@ -26,7 +26,7 @@ export default defineConfig({
     { name: "webkit", use: { ...devices["Desktop Safari"] } },
   ],
   reporter: CI ? "github" : "list",
-  testDir: "./tests/e2e",
+  testDir: "./tests/browser",
   testMatch: "**/*.test.ts",
   use: {
     baseURL,
