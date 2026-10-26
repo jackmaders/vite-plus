@@ -78,7 +78,7 @@ async function signUpAndVisitTodos(page: Page, baseURL: string | undefined) {
 async function createTodo(page: Page, title: string) {
   const form = page.getByRole("form", { name: "Create a todo" });
   await form.getByRole("textbox", { exact: true, name: "Title" }).fill(title);
-  await form.getByRole("button", { name: "Add Todo" }).click();
+  await submitWrite(page, form.getByRole("button", { name: "Add Todo" }));
   await page
     .getByRole("checkbox", { exact: true, name: `Toggle ${title}` })
     .waitFor({ state: "visible" });
