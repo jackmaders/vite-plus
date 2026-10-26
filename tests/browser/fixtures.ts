@@ -5,9 +5,12 @@ const IGNORED_WARNINGS = [
   "Layout was forced before the page was fully loaded",
 ];
 
+interface BrowserDiagnostics {
+  readonly problems: readonly string[];
+}
+
 const test = base.extend<{
-  // oxlint-disable-next-line typescript/no-invalid-void-type -- Playwright auto fixture provides no value to tests.
-  browserDiagnostics: void;
+  browserDiagnostics: BrowserDiagnostics;
 }>({
   browserDiagnostics: [
     async ({ page }, use, testInfo) => {
@@ -30,7 +33,7 @@ const test = base.extend<{
         problems.push(`[pageerror] ${error.message}`);
       });
 
-      await use();
+      await use({ problems });
 
       if (problems.length > 0) {
         const report = problems.join("\n");
@@ -48,3 +51,4 @@ const test = base.extend<{
 
 export { expect } from "@playwright/test";
 export { test };
+export type { BrowserDiagnostics };
