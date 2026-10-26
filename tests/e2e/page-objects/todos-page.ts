@@ -1,6 +1,7 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
 import { CreateTodoForm, DeleteTodoDialog, UpdateTodoDialog } from "./components";
+import { waitForHydration } from "./hydration";
 
 class TodosPage {
   public readonly createForm: CreateTodoForm;
@@ -20,6 +21,7 @@ class TodosPage {
 
   public async goto() {
     await this.page.goto("/todos");
+    await waitForHydration(this.page);
   }
 
   public async createTodo(title: string, description?: string) {

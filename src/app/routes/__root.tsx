@@ -5,10 +5,10 @@ import { HeadContent, Link, Scripts, createRootRouteWithContext } from "@tanstac
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 
 import { ServerErrorPage } from "@/pages/server-error";
+import { useHydrated } from "@/shared/lib/use-hydrated";
 import { Toaster } from "@/shared/ui/shadcn/toast";
 
-import { Footer } from "../layouts/footer";
-import { Header } from "../layouts/header";
+import { Footer, Header } from "../layouts";
 
 import appCss from "../styles/styles.css?url";
 
@@ -60,12 +60,17 @@ function NotFound() {
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const isHydrated = useHydrated();
+
   return (
     <html lang="en">
       <head>
         <HeadContent />
       </head>
-      <body className="font-sans wrap-anywhere antialiased selection:bg-teal-500/25">
+      <body
+        className="font-sans wrap-anywhere antialiased selection:bg-teal-500/25"
+        data-hydrated={isHydrated ? "true" : "false"}
+      >
         <Header />
         {children}
         <Footer />

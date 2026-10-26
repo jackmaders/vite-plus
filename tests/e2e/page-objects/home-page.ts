@@ -1,5 +1,7 @@
 import type { Locator, Page } from "@playwright/test";
 
+import { waitForHydration } from "./hydration";
+
 class HomePage {
   public readonly heading: Locator;
   public readonly typeSafeRoutingHeading: Locator;
@@ -23,6 +25,7 @@ class HomePage {
 
   public async goto() {
     await this.page.goto("/");
+    await waitForHydration(this.page);
   }
 
   public async clickAboutLink() {
