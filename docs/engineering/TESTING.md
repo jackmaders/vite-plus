@@ -10,10 +10,10 @@ Applies when implementing new behavior or writing, reviewing, or organizing test
   validation, error, and recovery scenarios.
 - When a test requires the Cloudflare Workers runtime, place it in
   `__tests__/workers/` and name it `<module>.spec.ts`.
-- Place browser tests in `tests/e2e/` and name them `<scenario>.test.ts`.
-- Place E2E page objects in `tests/e2e/page-objects/` and component objects in
-  `tests/e2e/page-objects/components/`, exporting them through
-  `tests/e2e/page-objects/index.ts`. Follow the guidelines in
+- Place browser tests in `tests/browser/` and name them `<scenario>.test.ts`.
+- Place browser test page objects in `tests/browser/page-objects/` and component
+  objects in `tests/browser/page-objects/components/`, exporting them through
+  `tests/browser/page-objects/index.ts`. Follow the guidelines in
   [.agents/skills/playwright-best-practices/SKILL.md](../../.agents/skills/playwright-best-practices/SKILL.md).
 
 ## Fixtures
@@ -53,14 +53,14 @@ Applies when implementing new behavior or writing, reviewing, or organizing test
 - Keep unit tests fast and runnable in any order. Isolate mutable state
   and control external inputs such as time, randomness, and network responses.
 
-## E2E tests and Page Object Model
+## Browser tests and Page Object Model
 
 - Model every browser page, modal, or form interaction through page objects and component objects, following [.agents/skills/playwright-best-practices/SKILL.md](../../.agents/skills/playwright-best-practices/SKILL.md). Keep tests focused on intent and expectations while delegating locators and interactions to page objects.
-- Place root page objects in `tests/e2e/page-objects/` and nested UI dialog or form component objects in `tests/e2e/page-objects/components/`. Export them from `tests/e2e/page-objects/index.ts`.
+- Place root page objects in `tests/browser/page-objects/` and nested UI dialog or form component objects in `tests/browser/page-objects/components/`. Export them from `tests/browser/page-objects/index.ts`.
 - Expose locators as public properties on page and component objects so tests can run direct assertions against elements.
 - Encapsulate navigation and user actions as intent-revealing methods on page objects (e.g. `goto()`, `submitCreate()`, `deleteItem()`).
 - Keep test assertions in the test files. Page objects encapsulate elements and interaction mechanics; test files state expectations and verify behavior.
-- Decompose complex dialogs and nested forms into discrete component objects under `tests/e2e/page-objects/components/` (one class per file) to keep classes focused and comply with class length limits.
+- Decompose complex dialogs and nested forms into discrete component objects under `tests/browser/page-objects/components/` (one class per file) to keep classes focused and comply with class length limits.
 
 ## Diagnostics and reporters
 

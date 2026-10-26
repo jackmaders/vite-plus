@@ -1,5 +1,5 @@
-name: Run Playwright
-description: Sets up a Playwright browser, runs E2E tests, and uploads failure reports
+name: Run Browser Tests
+description: Sets up a Playwright browser, runs browser tests, and uploads failure reports
 
 inputs:
   base-url:
@@ -22,7 +22,7 @@ runs:
       env:
         PLAYWRIGHT_BASE_URL: ${{ inputs.base-url }}
         PLAYWRIGHT_TARGET: preview
-      run: vp run test:e2e --project=${{ inputs.browser }}
+      run: vp run test:browser --project=${{ inputs.browser }}
     - name: Upload failure report
       if: ${{ !cancelled() && failure() }}
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

@@ -41,7 +41,7 @@ src/
         └── shadcn/               # Headless shadcn/ui primitives
 
 tests/
-├── e2e/                          # Playwright end-to-end tests and page objects
+├── browser/                     # Playwright browser tests and page objects
 │   ├── page-objects/             # Page Object Models for routes and views
 │   │   └── components/           # Sub-component objects for dialogs and forms
 │   └── <entity>-<scenario>.test.ts
@@ -235,9 +235,10 @@ function useCreateRecord() {
 - Keep failed confirmation dialogs open with inline mutation feedback so users
   can retry.
 - Use `/error-test` to trigger known and unexpected failures with buttons.
-  `tests/e2e/error-response.test.ts` verifies the actual server-function responses
+  `tests/browser/error-response.test.ts` verifies actual server-function
+  responses
   through the normal browser test suite. This diagnostic page is excluded from
-  unit coverage because the E2E tests exercise it against the built application.
+  unit coverage because the browser tests exercise it against the built application.
 - Pass Zod schemas directly to `useAppForm` validators through Standard Schema.
 - Use `z.input<typeof schema>` for form values. Form passes original input to
   `onSubmit`; call `schema.parse(value)` when transformed output is needed.
