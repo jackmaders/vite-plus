@@ -1,19 +1,18 @@
 import { expect, test } from "@playwright/test";
 
+import { ErrorTestPage } from "./page-objects";
+
 test("returns a safe known error from the actual server function", async ({ page }) => {
   // Arrange
-  await page.goto("/error-test");
-  const responsePromise = page.waitForResponse((response) =>
-    response.url().includes("/_serverFn/"),
-  );
+  const errorTestPage = new ErrorTestPage(page);
+  await errorTestPage.goto();
 
   // Act
-  await page.getByRole("button", { exact: true, name: "Trigger known error" }).click();
-  const response = await responsePromise;
+  const response = await errorTestPage.triggerKnownError();
   const body = await response.text();
 
   // Assert
-  await expect(page.getByRole("status", { name: "Server error response" })).toHaveText(
+  await expect(errorTestPage.serverResponseStatus).toHaveText(
     "TODO_NOT_FOUND: Todo item not found. (404)",
   );
   expect(response.request().method()).toBe("POST");
@@ -23,18 +22,15 @@ test("returns a safe known error from the actual server function", async ({ page
 
 test("returns a generic application error for an unexpected failure", async ({ page }) => {
   // Arrange
-  await page.goto("/error-test");
-  const responsePromise = page.waitForResponse((response) =>
-    response.url().includes("/_serverFn/"),
-  );
+  const errorTestPage = new ErrorTestPage(page);
+  await errorTestPage.goto();
 
   // Act
-  await page.getByRole("button", { exact: true, name: "Trigger unexpected error" }).click();
-  const response = await responsePromise;
+  const response = await errorTestPage.triggerUnexpectedError();
   const body = await response.text();
 
   // Assert
-  await expect(page.getByRole("status", { name: "Server error response" })).toHaveText(
+  await expect(errorTestPage.serverResponseStatus).toHaveText(
     "INTERNAL_SERVER_ERROR: Something went wrong. (500)",
   );
   expect(response.request().method()).toBe("GET");
@@ -44,37 +40,40 @@ test("returns a generic application error for an unexpected failure", async ({ p
 
 test("shows a default notification for a failed API mutation", async ({ page }) => {
   // Arrange
-  await page.goto("/error-test");
+  const errorTestPage = new ErrorTestPage(page);
+  await errorTestPage.goto();
 
   // Act
-  await page.getByRole("button", { exact: true, name: "Trigger default error toast" }).click();
+  await errorTestPage.triggerDefaultErrorToast();
 
   // Assert
-  await expect(page.getByRole("dialog", { name: "Todo item not found." })).toHaveCount(1);
-  await expect(page.getByRole("dialog")).not.toContainText("private");
+  await expect(errorTestPage.getToastDialog("Todo item not found.")).toHaveCount(1);
+  await expect(errorTestPage.dialogs).not.toContainText("private");
 });
 
 test("uses the safe generic message for an unexpected API failure", async ({ page }) => {
   // Arrange
-  await page.goto("/error-test");
+  const errorTestPage = new ErrorTestPage(page);
+  await errorTestPage.goto();
 
   // Act
-  await page.getByRole("button", { exact: true, name: "Trigger unexpected error toast" }).click();
+  await errorTestPage.triggerUnexpectedErrorToast();
 
   // Assert
-  await expect(page.getByRole("dialog", { name: "Something went wrong." })).toBeVisible();
-  await expect(page.getByRole("dialog")).not.toContainText("private");
+  await expect(errorTestPage.getToastDialog("Something went wrong.")).toBeVisible();
+  await expect(errorTestPage.dialogs).not.toContainText("private");
 });
 
 test("shows the default toast alongside inline API feedback", async ({ page }) => {
   // Arrange
-  await page.goto("/error-test");
+  const errorTestPage = new ErrorTestPage(page);
+  await errorTestPage.goto();
 
   // Act
-  await page.getByRole("button", { exact: true, name: "Trigger inline mutation error" }).click();
+  await errorTestPage.triggerInlineMutationError();
 
   // Assert
-  await expect(page.getByRole("alert")).toHaveText("Todo item not found.");
-  await expect(page.getByRole("dialog", { name: "Todo item not found." })).toBeVisible();
-  await expect(page.getByRole("dialog")).toHaveCount(1);
+  await expect(errorTestPage.inlineAlert).toHaveText("Todo item not found.");
+  await expect(errorTestPage.getToastDialog("Todo item not found.")).toBeVisible();
+  await expect(errorTestPage.dialogs).toHaveCount(1);
 });

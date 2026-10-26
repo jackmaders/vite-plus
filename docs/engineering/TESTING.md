@@ -11,6 +11,8 @@ Applies when implementing new behavior or writing, reviewing, or organizing test
 - When a test requires the Cloudflare Workers runtime, place it in
   `__tests__/workers/` and name it `<module>.spec.ts`.
 - Place browser tests in `tests/e2e/` and name them `<scenario>.test.ts`.
+- Place E2E page objects and component objects in `tests/e2e/page-objects/` and
+  export them through `tests/e2e/page-objects/index.ts`.
 
 ## Fixtures
 
@@ -48,6 +50,15 @@ Applies when implementing new behavior or writing, reviewing, or organizing test
   identifies the behavior that broke.
 - Keep unit tests fast and runnable in any order. Isolate mutable state
   and control external inputs such as time, randomness, and network responses.
+
+## E2E tests and Page Object Model
+
+- Model every browser page, modal, or form interaction through page objects and component objects. Keep tests focused on intent and expectations while delegating locators and interactions to page objects.
+- Place page and component objects in `tests/e2e/page-objects/` and export them from `tests/e2e/page-objects/index.ts`.
+- Expose locators as public properties on page objects so tests can run direct assertions against elements.
+- Encapsulate navigation and user actions as intent-revealing methods on page objects (e.g. `goto()`, `submitCreate()`, `deleteTodo()`).
+- Keep test assertions in the test files. Page objects encapsulate elements and interaction mechanics; test files state expectations and verify behavior.
+- Decompose complex dialogs and nested forms into discrete component objects (one class per file) to keep classes focused and comply with class length limits.
 
 ## Diagnostics and reporters
 
