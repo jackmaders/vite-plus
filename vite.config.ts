@@ -2,6 +2,7 @@ import { defineConfig, lazyPlugins } from "vite-plus";
 
 const FULL_CHECK = process.env["FULL_CHECK"] === "1";
 const VITEST = process.env["VITEST"] === "true";
+const CI = Boolean(process.env["CI"]);
 
 process.env["WRANGLER_LOG"] ??= "error";
 
@@ -398,7 +399,7 @@ const testConfig = defineConfig(async () => ({
       },
       await workerTestConfig(),
     ],
-    reporters: [process.env["CI"] ? "default" : "dot"],
+    reporters: [CI ? "default" : "dot"],
   },
 }));
 
