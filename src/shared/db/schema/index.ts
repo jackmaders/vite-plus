@@ -1,10 +1,7 @@
 export {
   account,
-  accountRelations,
   session,
-  sessionRelations,
   user,
-  userRelations,
   verification,
   type Account,
   type NewAccount,
