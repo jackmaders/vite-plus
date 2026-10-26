@@ -28,9 +28,9 @@ loader data fetching, or server functions.
 - When concrete dependencies would couple consumers to unrelated
   implementation details, introduce dependency interfaces.
   Define those interfaces around the operations consumers need.
-- Auth and database integration uses Drizzle 1.0 RC (`drizzle-orm 1.0.0-rc.5-ab785fc`)
-  and Better Auth 1.7.10 with SQL builders. Better Auth runs against the base Drizzle
-  adapter (`better-auth/adapters/drizzle`) without relational joins. Enabling Better Auth
+- Auth and database integration uses Drizzle v1 implementation and Better Auth
+  with SQL builders. Better Auth runs against the base Drizzle adapter
+  (`better-auth/adapters/drizzle`) without relational joins. Enabling Better Auth
   joins requires aligning Drizzle RC relations (`defineRelations`) and adopting the matching
   relations-v2 adapter (`@better-auth/drizzle-adapter/relations-v2`), declared directly
   at a compatible Better Auth version rather than imported through transitive dependencies.
