@@ -93,6 +93,15 @@ const verification = sqliteTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
+const rateLimit = sqliteTable("rate_limit", {
+  count: integer("count").notNull(),
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  key: text("key").notNull().unique(),
+  lastRequest: integer("last_request", { mode: "number" }).notNull(),
+});
+
 type User = typeof user.$inferSelect;
 type NewUser = typeof user.$inferInsert;
 type Session = typeof session.$inferSelect;
@@ -101,17 +110,22 @@ type Account = typeof account.$inferSelect;
 type NewAccount = typeof account.$inferInsert;
 type Verification = typeof verification.$inferSelect;
 type NewVerification = typeof verification.$inferInsert;
+type RateLimit = typeof rateLimit.$inferSelect;
+type NewRateLimit = typeof rateLimit.$inferInsert;
 
 export {
   account,
+  rateLimit,
   session,
   user,
   verification,
   type Account,
   type NewAccount,
+  type NewRateLimit,
   type NewSession,
   type NewUser,
   type NewVerification,
+  type RateLimit,
   type Session,
   type User,
   type Verification,
