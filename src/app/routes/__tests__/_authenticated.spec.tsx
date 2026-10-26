@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { Route as AuthenticatedRoute } from "@/app/routes/_authenticated";
 import { routeTree } from "@/app/routeTree.gen";
@@ -27,10 +27,6 @@ function getBeforeLoad() {
 type BeforeLoadArgs = NonNullable<Parameters<ReturnType<typeof getBeforeLoad>>[0]>;
 
 describe("_authenticated route beforeLoad guard", () => {
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("returns session context when user is authenticated", async () => {
     expect.assertions(1);
 
@@ -67,8 +63,6 @@ describe("_authenticated route beforeLoad guard", () => {
 });
 
 describe("_authenticated route layout and navigation", () => {
-  afterEach(cleanup);
-
   it("redirects unauthenticated users attempting to access /profile to /", async () => {
     expect.assertions(1);
 

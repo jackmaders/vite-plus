@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
@@ -10,7 +10,6 @@ const LIGHT_LABEL = "Theme mode: light. Click to switch mode.";
 
 describe("theme toggle initial mode", () => {
   afterEach(() => {
-    cleanup();
     delete document.documentElement.dataset["theme"];
   });
 
@@ -32,7 +31,6 @@ describe("theme toggle initial mode", () => {
 
 describe("theme toggle manual modes", () => {
   afterEach(() => {
-    cleanup();
     delete document.documentElement.dataset["theme"];
   });
 
@@ -76,7 +74,6 @@ describe("theme toggle manual modes", () => {
 
 describe("theme toggle system mode", () => {
   afterEach(() => {
-    cleanup();
     delete document.documentElement.dataset["theme"];
   });
 

@@ -1,6 +1,6 @@
 import { CancelledError, QueryClient } from "@tanstack/react-query";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { getRouter } from "@/app/router";
 import { ApplicationError } from "@/shared/errors";
@@ -8,10 +8,6 @@ import { toast } from "@/shared/ui/shadcn/toast";
 
 vi.mock(import("@tanstack/react-router-ssr-query"));
 vi.mock(import("@/shared/ui/shadcn/toast"));
-
-afterEach(() => {
-  vi.clearAllMocks();
-});
 
 describe("router route matching", () => {
   it("matches the home page within the root document", () => {

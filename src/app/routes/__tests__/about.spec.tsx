@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { routeTree } from "@/app/routeTree.gen";
 
@@ -10,10 +10,6 @@ vi.mock(import("@/app/styles/styles.css?url"), () => ({ default: "/styles.css" }
 vi.mock(import("@tanstack/react-devtools"));
 
 describe("about route", () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it("renders the page heading", async () => {
     expect.assertions(1);
 

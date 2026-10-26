@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { getSession } from "@/shared/auth/session.server";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
@@ -7,10 +7,6 @@ vi.mock(import("@tanstack/react-start"));
 vi.mock(import("@/shared/auth/session.server"));
 
 describe("session.functions getSessionFn", () => {
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("returns the session from getSession when authenticated", async () => {
     expect.assertions(1);
 

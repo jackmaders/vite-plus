@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { authMiddleware } from "@/shared/auth/middleware";
 import { ensureSession } from "@/shared/auth/session.server";
@@ -17,10 +17,6 @@ function getServerMiddleware() {
 type MiddlewareInput = Parameters<ReturnType<typeof getServerMiddleware>>[0];
 
 describe("authMiddleware behavior", () => {
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("passes authenticated session to next context", async () => {
     expect.assertions(2);
 

@@ -1,7 +1,7 @@
 import { createFormHookContexts } from "@tanstack/react-form";
-import { cleanup, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import type { ReactElement } from "react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { FormError } from "../form-error";
 
@@ -15,11 +15,6 @@ interface SubscribeHandlerProps {
 }
 
 describe("form error component", () => {
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
-  });
-
   it("renders nothing when there is no submission error", () => {
     expect.assertions(1);
 
