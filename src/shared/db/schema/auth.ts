@@ -1,5 +1,4 @@
 import { sql } from "drizzle-orm";
-import { relations } from "drizzle-orm/_relations";
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 const user = sqliteTable("user", {
@@ -94,25 +93,6 @@ const verification = sqliteTable(
   (table) => [index("verification_identifier_idx").on(table.identifier)],
 );
 
-const userRelations = relations(user, ({ many }) => ({
-  accounts: many(account),
-  sessions: many(session),
-}));
-
-const sessionRelations = relations(session, ({ one }) => ({
-  user: one(user, {
-    fields: [session.userId],
-    references: [user.id],
-  }),
-}));
-
-const accountRelations = relations(account, ({ one }) => ({
-  user: one(user, {
-    fields: [account.userId],
-    references: [user.id],
-  }),
-}));
-
 type User = typeof user.$inferSelect;
 type NewUser = typeof user.$inferInsert;
 type Session = typeof session.$inferSelect;
@@ -124,11 +104,8 @@ type NewVerification = typeof verification.$inferInsert;
 
 export {
   account,
-  accountRelations,
   session,
-  sessionRelations,
   user,
-  userRelations,
   verification,
   type Account,
   type NewAccount,
