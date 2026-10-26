@@ -7,7 +7,8 @@ import { toast } from "@/shared/ui/shadcn/toast";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
 import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
 
-import { DeleteTodoDialog, deleteTodoFn } from "../..";
+import { deleteTodoFn } from "../../api/todos.functions";
+import { DeleteTodoDialog } from "../delete-todo-dialog";
 
 vi.mock(import("../../api/todos.functions"));
 vi.mock(import("@/shared/ui/shadcn/toast"));

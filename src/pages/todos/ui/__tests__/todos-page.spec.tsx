@@ -8,7 +8,9 @@ import { toast, Toaster } from "@/shared/ui/shadcn/toast";
 import { createTodoFixture } from "@test/vitest/fixtures/todos";
 import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
 
-import { deleteTodoFn, getTodosFn, TodosPage, todosQueryOptions, updateTodoFn } from "../..";
+import { todosQueryOptions } from "../../api/todo-query-options";
+import { deleteTodoFn, getTodosFn, updateTodoFn } from "../../api/todos.functions";
+import { TodosPage } from "../todos-page";
 
 vi.mock(import("../../api/todos.functions"));
 
