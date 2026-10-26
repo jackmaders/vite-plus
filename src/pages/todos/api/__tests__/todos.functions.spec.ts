@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { ensureSession } from "@/shared/auth/session.server";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
@@ -15,10 +15,6 @@ const MOCK_TODO = TEST_TODO;
 
 beforeEach(() => {
   vi.mocked(ensureSession).mockResolvedValue(TEST_SESSION);
-});
-
-afterEach(() => {
-  vi.clearAllMocks();
 });
 
 describe("todos functions getTodosFn", () => {

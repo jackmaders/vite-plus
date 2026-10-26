@@ -1,6 +1,6 @@
-import { cleanup, createEvent, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { createEvent, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ComponentProps } from "react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 import * as z from "zod";
 
 import { useAppForm } from "../app-form";
@@ -52,11 +52,6 @@ function dispatchSubmit(element: HTMLElement) {
 }
 
 describe("form component", () => {
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
-  });
-
   it("renders a form and forwards its props and children", () => {
     expect.assertions(3);
 

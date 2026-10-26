@@ -1,5 +1,5 @@
 import { notFound, redirect } from "@tanstack/react-router";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { ApplicationError } from "../application-error";
 import { logger } from "../logger";
@@ -16,10 +16,6 @@ async function runMiddleware(next: () => Promise<unknown>) {
 }
 
 describe("error middleware", () => {
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("returns the downstream result", async () => {
     expect.assertions(1);
     // Arrange

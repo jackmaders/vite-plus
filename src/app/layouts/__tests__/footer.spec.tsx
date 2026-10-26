@@ -1,5 +1,5 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vite-plus/test";
+import { render, screen, within } from "@testing-library/react";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vite-plus/test";
 
 import { Footer } from "@/app/layouts/footer";
 
@@ -9,8 +9,6 @@ describe("footer copyright", () => {
     vi.setSystemTime(new Date("2042-06-15T12:00:00Z"));
     vi.resetModules();
   });
-
-  afterEach(cleanup);
 
   afterAll(() => {
     vi.useRealTimers();
@@ -32,8 +30,6 @@ describe("footer copyright", () => {
 });
 
 describe("footer social links", () => {
-  afterEach(cleanup);
-
   it("provides an accessible external link to X", () => {
     expect.assertions(3);
 

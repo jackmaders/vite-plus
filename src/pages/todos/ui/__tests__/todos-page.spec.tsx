@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -14,8 +14,6 @@ vi.mock(import("../../api/todos.functions"));
 
 afterEach(() => {
   toast.close();
-  cleanup();
-  vi.clearAllMocks();
 });
 
 describe("todos page write recovery", () => {

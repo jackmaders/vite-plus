@@ -1,17 +1,12 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { TodoFilters, type TodoFilter } from "@/pages/todos/ui/todo-filters";
 
 const mockCounts = { active: 3, all: 5, completed: 2 };
 
 describe("todo filters component", () => {
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
-  });
-
   it("displays filter buttons and badge counts correctly", () => {
     expect.assertions(4);
 
