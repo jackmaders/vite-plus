@@ -1,8 +1,6 @@
 import { expect, type Locator, type Page } from "@playwright/test";
 
-import { CreateTodoForm } from "./create-todo-form";
-import { DeleteTodoDialog } from "./delete-todo-dialog";
-import { UpdateTodoDialog } from "./update-todo-dialog";
+import { CreateTodoForm, DeleteTodoDialog, UpdateTodoDialog } from "./components";
 
 class TodosPage {
   public readonly createForm: CreateTodoForm;
