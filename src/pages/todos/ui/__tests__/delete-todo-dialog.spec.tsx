@@ -1,6 +1,6 @@
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { getRouter } from "@/app/router";
 import { toast } from "@/shared/ui/shadcn/toast";
@@ -14,11 +14,6 @@ vi.mock(import("@/shared/ui/shadcn/toast"));
 
 beforeEach(() => {
   vi.mocked(deleteTodoFn).mockReset().mockResolvedValue(TEST_TODO);
-});
-
-afterEach(() => {
-  cleanup();
-  vi.clearAllMocks();
 });
 
 describe("delete todo dialog", () => {

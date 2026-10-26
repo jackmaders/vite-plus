@@ -1,6 +1,6 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { useUpdateTodo } from "@/pages/todos/api/use-update-todo";
 import { TodoItemSummary } from "@/pages/todos/ui/todo-item-summary";
@@ -14,15 +14,9 @@ const mockUpdateTodo = vi.fn<() => void>();
 
 describe("todo item summary rendering and states", () => {
   beforeEach(() => {
-    mockUpdateTodo.mockClear();
     vi.mocked(useUpdateTodo).mockReturnValue({
       mutate: mockUpdateTodo,
     } as never);
-  });
-
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
   });
 
   it("renders todo title, description, and pending badge", () => {
@@ -67,15 +61,9 @@ describe("todo item summary rendering and states", () => {
 
 describe("todo item summary interactions", () => {
   beforeEach(() => {
-    mockUpdateTodo.mockClear();
     vi.mocked(useUpdateTodo).mockReturnValue({
       mutate: mockUpdateTodo,
     } as never);
-  });
-
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
   });
 
   it("calls updateTodo when checkbox is clicked", async () => {

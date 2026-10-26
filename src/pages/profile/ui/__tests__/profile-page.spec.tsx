@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { ProfilePage } from "@/pages/profile";
 import { useSession } from "@/shared/auth/index.client";
@@ -10,11 +10,6 @@ vi.mock(import("@/shared/auth/index.client"));
 type SessionHookResult = ReturnType<typeof useSession>;
 
 describe("profile page component", () => {
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
-  });
-
   it("renders user information when session is loaded", () => {
     expect.assertions(3);
 

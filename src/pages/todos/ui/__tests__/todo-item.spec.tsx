@@ -1,6 +1,6 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { useDeleteTodo } from "@/pages/todos/api/use-delete-todo";
 import { useUpdateTodo } from "@/pages/todos/api/use-update-todo";
@@ -26,11 +26,6 @@ describe("todo item display", () => {
       mutateAsync: vi.fn<() => Promise<unknown>>(),
       reset: vi.fn<() => void>(),
     } as never);
-  });
-
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
   });
 
   it("renders todo title, description, and pending status", () => {
@@ -83,11 +78,6 @@ describe("todo item actions", () => {
       mutateAsync: vi.fn<() => Promise<unknown>>(),
       reset: vi.fn<() => void>(),
     } as never);
-  });
-
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
   });
 
   it("renders update and delete action triggers", () => {

@@ -1,5 +1,5 @@
-import { cleanup, renderHook, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { renderHook, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { createTodoFixture } from "@test/vitest/fixtures/todos";
 import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
@@ -13,11 +13,6 @@ vi.mock(import("../todos.functions"));
 const MOCK_TODO = createTodoFixture();
 
 describe("useUpdateTodo mutation hook", () => {
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
-  });
-
   it("invokes updateTodoFn and invalidates queries on success", async () => {
     expect.hasAssertions();
 
