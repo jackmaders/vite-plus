@@ -1,5 +1,4 @@
 import { sql } from "drizzle-orm";
-import { relations } from "drizzle-orm/_relations";
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 const user = sqliteTable("user", {
@@ -103,25 +102,6 @@ const rateLimit = sqliteTable("rate_limit", {
   lastRequest: integer("last_request", { mode: "number" }).notNull(),
 });
 
-const userRelations = relations(user, ({ many }) => ({
-  accounts: many(account),
-  sessions: many(session),
-}));
-
-const sessionRelations = relations(session, ({ one }) => ({
-  user: one(user, {
-    fields: [session.userId],
-    references: [user.id],
-  }),
-}));
-
-const accountRelations = relations(account, ({ one }) => ({
-  user: one(user, {
-    fields: [account.userId],
-    references: [user.id],
-  }),
-}));
-
 type User = typeof user.$inferSelect;
 type NewUser = typeof user.$inferInsert;
 type Session = typeof session.$inferSelect;
@@ -135,12 +115,9 @@ type NewRateLimit = typeof rateLimit.$inferInsert;
 
 export {
   account,
-  accountRelations,
   rateLimit,
   session,
-  sessionRelations,
   user,
-  userRelations,
   verification,
   type Account,
   type NewAccount,

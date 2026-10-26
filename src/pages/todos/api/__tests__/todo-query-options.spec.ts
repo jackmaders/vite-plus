@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
 
@@ -8,10 +8,6 @@ import { getTodosFn } from "../todos.functions";
 vi.mock(import("../todos.functions"));
 
 describe("todo query options", () => {
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
   it("constructs expected hierarchical query keys", () => {
     expect.assertions(2);
 

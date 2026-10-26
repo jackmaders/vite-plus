@@ -2,6 +2,7 @@ import { defineConfig, lazyPlugins } from "vite-plus";
 
 const FULL_CHECK = process.env["FULL_CHECK"] === "1";
 const VITEST = process.env["VITEST"] === "true";
+const CI = Boolean(process.env["CI"]);
 
 process.env["WRANGLER_LOG"] ??= "error";
 
@@ -65,8 +66,10 @@ const lintConfig = defineConfig({
           "**/__mocks__/**",
         ],
         rules: {
+          "eslint/complexity": "off",
           "eslint/max-lines": "off",
           "eslint/max-lines-per-function": "off",
+          "eslint/max-statements": "off",
           "eslint/no-magic-numbers": "off",
           "import/group-exports": "off",
           "promise/avoid-new": "off",
@@ -396,6 +399,7 @@ const testConfig = defineConfig(async () => ({
       },
       await workerTestConfig(),
     ],
+    reporters: [CI ? "default" : "dot"],
   },
 }));
 

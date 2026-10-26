@@ -1,5 +1,5 @@
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { render, screen } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { useDeleteTodo } from "@/pages/todos/api/use-delete-todo";
 import { useUpdateTodo } from "@/pages/todos/api/use-update-todo";
@@ -23,11 +23,6 @@ describe("todo list empty state", () => {
     } as never);
   });
 
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
-  });
-
   it("renders empty state message when todos is empty", () => {
     expect.assertions(1);
 
@@ -49,11 +44,6 @@ describe("todo list items rendering", () => {
       isPending: false,
       mutate: vi.fn<() => void>(),
     } as never);
-  });
-
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
   });
 
   it("renders list of todos", () => {

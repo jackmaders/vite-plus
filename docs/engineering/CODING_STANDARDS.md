@@ -42,6 +42,9 @@ writing comments, or applying function-level design conventions.
   modules.
 - When a slice needs separate barrel files for server and client exports,
   use `index.server.ts` and `index.client.ts`.
+- Only export from the slice root (`index.ts` or `index.{client,server}.ts`).
+  Do not create internal segment barrel files (`api/index.ts`, `ui/index.ts`,
+  `model/index.ts`); import directly from segment files within the slice.
 - When an export is created with `createServerFn`, suffix its name with `Fn`.
 
 ### Framework conventions
@@ -98,6 +101,12 @@ writing comments, or applying function-level design conventions.
   the authenticated user's ID.
 - If an operation expects a row but `.returning()` returns none,
   throw an error.
+- The project uses Drizzle v1 implementation with Better Auth using SQL builders
+  and the standard `better-auth/adapters/drizzle` adapter without relational query joins.
+  If Better Auth joins are enabled in the future, align Drizzle RC relations with
+  the matching relations-v2 adapter (`@better-auth/drizzle-adapter/relations-v2`)
+  declared directly as a dependency at a compatible version rather than relying on a
+  transitive package.
 
 ## Error handling
 

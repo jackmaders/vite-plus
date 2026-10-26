@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { routeTree } from "@/app/routeTree.gen";
 
@@ -10,10 +10,6 @@ vi.mock(import("@/app/styles/styles.css?url"), () => ({ default: "/styles.css" }
 vi.mock(import("@tanstack/react-devtools"));
 
 describe("home route content", () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it("renders its hero, feature cards, and quick start guide", async () => {
     expect.assertions(5);
 
@@ -38,10 +34,6 @@ describe("home route content", () => {
 });
 
 describe("home route links", () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it("links to the about page and router guide", async () => {
     expect.assertions(4);
 

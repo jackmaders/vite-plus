@@ -1,11 +1,8 @@
 export {
   account,
-  accountRelations,
   rateLimit,
   session,
-  sessionRelations,
   user,
-  userRelations,
   verification,
   type Account,
   type NewAccount,

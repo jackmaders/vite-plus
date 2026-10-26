@@ -1,8 +1,8 @@
 import { createFormHookContexts } from "@tanstack/react-form";
-import { cleanup, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { createTextFieldFixture } from "@test/vitest/fixtures/form";
 
@@ -19,11 +19,6 @@ async function fillAndBlur(user: ReturnType<typeof userEvent.setup>, input: HTML
 }
 
 describe("text field component", () => {
-  afterEach(() => {
-    cleanup();
-    vi.clearAllMocks();
-  });
-
   it("renders a controlled text field with its label and forwarded props", () => {
     expect.assertions(5);
 

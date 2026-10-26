@@ -6,8 +6,8 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { routeTree } from "@/app/routeTree.gen";
 import { ServerErrorPage } from "@/pages/server-error";
@@ -19,10 +19,6 @@ vi.mock(import("@tanstack/react-router-devtools"));
 vi.mock(import("@tanstack/react-query-devtools"));
 
 describe("root route document metadata", () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it("sets the title and viewport metadata", async () => {
     expect.assertions(2);
 
@@ -50,10 +46,6 @@ describe("root route document metadata", () => {
 });
 
 describe("root route layout", () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it("wraps the current page with the site header and footer", async () => {
     expect.assertions(3);
 
@@ -76,10 +68,6 @@ describe("root route layout", () => {
 });
 
 describe("root route devtools panels", () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it("renders the router and react-query devtools panels", async () => {
     expect.assertions(2);
 
@@ -101,10 +89,6 @@ describe("root route devtools panels", () => {
 });
 
 describe("root route notFoundComponent", () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it("renders the not found page for an unrecognised route", async () => {
     expect.assertions(3);
 
@@ -129,10 +113,6 @@ describe("root route notFoundComponent", () => {
 });
 
 describe("route error boundary", () => {
-  afterEach(() => {
-    cleanup();
-  });
-
   it("shows generic messaging without exposing the route error", async () => {
     expect.assertions(2);
 

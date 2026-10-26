@@ -48,3 +48,10 @@ Applies when implementing new behavior or writing, reviewing, or organizing test
   identifies the behavior that broke.
 - Keep unit tests fast and runnable in any order. Isolate mutable state
   and control external inputs such as time, randomness, and network responses.
+
+## Diagnostics and reporters
+
+- Test and check outputs default to minimal reporters (such as `dot` reporter) to keep tool output concise.
+- When diagnosing a test or typecheck failure, pass explicit reporter or verbose flags for detailed traces:
+  - Run unit tests with `--reporter=default` or `--reporter=verbose` (e.g. `vp test <path> --reporter=default`).
+  - Run `vp check --fix` to automatically format and resolve linting issues.

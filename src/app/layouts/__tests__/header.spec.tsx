@@ -5,7 +5,7 @@ import {
   createRoute,
   createRouter,
 } from "@tanstack/react-router";
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vite-plus/test";
 
@@ -20,8 +20,6 @@ function createAboutPageRouteTree() {
 }
 
 describe("header identity and documentation", () => {
-  afterEach(cleanup);
-
   it("provides a branded home link within the header navigation", () => {
     expect.assertions(2);
 
@@ -60,8 +58,6 @@ describe("header identity and documentation", () => {
 });
 
 describe("header navigation", () => {
-  afterEach(cleanup);
-
   it("links to both pages and highlights home on the home page", () => {
     expect.assertions(5);
 
@@ -106,8 +102,6 @@ describe("header navigation", () => {
 });
 
 describe("header social links", () => {
-  afterEach(cleanup);
-
   it("provides an accessible external link to X", () => {
     expect.assertions(3);
 
@@ -143,7 +137,6 @@ describe("header social links", () => {
 
 describe("header theme control", () => {
   afterEach(() => {
-    cleanup();
     delete document.documentElement.dataset["theme"];
   });
 
