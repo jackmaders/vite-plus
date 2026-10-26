@@ -29,8 +29,8 @@ release. Add a tool name to select part of the graph. For example, run
 
 ## Context
 
-- When adding or changing project-specific domain concepts, read and update
-  [GLOSSARY.md](GLOSSARY.md) in the same change. Follow
+- When adding or changing project-specific concepts or repo-defined terminology,
+  read and update [GLOSSARY.md](GLOSSARY.md) in the same change. Follow
   [domain doc guidance](docs/agents/domain.md).
 - When naming server or client modules, exports, functions, variables, or SQL
   columns, or changing database schemas, validation schemas, queries, component
