@@ -4,7 +4,7 @@ import { afterEach, beforeAll } from "vite-plus/test";
 
 import { todos } from "@/shared/db";
 import { getDb } from "@/shared/db/index.server";
-import { user } from "@/shared/db/schema";
+import { rateLimit, user } from "@/shared/db/schema";
 
 const testEnv = env as unknown as {
   TEST_MIGRATIONS?: D1Migration[];
@@ -18,4 +18,5 @@ afterEach(async () => {
   const db = getDb(env.DB);
   await db.delete(todos);
   await db.delete(user);
+  await db.delete(rateLimit);
 });
