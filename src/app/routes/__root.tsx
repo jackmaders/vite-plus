@@ -3,12 +3,12 @@ import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { HeadContent, Link, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { useEffect } from "react";
 
 import { ServerErrorPage } from "@/pages/server-error";
 import { Toaster } from "@/shared/ui/shadcn/toast";
 
-import { Footer } from "../layouts/footer";
-import { Header } from "../layouts/header";
+import { Footer, Header } from "../layouts";
 
 import appCss from "../styles/styles.css?url";
 
@@ -60,12 +60,19 @@ function NotFound() {
 }
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  useEffect(() => {
+    document.body.dataset["hydrated"] = "true";
+  }, []);
+
   return (
     <html lang="en">
       <head>
         <HeadContent />
       </head>
-      <body className="font-sans wrap-anywhere antialiased selection:bg-teal-500/25">
+      <body
+        className="font-sans wrap-anywhere antialiased selection:bg-teal-500/25"
+        data-hydrated="false"
+      >
         <Header />
         {children}
         <Footer />

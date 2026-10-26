@@ -12,6 +12,8 @@ const baseURL = PLAYWRIGHT_BASE_URL || PREVIEW_URL;
 const webServer = {
   command: "vp preview",
   reuseExistingServer: !CI,
+  stderr: "ignore" as const,
+  stdout: "ignore" as const,
   url: baseURL,
 };
 

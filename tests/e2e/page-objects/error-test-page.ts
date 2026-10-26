@@ -1,5 +1,7 @@
 import type { Locator, Page } from "@playwright/test";
 
+import { waitForHydration } from "./hydration";
+
 class ErrorTestPage {
   public readonly knownErrorButton: Locator;
   public readonly unexpectedErrorButton: Locator;
@@ -43,6 +45,7 @@ class ErrorTestPage {
 
   public async goto() {
     await this.page.goto("/error-test");
+    await waitForHydration(this.page);
   }
 
   public async triggerKnownError() {
