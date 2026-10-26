@@ -11,7 +11,9 @@ const DEFAULT_FORM_VALUES: CreateTodoInput = {
   title: "",
 };
 
-function CreateTodoForm({ ...props }: ComponentProps<"form"> = {}) {
+type CreateTodoFormProps = ComponentProps<ReturnType<typeof useAppForm>["Form"]>;
+
+function CreateTodoForm({ ...props }: CreateTodoFormProps = {}) {
   const { mutateAsync: createTodo } = useCreateTodo();
 
   const form = useAppForm({

@@ -84,7 +84,7 @@ loader data fetching, or server functions.
 ### Authenticated reads and writes
 
 - Keep page logic, query options, mutations, schemas, and database operations
-  in the owning page slice. Import through its public API from routes.
+  in the owning page slice.
 - Await `context.queryClient.query(options)` in the loader. Read the same
   options with `useSuspenseQuery` in the page.
 - Keep privileged operations in server functions. Loaders also run in the browser.

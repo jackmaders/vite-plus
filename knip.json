@@ -14,12 +14,13 @@
   ],
   "project": ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"],
   "ignore": ["src/shared/ui/shadcn/**"],
+  "ignoreDependencies": ["cloudflare"],
   "ignoreExportsUsedInFile": {
     "interface": true,
     "type": true
   },
   "rules": {
-    "binaries": "off",
+    "binaries": "error",
     "dependencies": "off",
     "devDependencies": "off",
     "duplicates": "error",
@@ -28,7 +29,7 @@
     "files": "off",
     "namespaceMembers": "error",
     "types": "error",
-    "unlisted": "off",
-    "unresolved": "off"
+    "unlisted": "error",
+    "unresolved": "error"
   }
 }
