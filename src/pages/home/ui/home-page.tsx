@@ -1,4 +1,5 @@
-import { SignInCard, SignUpCard } from "@/features/authentication";
+import { SignInCard } from "@/features/user-sign-in";
+import { SignUpCard } from "@/features/user-sign-up";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/shadcn/tabs";
 
 export function HomePage() {

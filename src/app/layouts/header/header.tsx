@@ -3,10 +3,12 @@ import { cn } from "cn";
 import { CheckSquare } from "lucide-react";
 import type { ComponentProps } from "react";
 
-import { SignInDialog, SignOutDialog, SignUpDialog } from "@/features/authentication";
+import { SignInDialog } from "@/features/user-sign-in";
+import { SignUpDialog } from "@/features/user-sign-up";
 import { useSession } from "@/shared/auth";
 
 import { MobileDrawer } from "./mobile-drawer";
+import { SignOutDialog } from "./sign-out-dialog";
 
 export function Header({ className, ...props }: ComponentProps<"header">) {
   const { data: session } = useSession();
