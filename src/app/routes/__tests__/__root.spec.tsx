@@ -12,6 +12,8 @@ import { describe, expect, it, vi } from "vite-plus/test";
 import { routeTree } from "@/app/routeTree.gen";
 import { ServerErrorPage } from "@/pages/server-error";
 
+vi.mock(import("@/shared/auth"));
+
 vi.mock(import("@/app/styles/styles.css?url"), () => ({ default: "/styles.css" }));
 
 vi.mock(import("@tanstack/react-devtools"));

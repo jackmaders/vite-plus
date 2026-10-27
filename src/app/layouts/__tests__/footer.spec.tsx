@@ -1,60 +1,41 @@
+import { QueryClient } from "@tanstack/react-query";
+import {
+  createMemoryHistory,
+  createRootRouteWithContext,
+  createRoute,
+  createRouter,
+} from "@tanstack/react-router";
 import { render, screen, within } from "@testing-library/react";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vite-plus/test";
+import { describe, expect, it } from "vite-plus/test";
 
 import { Footer } from "@/app/layouts/footer";
+import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
 
-describe("footer copyright", () => {
-  beforeAll(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2042-06-15T12:00:00Z"));
-    vi.resetModules();
-  });
+function createFooterRouteTree() {
+  const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()();
+  const homeRoute = createRoute({ getParentRoute: () => rootRoute, path: "/" });
+  const aboutRoute = createRoute({ getParentRoute: () => rootRoute, path: "/about" });
+  return rootRoute.addChildren([homeRoute, aboutRoute]);
+}
 
-  afterAll(() => {
-    vi.useRealTimers();
-  });
-
-  it("displays the current copyright year and framework attribution", async () => {
+describe("footer navigation", () => {
+  it("provides navigation links to home and about", () => {
     expect.assertions(2);
 
-    // Act
-    const { Footer: DatedFooter } = await import("@/app/layouts/footer");
-    render(<DatedFooter />);
+    // Arrange
+    const router = createRouter({
+      context: { queryClient: new QueryClient() },
+      history: createMemoryHistory({ initialEntries: ["/"] }),
+      routeTree: createFooterRouteTree(),
+    });
+    const { wrapper } = createTestingWrapper({ router });
 
+    // Act
+    render(<Footer />, { wrapper });
     const footer = within(screen.getByRole("contentinfo"));
 
     // Assert
-    expect(footer.getByText("© 2042 Your name here. All rights reserved.")).toBeDefined();
-    expect(footer.getByText("Built with TanStack Start")).toBeDefined();
-  });
-});
-
-describe("footer social links", () => {
-  it("provides an accessible external link to X", () => {
-    expect.assertions(3);
-
-    // Act
-    render(<Footer />);
-
-    const link = screen.getByRole("link", { name: "Follow TanStack on X" });
-
-    // Assert
-    expect(link.getAttribute("href")).toBe("https://x.com/tan_stack");
-    expect(link.getAttribute("target")).toBe("_blank");
-    expect(link.getAttribute("rel")).toMatch(/(?:^|\s)noreferrer(?:\s|$)/u);
-  });
-
-  it("provides an accessible external link to GitHub", () => {
-    expect.assertions(3);
-
-    // Act
-    render(<Footer />);
-
-    const link = screen.getByRole("link", { name: "Go to TanStack GitHub" });
-
-    // Assert
-    expect(link.getAttribute("href")).toBe("https://github.com/TanStack");
-    expect(link.getAttribute("target")).toBe("_blank");
-    expect(link.getAttribute("rel")).toMatch(/(?:^|\s)noreferrer(?:\s|$)/u);
+    expect(footer.getByRole("link", { name: "Home" }).getAttribute("href")).toBe("/");
+    expect(footer.getByRole("link", { name: "About" }).getAttribute("href")).toBe("/about");
   });
 });

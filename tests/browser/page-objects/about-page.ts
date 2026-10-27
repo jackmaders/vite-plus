@@ -11,7 +11,7 @@ class AboutPage {
     this.page = page;
     this.heading = page.getByRole("heading", {
       level: 1,
-      name: "A small starter with room to grow.",
+      name: "About",
     });
   }
 

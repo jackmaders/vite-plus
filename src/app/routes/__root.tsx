@@ -70,7 +70,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body
-        className="font-sans wrap-anywhere antialiased selection:bg-teal-500/25"
+        className="flex min-h-svh flex-col font-sans wrap-anywhere antialiased"
         data-hydrated="false"
       >
         <Header />

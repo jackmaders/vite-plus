@@ -5,40 +5,27 @@ import {
   createRoute,
   createRouter,
 } from "@tanstack/react-router";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it } from "vite-plus/test";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { Header } from "@/app/layouts/header";
+import { signOut, useSession } from "@/shared/auth";
+import { TEST_SESSION } from "@test/vitest/fixtures/session";
 import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
 
-function createAboutPageRouteTree() {
+vi.mock(import("@/shared/auth"));
+
+function createHeaderRouteTree() {
   const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()();
   const homeRoute = createRoute({ getParentRoute: () => rootRoute, path: "/" });
   const aboutRoute = createRoute({ getParentRoute: () => rootRoute, path: "/about" });
-  return rootRoute.addChildren([homeRoute, aboutRoute]);
+  const todosRoute = createRoute({ getParentRoute: () => rootRoute, path: "/todos" });
+  return rootRoute.addChildren([homeRoute, aboutRoute, todosRoute]);
 }
 
-describe("header identity and documentation", () => {
-  it("provides a branded home link within the header navigation", () => {
-    expect.assertions(2);
-
-    // Arrange
-    const { wrapper } = createTestingWrapper();
-
-    // Act
-    render(<Header />, { wrapper });
-    const navigation = within(screen.getByRole("banner")).getByRole("navigation");
-    const heading = within(navigation).getByRole("heading", { name: "TanStack Start" });
-
-    // Assert
-    expect(within(heading).getByRole("link", { name: "TanStack Start" }).getAttribute("href")).toBe(
-      "/",
-    );
-    expect(heading.tagName).toBe("H2");
-  });
-
-  it("opens the documentation in a new tab", () => {
+describe("header identity and navigation", () => {
+  it("provides a branded home link and navigation links", () => {
     expect.assertions(3);
 
     // Arrange
@@ -46,92 +33,46 @@ describe("header identity and documentation", () => {
 
     // Act
     render(<Header />, { wrapper });
-    const link = screen.getByRole("link", { name: "Docs" });
+    const banner = screen.getByRole("banner");
 
     // Assert
-    expect(link.getAttribute("href")).toBe(
-      "https://tanstack.com/start/latest/docs/framework/react/overview",
-    );
-    expect(link.getAttribute("target")).toBe("_blank");
-    expect(link.getAttribute("rel")).toMatch(/(?:^|\s)noreferrer(?:\s|$)/u);
+    expect(within(banner).getByRole("link", { name: "App" }).getAttribute("href")).toBe("/");
+    expect(within(banner).getByRole("link", { name: "Home" }).getAttribute("href")).toBe("/");
+    expect(within(banner).getByRole("link", { name: "About" }).getAttribute("href")).toBe("/about");
   });
-});
 
-describe("header navigation", () => {
-  it("links to both pages and highlights home on the home page", () => {
-    expect.assertions(5);
+  it("shows sign in button when user is unauthenticated", () => {
+    expect.assertions(1);
 
     // Arrange
+    vi.mocked(useSession).mockReturnValue({ data: null, isPending: false } as never);
     const { wrapper } = createTestingWrapper();
 
     // Act
     render(<Header />, { wrapper });
-    const home = screen.getByRole("link", { name: "Home" });
-    const about = screen.getByRole("link", { name: "About" });
 
     // Assert
-    expect(home.getAttribute("href")).toBe("/");
-    expect(about.getAttribute("href")).toBe("/about");
-    expect(home.getAttribute("aria-current")).toBe("page");
-    expect([...home.classList]).toContain("after:scale-x-100");
-    expect([...about.classList]).not.toContain("after:scale-x-100");
+    expect(screen.getByRole("link", { name: "Sign In" }).getAttribute("href")).toBe("/");
   });
 
-  it("highlights about instead of home on the about page", () => {
-    expect.assertions(4);
+  it("shows todos link and sign out button when user is authenticated", () => {
+    expect.assertions(2);
 
     // Arrange
+    vi.mocked(useSession).mockReturnValue({ data: TEST_SESSION, isPending: false } as never);
     const router = createRouter({
       context: { queryClient: new QueryClient() },
-      history: createMemoryHistory({ initialEntries: ["/about"] }),
-      routeTree: createAboutPageRouteTree(),
+      history: createMemoryHistory({ initialEntries: ["/todos"] }),
+      routeTree: createHeaderRouteTree(),
     });
     const { wrapper } = createTestingWrapper({ router });
 
     // Act
     render(<Header />, { wrapper });
-    const home = screen.getByRole("link", { name: "Home" });
-    const about = screen.getByRole("link", { name: "About" });
 
     // Assert
-    expect(about.getAttribute("aria-current")).toBe("page");
-    expect([...about.classList]).toContain("after:scale-x-100");
-    expect(home.getAttribute("aria-current")).toBeNull();
-    expect([...home.classList]).not.toContain("after:scale-x-100");
-  });
-});
-
-describe("header social links", () => {
-  it("provides an accessible external link to X", () => {
-    expect.assertions(3);
-
-    // Arrange
-    const { wrapper } = createTestingWrapper();
-
-    // Act
-    render(<Header />, { wrapper });
-    const link = screen.getByRole("link", { name: "Follow TanStack on X" });
-
-    // Assert
-    expect(link.getAttribute("href")).toBe("https://x.com/tan_stack");
-    expect(link.getAttribute("target")).toBe("_blank");
-    expect(link.getAttribute("rel")).toMatch(/(?:^|\s)noreferrer(?:\s|$)/u);
-  });
-
-  it("provides an accessible external link to GitHub", () => {
-    expect.assertions(3);
-
-    // Arrange
-    const { wrapper } = createTestingWrapper();
-
-    // Act
-    render(<Header />, { wrapper });
-    const link = screen.getByRole("link", { name: "Go to TanStack GitHub" });
-
-    // Assert
-    expect(link.getAttribute("href")).toBe("https://github.com/TanStack");
-    expect(link.getAttribute("target")).toBe("_blank");
-    expect(link.getAttribute("rel")).toMatch(/(?:^|\s)noreferrer(?:\s|$)/u);
+    expect(screen.getByRole("link", { name: "Todos" }).getAttribute("href")).toBe("/todos");
+    expect(screen.getByRole("button", { name: "Sign Out" })).toBeDefined();
   });
 });
 
@@ -158,5 +99,81 @@ describe("header theme control", () => {
     expect(button.textContent).toBe("Light");
     expect(button.getAttribute("aria-label")).toBe("Theme mode: light. Click to switch mode.");
     expect(document.documentElement.dataset["theme"]).toBe("light");
+  });
+});
+
+describe("header auth actions", () => {
+  it("signs out from the desktop header and returns home", async () => {
+    expect.assertions(2);
+
+    // Arrange
+    vi.mocked(useSession).mockReturnValue({ data: TEST_SESSION, isPending: false } as never);
+    const user = userEvent.setup();
+    const router = createRouter({
+      context: { queryClient: new QueryClient() },
+      history: createMemoryHistory({ initialEntries: ["/todos"] }),
+      routeTree: createHeaderRouteTree(),
+    });
+    await router.load();
+    const navigate = vi.spyOn(router, "navigate");
+    const { wrapper } = createTestingWrapper({ router });
+    render(<Header />, { wrapper });
+
+    // Act
+    await user.click(screen.getByRole("button", { name: "Sign Out" }));
+
+    // Assert
+    await waitFor(() => {
+      expect(navigate).toHaveBeenCalledWith({ to: "/" });
+    });
+    expect(signOut).toHaveBeenCalledWith();
+  });
+
+  it("shows sign in in the mobile drawer without a session", async () => {
+    expect.assertions(2);
+
+    // Arrange
+    vi.mocked(useSession).mockReturnValue({ data: null, isPending: false } as never);
+    const user = userEvent.setup();
+    const { wrapper } = createTestingWrapper();
+    render(<Header />, { wrapper });
+
+    // Act
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+    const drawer = await screen.findByRole("dialog");
+
+    // Assert
+    expect(within(drawer).getByRole("link", { name: "Sign In" }).getAttribute("href")).toBe("/");
+    expect(within(drawer).queryByRole("link", { name: "Todos" })).toBeNull();
+  });
+
+  it("signs out from the mobile drawer and returns home", async () => {
+    expect.assertions(3);
+
+    // Arrange
+    vi.mocked(useSession).mockReturnValue({ data: TEST_SESSION, isPending: false } as never);
+    const user = userEvent.setup();
+    const router = createRouter({
+      context: { queryClient: new QueryClient() },
+      history: createMemoryHistory({ initialEntries: ["/todos"] }),
+      routeTree: createHeaderRouteTree(),
+    });
+    await router.load();
+    const navigate = vi.spyOn(router, "navigate");
+    const { wrapper } = createTestingWrapper({ router });
+    render(<Header />, { wrapper });
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+    const drawer = await screen.findByRole("dialog");
+    const todos = within(drawer).getByRole("link", { name: "Todos" });
+
+    // Act
+    await user.click(within(drawer).getByRole("button", { name: "Sign Out" }));
+
+    // Assert
+    await waitFor(() => {
+      expect(navigate).toHaveBeenCalledWith({ to: "/" });
+    });
+    expect(todos.getAttribute("href")).toBe("/todos");
+    expect(signOut).toHaveBeenCalledWith();
   });
 });

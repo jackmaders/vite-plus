@@ -4,23 +4,24 @@ import { waitForHydration } from "./hydration";
 
 class HomePage {
   public readonly heading: Locator;
-  public readonly typeSafeRoutingHeading: Locator;
-  public readonly serverFunctionsHeading: Locator;
-  public readonly streamingByDefaultHeading: Locator;
-  public readonly aboutLink: Locator;
+  public readonly signInTab: Locator;
+  public readonly signUpTab: Locator;
+  public readonly emailInput: Locator;
+  public readonly passwordInput: Locator;
+  public readonly nameInput: Locator;
+  public readonly submitButton: Locator;
 
   private readonly page: Page;
 
   public constructor(page: Page) {
     this.page = page;
-    this.heading = page.getByRole("heading", {
-      level: 1,
-      name: "Start simple, ship quickly.",
-    });
-    this.typeSafeRoutingHeading = page.getByRole("heading", { name: "Type-Safe Routing" });
-    this.serverFunctionsHeading = page.getByRole("heading", { name: "Server Functions" });
-    this.streamingByDefaultHeading = page.getByRole("heading", { name: "Streaming by Default" });
-    this.aboutLink = page.getByRole("link", { name: "About This Starter" });
+    this.heading = page.getByRole("heading", { name: /sign in/iu });
+    this.signInTab = page.getByRole("tab", { name: "Sign In" });
+    this.signUpTab = page.getByRole("tab", { name: "Sign Up" });
+    this.emailInput = page.getByLabel("Email");
+    this.passwordInput = page.getByLabel("Password");
+    this.nameInput = page.getByLabel("Name");
+    this.submitButton = page.getByRole("button", { name: /sign in|create account/iu });
   }
 
   public async goto() {
@@ -28,8 +29,12 @@ class HomePage {
     await waitForHydration(this.page);
   }
 
-  public async clickAboutLink() {
-    await this.aboutLink.click();
+  public async switchToSignUp() {
+    await this.signUpTab.click();
+  }
+
+  public async switchToSignIn() {
+    await this.signInTab.click();
   }
 }
 

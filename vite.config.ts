@@ -203,7 +203,6 @@ const lintConfig = defineConfig({
         rules: {
           "eslint/sort-keys": "off",
           "import/no-namespace": "off",
-          "react-perf/jsx-no-jsx-as-prop": "off",
           "react/only-export-components": "off",
           "tailwindcss/enforces-shorthand": "off",
           "tailwindcss/no-arbitrary-value": "off",
@@ -274,6 +273,7 @@ const lintConfig = defineConfig({
       "oxc/no-rest-spread-properties": "off",
       "promise/catch-or-return": "error",
       "promise/no-return-in-finally": "error",
+      "react-perf/jsx-no-jsx-as-prop": "off",
       "react-perf/jsx-no-new-array-as-prop": "off",
       "react-perf/jsx-no-new-function-as-prop": "off",
       "react-perf/jsx-no-new-object-as-prop": "off",

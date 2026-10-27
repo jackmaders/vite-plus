@@ -11,9 +11,7 @@ const DEFAULT_FORM_VALUES: CreateTodoInput = {
   title: "",
 };
 
-type CreateTodoFormProps = ComponentProps<ReturnType<typeof useAppForm>["Form"]>;
-
-function CreateTodoForm({ ...props }: CreateTodoFormProps = {}) {
+function CreateTodoForm({ ...props }: ComponentProps<ReturnType<typeof useAppForm>["Form"]> = {}) {
   const { mutateAsync: createTodo } = useCreateTodo();
 
   const form = useAppForm({
@@ -36,7 +34,7 @@ function CreateTodoForm({ ...props }: CreateTodoFormProps = {}) {
             {(field) => <field.TextField label="Description" placeholder="Description" />}
           </form.AppField>
           <form.FormError />
-          <form.SubmitButton busyLabel="Adding...">Add Todo</form.SubmitButton>
+          <form.SubmitButton>Add Todo</form.SubmitButton>
         </form.Form>
       </form.AppForm>
     </Card>
