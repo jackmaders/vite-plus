@@ -50,4 +50,5 @@ schema and narrowed for the fields a caller may supply.
 
 **Browser test**:
 A Playwright test that exercises the built application through a browser. The
-suite lives under `tests/browser/` and runs in Chromium, Firefox, and WebKit.
+suite lives under `tests/browser/` and runs in Chromium and Firefox during PR
+checks, and additionally in WebKit during post-deploy checks.
