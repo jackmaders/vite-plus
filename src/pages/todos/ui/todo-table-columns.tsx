@@ -11,8 +11,6 @@ import { TodoCompletionCheckbox } from "./todo-completion-checkbox";
 import { UpdateTodoDialog } from "./update-todo-dialog";
 
 const columnHelper = createColumnHelper<DataTableFeatures, Todo>();
-const editTrigger = <Button variant="ghost" size="icon-sm" aria-label="Edit todo" />;
-const deleteTrigger = <Button variant="ghost" size="icon-sm" aria-label="Delete todo" />;
 
 const todoTableColumns = columnHelper.columns([
   columnHelper.accessor("completed", {
@@ -23,11 +21,7 @@ const todoTableColumns = columnHelper.columns([
   columnHelper.accessor("title", {
     cell: ({ row, getValue }) => (
       <div className="flex items-center gap-2">
-        <span
-          className={row.original.completed ? "text-muted-foreground line-through" : "font-medium"}
-        >
-          {getValue()}
-        </span>
+        <span>{getValue()}</span>
         <Badge variant={row.original.completed ? "secondary" : "outline"}>
           {row.original.completed ? "Done" : "Pending"}
         </Badge>
@@ -46,16 +40,24 @@ const todoTableColumns = columnHelper.columns([
     ),
   }),
   columnHelper.accessor("description", {
-    cell: ({ getValue }) => <span className="text-muted-foreground">{getValue() ?? ""}</span>,
+    cell: ({ getValue }) => <span>{getValue()}</span>,
     header: "Description",
   }),
   columnHelper.display({
     cell: ({ row }) => (
       <div className="flex items-center justify-end gap-1">
-        <UpdateTodoDialog aria-label="Edit todo" render={editTrigger} todo={row.original}>
+        <UpdateTodoDialog
+          aria-label="Edit todo"
+          render={<Button variant="ghost" size="icon-sm" />}
+          todo={row.original}
+        >
           Edit
         </UpdateTodoDialog>
-        <DeleteTodoDialog aria-label="Delete todo" render={deleteTrigger} todo={row.original}>
+        <DeleteTodoDialog
+          aria-label="Delete todo"
+          render={<Button variant="ghost" size="icon-sm" />}
+          todo={row.original}
+        >
           Delete
         </DeleteTodoDialog>
       </div>

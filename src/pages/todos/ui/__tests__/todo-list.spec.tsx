@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -69,6 +69,30 @@ describe("todo list items rendering in table", () => {
     // Assert
     expect(screen.getByText(firstTodo.title)).toBeDefined();
     expect(screen.getByText(secondTodo.title)).toBeDefined();
+  });
+
+  it("sorts todos in both directions from the title heading", async () => {
+    expect.assertions(2);
+
+    // Arrange
+    const user = userEvent.setup();
+    render(<TodoList todos={[secondTodo, firstTodo]} />);
+
+    // Act
+    await user.click(screen.getByRole("button", { name: "Title" }));
+    const ascending = screen
+      .getAllByRole("row")
+      .slice(1)
+      .map((row) => within(row).getAllByRole("cell")[1]?.textContent);
+    await user.click(screen.getByRole("button", { name: "Title" }));
+    const descending = screen
+      .getAllByRole("row")
+      .slice(1)
+      .map((row) => within(row).getAllByRole("cell")[1]?.textContent);
+
+    // Assert
+    expect(ascending).toStrictEqual([`${firstTodo.title}Pending`, `${secondTodo.title}Done`]);
+    expect(descending).toStrictEqual([`${secondTodo.title}Done`, `${firstTodo.title}Pending`]);
   });
 
   it("allows toggling todo completed status via checkbox", async () => {
