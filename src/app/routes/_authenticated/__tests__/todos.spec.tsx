@@ -42,7 +42,7 @@ describe("authenticated todos route", () => {
   });
 
   afterEach(() => {
-    vi.resetAllMocks();
+    vi.clearAllMocks();
   });
 
   it("loads todos into the router query cache before rendering the page", async () => {

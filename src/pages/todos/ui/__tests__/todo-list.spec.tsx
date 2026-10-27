@@ -1,15 +1,16 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { useDeleteTodo } from "@/pages/todos/api/use-delete-todo";
 import { useUpdateTodo } from "@/pages/todos/api/use-update-todo";
 import { TodoList } from "@/pages/todos/ui/todo-list";
-import { TEST_TODOS } from "@test/vitest/fixtures/todos";
+import { type TEST_TODO, TEST_TODOS } from "@test/vitest/fixtures/todos";
 
 vi.mock(import("@/pages/todos/api/use-delete-todo"));
 vi.mock(import("@/pages/todos/api/use-update-todo"));
 
-const mockTodos = TEST_TODOS;
+const [firstTodo, secondTodo] = TEST_TODOS as [typeof TEST_TODO, typeof TEST_TODO];
 
 describe("todo list empty state", () => {
   beforeEach(() => {
@@ -34,7 +35,7 @@ describe("todo list empty state", () => {
   });
 });
 
-describe("todo list items rendering", () => {
+describe("todo list items rendering in table", () => {
   beforeEach(() => {
     vi.mocked(useDeleteTodo).mockReturnValue({
       isPending: false,
@@ -46,24 +47,85 @@ describe("todo list items rendering", () => {
     } as never);
   });
 
-  it("renders list of todos", () => {
+  it("renders table and column headers", () => {
+    expect.assertions(4);
+
+    // Arrange & Act
+    render(<TodoList todos={TEST_TODOS} />);
+
+    // Assert
+    expect(screen.getByRole("table")).toBeDefined();
+    expect(screen.getByRole("columnheader", { name: "Status" })).toBeDefined();
+    expect(screen.getByRole("columnheader", { name: "Title" })).toBeDefined();
+    expect(screen.getByRole("columnheader", { name: "Description" })).toBeDefined();
+  });
+
+  it("renders todo titles in table", () => {
     expect.assertions(2);
 
     // Arrange & Act
-    render(<TodoList todos={mockTodos} />);
+    render(<TodoList todos={TEST_TODOS} />);
 
     // Assert
-    expect(screen.getByText("First Todo")).toBeDefined();
-    expect(screen.getByText("Second Todo")).toBeDefined();
+    expect(screen.getByText(firstTodo.title)).toBeDefined();
+    expect(screen.getByText(secondTodo.title)).toBeDefined();
   });
 
-  it("renders custom className on list container", () => {
-    expect.assertions(1);
+  it("sorts todos in both directions from the title heading", async () => {
+    expect.assertions(2);
 
-    // Arrange & Act
-    render(<TodoList aria-label="Todo list" className="opacity-50" todos={mockTodos} />);
+    // Arrange
+    const user = userEvent.setup();
+    render(<TodoList todos={[secondTodo, firstTodo]} />);
+
+    // Act
+    await user.click(screen.getByRole("button", { name: "Title" }));
+    const ascending = screen
+      .getAllByRole("row")
+      .slice(1)
+      .map((row) => within(row).getAllByRole("cell")[1]?.textContent);
+    await user.click(screen.getByRole("button", { name: "Title" }));
+    const descending = screen
+      .getAllByRole("row")
+      .slice(1)
+      .map((row) => within(row).getAllByRole("cell")[1]?.textContent);
 
     // Assert
-    expect(screen.getByLabelText("Todo list").className).toContain("opacity-50");
+    expect(ascending).toStrictEqual([`${firstTodo.title}Pending`, `${secondTodo.title}Done`]);
+    expect(descending).toStrictEqual([`${secondTodo.title}Done`, `${firstTodo.title}Pending`]);
+  });
+
+  it("allows toggling todo completed status via checkbox", async () => {
+    expect.assertions(1);
+
+    // Arrange
+    const user = userEvent.setup();
+    const updateMock = vi.fn<() => void>();
+    vi.mocked(useUpdateTodo).mockReturnValue({
+      isPending: false,
+      mutate: updateMock,
+    } as never);
+
+    render(<TodoList todos={TEST_TODOS} />);
+
+    // Act
+    await user.click(screen.getByRole("checkbox", { name: `Toggle ${firstTodo.title}` }));
+
+    // Assert
+    expect(updateMock).toHaveBeenCalledWith({
+      data: { completed: true },
+      id: firstTodo.id,
+    });
+  });
+
+  it("renders edit and delete action buttons for each todo", () => {
+    expect.assertions(2);
+
+    // Arrange & Act
+    render(<TodoList todos={TEST_TODOS} />);
+
+    // Assert
+    expect(screen.getAllByRole("button", { name: "Edit todo" })).toHaveLength(2);
+    expect(screen.getAllByRole("button", { name: "Delete todo" })).toHaveLength(2);
   });
 });
