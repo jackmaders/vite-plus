@@ -1,25 +1,22 @@
-import { cn } from "cn";
-import type { ComponentProps } from "react";
-
 import type { Todo } from "@/shared/db";
+import { DataTable } from "@/shared/ui/data-table";
 
-import { TodoItem } from "./todo-item";
+import { todoTableColumns } from "./todo-table-columns";
 
-interface TodoListProps extends ComponentProps<"div"> {
+interface TodoListProps {
   todos: Todo[];
 }
 
-function TodoList({ todos, className, ...props }: TodoListProps) {
-  if (todos.length === 0) {
-    return <p>No todos found</p>;
-  }
-
+function TodoList({ todos }: TodoListProps) {
   return (
-    <div className={cn("flex flex-col gap-2", className)} {...props}>
-      {todos.map((item) => (
-        <TodoItem key={item.id} todo={item} />
-      ))}
-    </div>
+    <DataTable
+      columns={todoTableColumns}
+      data={todos}
+      emptyMessage="No todos found"
+      filterColumn="title"
+      filterPlaceholder="Filter todos..."
+      getRowId={(todo) => todo.id}
+    />
   );
 }
 
