@@ -1,20 +1,16 @@
+import { Loader } from "lucide-react";
 import type { ComponentProps } from "react";
 
 import { Button } from "@/shared/ui/shadcn/button";
 
 import { useFormContext } from "./form-context";
 
-interface SubmitButtonProps extends ComponentProps<typeof Button> {
-  busyLabel?: string;
-}
-
 function SubmitButton({
-  busyLabel = "Please wait…",
   children,
   disabled,
   type = "submit",
   ...props
-}: SubmitButtonProps) {
+}: ComponentProps<typeof Button>) {
   const form = useFormContext();
 
   return (
@@ -26,7 +22,14 @@ function SubmitButton({
           disabled={Boolean(disabled) || !canSubmit || isSubmitting}
           type={type}
         >
-          {isSubmitting ? busyLabel : children}
+          {isSubmitting ? (
+            <>
+              <Loader aria-hidden="true" data-icon="inline-start" />
+              <span className="sr-only">Please wait…</span>
+            </>
+          ) : (
+            children
+          )}
         </Button>
       )}
     </form.Subscribe>
@@ -34,4 +37,3 @@ function SubmitButton({
 }
 
 export { SubmitButton };
-export type { SubmitButtonProps };
