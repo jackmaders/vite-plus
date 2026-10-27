@@ -1,9 +1,16 @@
 import { vi } from "vite-plus/test";
 
-const signIn = vi.fn<() => void>();
-const signOut = vi.fn<() => void>();
-const signUp = vi.fn<() => void>();
-const useSession = vi.fn<() => void>();
+const signIn = {
+  email: vi.fn<() => Promise<unknown>>(),
+};
+const signOut = vi.fn<() => Promise<unknown>>().mockResolvedValue({});
+const signUp = {
+  email: vi.fn<() => Promise<unknown>>(),
+};
+const useSession = vi.fn<() => { data: unknown; isPending: boolean }>().mockReturnValue({
+  data: null,
+  isPending: false,
+});
 
 const authClient = {
   signIn,

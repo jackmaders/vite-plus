@@ -326,7 +326,7 @@ const lintConfig = defineConfig({
       "vitest/prefer-to-be-truthy": "off",
       "vitest/require-test-timeout": "off",
     },
-    settings: { tailwindcss: { cssConfigPath: "./src/app/styles/styles.css" } },
+    settings: { tailwindcss: { cssConfigPath: "./src/app/styles/index.css" } },
   },
 });
 

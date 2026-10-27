@@ -1,4 +1,5 @@
 import { createFormHook } from "@tanstack/react-form";
+import type { ComponentProps } from "react";
 
 import { Form } from "./form";
 import { fieldContext, formContext } from "./form-context";
@@ -13,4 +14,7 @@ const { useAppForm } = createFormHook({
   formContext,
 });
 
+type AppForm = ComponentProps<ReturnType<typeof useAppForm>["Form"]>;
+
 export { useAppForm };
+export type { AppForm };

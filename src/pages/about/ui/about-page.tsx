@@ -1,18 +1,22 @@
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/ui/shadcn/card";
+
 export function AboutPage() {
   return (
-    <main className="mx-auto w-page px-4 py-12">
-      <section className="rounded-2xl border border-(--line) bg-linear-165 from-(--surface-strong) to-(--surface) p-6 shadow-island backdrop-blur-xs transition duration-180 ease-in-out sm:p-8">
-        <p className="mb-2 text-kicker font-bold tracking-kicker text-(--kicker) uppercase">
-          About
-        </p>
-        <h1 className="mb-3 font-display text-4xl font-bold text-(--sea-ink) sm:text-5xl">
-          A small starter with room to grow.
-        </h1>
-        <p className="m-0 max-w-3xl text-base leading-8 text-(--sea-ink-soft)">
-          TanStack Start gives you type-safe routing, server functions, and modern SSR defaults. Use
-          this as a clean foundation, then layer in your own routes, styling, and add-ons.
-        </p>
-      </section>
+    <main className="container mx-auto max-w-2xl px-4 py-12">
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <h1 className="text-xl font-semibold">About</h1>
+          </CardTitle>
+          <CardDescription>A simple starter with room to grow.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            This application is built with TanStack Start, Better Auth, and shadcn/ui. It provides
+            type-safe routing, server functions, and clean composable primitives.
+          </p>
+        </CardContent>
+      </Card>
     </main>
   );
 }
