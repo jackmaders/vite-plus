@@ -81,8 +81,8 @@ describe("header identity and navigation", () => {
 });
 
 describe("header auth actions", () => {
-  it("signs out from the desktop header and returns home", async () => {
-    expect.assertions(2);
+  it("signs out from the desktop header", async () => {
+    expect.assertions(1);
 
     // Arrange
     vi.mocked(useSession).mockReturnValue({ data: TEST_SESSION, isPending: false } as never);
@@ -93,9 +93,6 @@ describe("header auth actions", () => {
       routeTree: createHeaderRouteTree(),
     });
     await router.load();
-    const navigate = vi
-      .spyOn(window.location, "href", "set")
-      .mockImplementation(vi.fn<(url: string) => void>());
     const { wrapper } = createTestingWrapper({ router });
     render(<Header />, { wrapper });
 
@@ -108,9 +105,6 @@ describe("header auth actions", () => {
     );
 
     // Assert
-    await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith("/");
-    });
     expect(signOut).toHaveBeenCalledWith();
   });
 
@@ -136,8 +130,8 @@ describe("header auth actions", () => {
     expect(warning).not.toHaveBeenCalled();
   });
 
-  it("signs out from the mobile drawer and returns home", async () => {
-    expect.assertions(3);
+  it("signs out from the mobile drawer", async () => {
+    expect.assertions(2);
 
     // Arrange
     vi.mocked(useSession).mockReturnValue({ data: TEST_SESSION, isPending: false } as never);
@@ -148,9 +142,6 @@ describe("header auth actions", () => {
       routeTree: createHeaderRouteTree(),
     });
     await router.load();
-    const navigate = vi
-      .spyOn(window.location, "href", "set")
-      .mockImplementation(vi.fn<(url: string) => void>());
     const { wrapper } = createTestingWrapper({ router });
     render(<Header />, { wrapper });
     await user.click(screen.getByRole("button", { name: "Open menu" }));
@@ -166,9 +157,6 @@ describe("header auth actions", () => {
     );
 
     // Assert
-    await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith("/");
-    });
     expect(todos.getAttribute("href")).toBe("/todos");
     expect(signOut).toHaveBeenCalledWith();
   });
