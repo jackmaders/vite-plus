@@ -1,6 +1,4 @@
-import type { ComponentProps } from "react";
-
-import { useAppForm } from "@/shared/ui/form";
+import { useAppForm, type AppForm } from "@/shared/ui/form";
 import { Card } from "@/shared/ui/shadcn/card";
 
 import { useCreateTodo } from "../api/use-create-todo";
@@ -11,7 +9,7 @@ const DEFAULT_FORM_VALUES: CreateTodoInput = {
   title: "",
 };
 
-function CreateTodoForm({ ...props }: ComponentProps<ReturnType<typeof useAppForm>["Form"]> = {}) {
+function CreateTodoForm({ ...props }: AppForm) {
   const { mutateAsync: createTodo } = useCreateTodo();
 
   const form = useAppForm({

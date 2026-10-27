@@ -1,9 +1,8 @@
 import { cn } from "cn";
-import type { ComponentProps } from "react";
 import { z } from "zod";
 
 import { signUp } from "@/shared/auth";
-import { useAppForm } from "@/shared/ui/form";
+import { useAppForm, type AppForm } from "@/shared/ui/form";
 
 const signUpSchema = z.object({
   email: z.email("Enter a valid email address"),
@@ -11,10 +10,7 @@ const signUpSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-export function SignUpForm({
-  className,
-  ...props
-}: ComponentProps<ReturnType<typeof useAppForm>["Form"]>) {
+export function SignUpForm({ className, ...props }: AppForm) {
   const form = useAppForm({
     defaultValues: { email: "", name: "", password: "" },
     onSubmit: async ({ value }) => await signUp.email(value),
