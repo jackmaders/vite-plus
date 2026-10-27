@@ -7,12 +7,16 @@ import {
   RouterProvider,
 } from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { routeTree } from "@/app/routeTree.gen";
 import { ServerErrorPage } from "@/pages/server-error";
 
 vi.mock(import("@/shared/auth"));
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 vi.mock(import("@/app/styles/styles.css?url"), () => ({ default: "/styles.css" }));
 
@@ -116,23 +120,30 @@ describe("root route notFoundComponent", () => {
 
 describe("route error boundary", () => {
   it("shows generic messaging without exposing the route error", async () => {
-    expect.assertions(2);
+    expect.assertions(4);
 
     // Arrange
-    const { router } = createFailedRoute();
+    const { router, error } = createFailedRoute();
+    const onCaughtError = vi.fn<(error: unknown, info: unknown) => void>();
+    const warning = vi
+      .spyOn(console, "warn")
+      .mockImplementation(vi.fn<(...args: unknown[]) => void>());
 
     // Act
     await router.load();
-    render(<RouterProvider router={router} />);
+    render(<RouterProvider router={router} />, { onCaughtError });
 
     // Assert
     expect(screen.getByText("Something went wrong. Please try again.")).toBeDefined();
     expect(screen.queryByText("private server detail")).toBeNull();
+    expect(onCaughtError).toHaveBeenCalledWith(error, expect.anything());
+    expect(warning.mock.calls).toStrictEqual([["Warning: Error in route match: __root__/"]]);
   });
 });
 
 function createFailedRoute() {
-  const loader = vi.fn<() => Promise<void>>().mockRejectedValue(new Error("private server detail"));
+  const error = new Error("private server detail");
+  const loader = vi.fn<() => Promise<void>>().mockRejectedValue(error);
   const rootRoute = createRootRoute({ errorComponent: ServerErrorPage });
   const indexRoute = createRoute({
     component: () => <p>Page loaded</p>,
@@ -142,6 +153,7 @@ function createFailedRoute() {
   });
 
   return {
+    error,
     router: createRouter({
       history: createMemoryHistory({ initialEntries: ["/"] }),
       routeTree: rootRoute.addChildren([indexRoute]),

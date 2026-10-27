@@ -115,9 +115,11 @@ describe("header auth actions", () => {
   });
 
   it("shows sign in in the mobile drawer without a session", async () => {
-    expect.assertions(2);
+    expect.assertions(4);
 
     // Arrange
+    const error = vi.spyOn(console, "error");
+    const warning = vi.spyOn(console, "warn");
     vi.mocked(useSession).mockReturnValue({ data: null, isPending: false } as never);
     const user = userEvent.setup();
     const { wrapper } = createTestingWrapper();
@@ -130,6 +132,8 @@ describe("header auth actions", () => {
     // Assert
     expect(within(drawer).getByRole("button", { name: "Sign in" })).toBeDefined();
     expect(within(drawer).queryByRole("link", { name: "Todos" })).toBeNull();
+    expect(error).not.toHaveBeenCalled();
+    expect(warning).not.toHaveBeenCalled();
   });
 
   it("signs out from the mobile drawer and returns home", async () => {
@@ -172,7 +176,7 @@ describe("header auth actions", () => {
 
 describe("mobile navigation", () => {
   it("closes the drawer after choosing a navigation link", async () => {
-    expect.assertions(1);
+    expect.assertions(3);
 
     // Arrange
     const user = userEvent.setup();
@@ -180,11 +184,14 @@ describe("mobile navigation", () => {
     render(<Header />, { wrapper });
     await user.click(screen.getByRole("button", { name: "Open menu" }));
     const drawer = await screen.findByRole("dialog");
+    const aboutLink = within(drawer).getByRole("link", { name: "About" });
 
     // Act
-    await user.click(within(drawer).getByRole("link", { name: "About" }));
+    await user.click(aboutLink);
 
     // Assert
+    expect(aboutLink.getAttribute("role")).toBe("link");
+    expect(aboutLink.getAttribute("href")).toBe("/about");
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).toBeNull();
     });

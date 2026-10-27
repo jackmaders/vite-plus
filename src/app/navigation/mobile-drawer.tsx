@@ -1,10 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { Menu } from "lucide-react";
-import { useState, type ComponentProps, type ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 
 import { Button } from "@/shared/ui/shadcn/button";
 import {
   Drawer,
+  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerHeader,
@@ -18,10 +19,8 @@ interface MobileDrawerProps extends ComponentProps<typeof DrawerTrigger> {
 }
 
 function MobileDrawer({ authActions, links, ...props }: MobileDrawerProps) {
-  const [open, setOpen] = useState(false);
-
   return (
-    <Drawer open={open} onOpenChange={setOpen} swipeDirection="left">
+    <Drawer swipeDirection="left">
       <DrawerTrigger
         render={<Button variant="ghost" size="sm" />}
         aria-label="Open menu"
@@ -36,12 +35,13 @@ function MobileDrawer({ authActions, links, ...props }: MobileDrawerProps) {
         </DrawerHeader>
         <div className="flex flex-col gap-4 p-4">
           {links.map((link) => (
-            <Link
+            <DrawerClose
+              nativeButton={false}
               key={link.to}
-              {...link}
-              onClick={() => {
-                setOpen(false);
-              }}
+              render={
+                // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role -- Link renders an anchor; override DrawerClose's button role.
+                <Link {...link} role="link" />
+              }
             />
           ))}
           {authActions}
