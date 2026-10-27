@@ -26,7 +26,7 @@ function MobileDrawer({ authActions, links, ...props }: MobileDrawerProps) {
         aria-label="Open menu"
         {...props}
       >
-        <Menu className="size-5" />
+        <Menu data-icon="inline-start" />
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader>

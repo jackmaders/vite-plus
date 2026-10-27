@@ -24,7 +24,7 @@ function SubmitButton({
         >
           {isSubmitting ? (
             <>
-              <Loader aria-hidden="true" />
+              <Loader aria-hidden="true" data-icon="inline-start" />
               <span className="sr-only">Please wait…</span>
             </>
           ) : (

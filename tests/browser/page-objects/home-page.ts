@@ -4,6 +4,7 @@ import { waitForHydration } from "./hydration";
 
 class HomePage {
   public readonly heading: Locator;
+  public readonly signUpHeading: Locator;
   public readonly signInTab: Locator;
   public readonly signUpTab: Locator;
   public readonly emailInput: Locator;
@@ -15,7 +16,8 @@ class HomePage {
 
   public constructor(page: Page) {
     this.page = page;
-    this.heading = page.getByRole("heading", { name: /sign in/iu });
+    this.heading = page.getByRole("main").getByRole("heading", { name: "Sign In" });
+    this.signUpHeading = page.getByRole("main").getByRole("heading", { name: "Sign Up" });
     this.signInTab = page.getByRole("tab", { name: "Sign In" });
     this.signUpTab = page.getByRole("tab", { name: "Sign Up" });
     this.emailInput = page.getByLabel("Email");
@@ -29,6 +31,16 @@ class HomePage {
   public async goto() {
     await this.page.goto("/");
     await waitForHydration(this.page);
+  }
+
+  public async navigateToAbout() {
+    const menu = this.page.getByRole("button", { name: "Open menu" });
+    if (await menu.isVisible()) {
+      await menu.click();
+      await this.page.getByRole("dialog").getByRole("link", { name: "About" }).click();
+      return;
+    }
+    await this.page.getByRole("banner").getByRole("link", { name: "About" }).click();
   }
 
   public async switchToSignUp() {

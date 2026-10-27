@@ -24,14 +24,14 @@ test.describe("home page", () => {
     await homePage.switchToSignUp();
 
     // Assert
-    await expect(page.getByRole("heading", { name: "Sign Up" })).toBeVisible();
+    await expect(homePage.signUpHeading).toBeVisible();
     await expect(homePage.nameInput).toBeVisible();
 
     // Act back
     await homePage.switchToSignIn();
 
     // Assert back
-    await expect(page.getByRole("heading", { name: "Sign In" })).toBeVisible();
+    await expect(homePage.heading).toBeVisible();
   });
 
   test("navigates to the about page from the navbar", async ({ page }) => {
@@ -41,7 +41,7 @@ test.describe("home page", () => {
     await homePage.goto();
 
     // Act
-    await page.getByRole("banner").getByRole("link", { name: "About" }).click();
+    await homePage.navigateToAbout();
 
     // Assert
     await expect(page).toHaveURL(/\/about$/u);
