@@ -12,7 +12,7 @@ import { createTodoFixture, TEST_TODOS } from "@test/vitest/fixtures/todos";
 
 vi.mock(import("@/shared/auth"));
 vi.mock(import("@/pages/todos/api/todos.functions"));
-vi.mock(import("@/app/styles/styles.css?url"), () => ({ default: "/styles.css" }));
+vi.mock(import("@/app/styles/index.css?url"), () => ({ default: "/index.css" }));
 vi.mock(import("@tanstack/react-devtools"));
 
 function createTodosRouter() {

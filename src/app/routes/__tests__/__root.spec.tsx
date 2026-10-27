@@ -18,7 +18,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-vi.mock(import("@/app/styles/styles.css?url"), () => ({ default: "/styles.css" }));
+vi.mock(import("@/app/styles/index.css?url"), () => ({ default: "/index.css" }));
 
 vi.mock(import("@tanstack/react-devtools"));
 vi.mock(import("@tanstack/react-router-devtools"));

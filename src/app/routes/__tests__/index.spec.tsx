@@ -10,7 +10,7 @@ import { TEST_SESSION } from "@test/vitest/fixtures/session";
 
 vi.mock(import("@/shared/auth"));
 vi.mock(import("@/pages/todos"));
-vi.mock(import("@/app/styles/styles.css?url"), () => ({ default: "/styles.css" }));
+vi.mock(import("@/app/styles/index.css?url"), () => ({ default: "/index.css" }));
 vi.mock(import("@tanstack/react-devtools"));
 vi.mock(import("@tanstack/react-router-devtools"));
 vi.mock(import("@tanstack/react-query-devtools"));

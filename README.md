@@ -31,12 +31,17 @@ pnpm build
 
 This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
 
+Replace `src/app/styles/theme.css` with a tweakcn theme export to change the theme.
+Keep framework imports, base styles, and compatibility aliases in
+`src/app/styles/index.css`. Load any custom fonts required by the theme from
+`theme.css`.
+
 ### Removing Tailwind CSS
 
 If you prefer not to use Tailwind CSS:
 
 1. Remove the demo routes in `src/app/routes/demo/` and demo pages in `src/pages/`
-2. Replace the Tailwind import in `src/app/styles/styles.css` with your own styles
+2. Replace the Tailwind imports in `src/app/styles/index.css` with your own styles
 3. Remove `tailwindcss()` from the plugins array in `vite.config.ts`
 4. Remove `@tailwindcss/vite` and `tailwindcss` from `package.json`
 

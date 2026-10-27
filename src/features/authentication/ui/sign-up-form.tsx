@@ -13,9 +13,7 @@ const signUpSchema = z.object({
 export function SignUpForm({ className, ...props }: AppForm) {
   const form = useAppForm({
     defaultValues: { email: "", name: "", password: "" },
-    onSubmit: async ({ value }) => {
-      await submitSignUp(value);
-    },
+    onSubmit: async ({ value }) => await signUp.email(value),
     validators: { onChange: signUpSchema },
   });
 
@@ -53,14 +51,4 @@ export function SignUpForm({ className, ...props }: AppForm) {
       </form.Form>
     </form.AppForm>
   );
-}
-
-async function submitSignUp(value: z.input<typeof signUpSchema>) {
-  const response = await signUp.email(value).catch(() => {
-    throw new Error("An unexpected error occurred");
-  });
-  if (response.error) {
-    throw new Error(response.error.message ?? "Registration failed");
-  }
-  window.location.href = "/todos";
 }

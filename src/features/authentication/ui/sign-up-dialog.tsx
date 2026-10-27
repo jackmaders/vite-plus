@@ -13,7 +13,7 @@ import { SignUpForm } from "./sign-up-form";
 export function SignUpDialog() {
   return (
     <Dialog>
-      <DialogTrigger render={<Button variant="outline" size="sm" />}>Sign up</DialogTrigger>
+      <DialogTrigger render={<Button />}>Sign up</DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Sign Up</DialogTitle>

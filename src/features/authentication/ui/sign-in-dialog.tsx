@@ -13,7 +13,7 @@ import { SignInForm } from "./sign-in-form";
 export function SignInDialog() {
   return (
     <Dialog>
-      <DialogTrigger render={<Button variant="outline" size="sm" />}>Sign in</DialogTrigger>
+      <DialogTrigger render={<Button variant="outline" />}>Sign in</DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Sign In</DialogTitle>
