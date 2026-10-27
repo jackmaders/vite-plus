@@ -1,41 +1,69 @@
-import { createColumnHelper, metaHelper, tableFeatures } from "@tanstack/react-table";
+import { createColumnHelper } from "@tanstack/react-table";
+import { ArrowUpDown } from "lucide-react";
 
 import type { Todo } from "@/shared/db";
+import type { DataTableFeatures } from "@/shared/ui/data-table";
+import { Badge } from "@/shared/ui/shadcn/badge";
+import { Button } from "@/shared/ui/shadcn/button";
 
-import { TodoActionsCell, TodoCompletionCell, TodoTitleCell } from "./todo-table-cells";
+import { DeleteTodoDialog } from "./delete-todo-dialog";
+import { TodoCompletionCheckbox } from "./todo-completion-checkbox";
+import { UpdateTodoDialog } from "./update-todo-dialog";
 
-interface TodoColumnMeta {
-  cellClassName?: string;
-  headerClassName?: string;
-}
-
-const todoTableFeatures = tableFeatures({
-  columnMeta: metaHelper<TodoColumnMeta>(),
-});
-const columnHelper = createColumnHelper<typeof todoTableFeatures, Todo>();
+const columnHelper = createColumnHelper<DataTableFeatures, Todo>();
+const editTrigger = <Button variant="ghost" size="icon-sm" aria-label="Edit todo" />;
+const deleteTrigger = <Button variant="ghost" size="icon-sm" aria-label="Delete todo" />;
 
 const todoTableColumns = columnHelper.columns([
   columnHelper.accessor("completed", {
-    cell: ({ row }) => <TodoCompletionCell todo={row.original} />,
+    cell: ({ row }) => <TodoCompletionCheckbox todo={row.original} />,
+    enableHiding: false,
     header: "Status",
-    meta: { headerClassName: "w-12" },
   }),
   columnHelper.accessor("title", {
-    cell: ({ row }) => <TodoTitleCell todo={row.original} />,
-    header: "Title",
-    meta: { cellClassName: "font-medium" },
+    cell: ({ row, getValue }) => (
+      <div className="flex items-center gap-2">
+        <span
+          className={row.original.completed ? "text-muted-foreground line-through" : "font-medium"}
+        >
+          {getValue()}
+        </span>
+        <Badge variant={row.original.completed ? "secondary" : "outline"}>
+          {row.original.completed ? "Done" : "Pending"}
+        </Badge>
+      </div>
+    ),
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => {
+          column.toggleSorting(column.getIsSorted() === "asc");
+        }}
+      >
+        Title
+        <ArrowUpDown data-icon="inline-end" />
+      </Button>
+    ),
   }),
   columnHelper.accessor("description", {
-    cell: (info) => info.getValue() ?? "",
+    cell: ({ getValue }) => <span className="text-muted-foreground">{getValue() ?? ""}</span>,
     header: "Description",
-    meta: { cellClassName: "text-muted-foreground" },
   }),
   columnHelper.display({
-    cell: ({ row }) => <TodoActionsCell todo={row.original} />,
-    header: "Actions",
+    cell: ({ row }) => (
+      <div className="flex items-center justify-end gap-1">
+        <UpdateTodoDialog aria-label="Edit todo" render={editTrigger} todo={row.original}>
+          Edit
+        </UpdateTodoDialog>
+        <DeleteTodoDialog aria-label="Delete todo" render={deleteTrigger} todo={row.original}>
+          Delete
+        </DeleteTodoDialog>
+      </div>
+    ),
+    enableHiding: false,
+    header: () => <div className="text-right">Actions</div>,
     id: "actions",
-    meta: { cellClassName: "text-right", headerClassName: "w-24 text-right" },
   }),
 ]);
 
-export { todoTableColumns, todoTableFeatures };
+export { todoTableColumns };
