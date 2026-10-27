@@ -6,7 +6,7 @@ import type { ComponentProps } from "react";
 import { SignInDialog, SignOutDialog, SignUpDialog } from "@/features/authentication";
 import { useSession } from "@/shared/auth";
 
-import { MobileDrawer } from "../navigation/mobile-drawer";
+import { MobileDrawer } from "./mobile-drawer";
 
 export function Header({ className, ...props }: ComponentProps<"header">) {
   const { data: session } = useSession();
