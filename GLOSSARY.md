@@ -35,6 +35,14 @@ A time-bounded authenticated state associated with a User.
 The user-facing view of a User’s name and email address. It is not a separate
 identity from the User.
 
+**User sign-in feature**:
+The `features/user-sign-in` slice owns the sign-in form and its card and dialog
+presentations.
+
+**User sign-up feature**:
+The `features/user-sign-up` slice owns the registration form and its card and
+dialog presentations. The header layout owns sign-out.
+
 ### Data
 
 **Database schema**:

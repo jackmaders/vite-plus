@@ -1,1 +1,1 @@
-export { useAppForm } from "./app-form";
+export { useAppForm, type AppForm } from "./app-form";
