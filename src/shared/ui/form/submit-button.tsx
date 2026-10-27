@@ -22,7 +22,14 @@ function SubmitButton({
           disabled={Boolean(disabled) || !canSubmit || isSubmitting}
           type={type}
         >
-          {isSubmitting ? <Loader /> : children}
+          {isSubmitting ? (
+            <>
+              <Loader aria-hidden="true" />
+              <span className="sr-only">Please wait…</span>
+            </>
+          ) : (
+            children
+          )}
         </Button>
       )}
     </form.Subscribe>

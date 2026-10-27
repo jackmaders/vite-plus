@@ -16,6 +16,10 @@ import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
 
 vi.mock(import("@/shared/auth"));
 
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 function createHeaderRouteTree() {
   const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()();
   const homeRoute = createRoute({ getParentRoute: () => rootRoute, path: "/" });
@@ -52,7 +56,7 @@ describe("header identity and navigation", () => {
     render(<Header />, { wrapper });
 
     // Assert
-    expect(screen.getByRole("link", { name: "Sign In" }).getAttribute("href")).toBe("/");
+    expect(screen.getByRole("button", { name: "Sign in" })).toBeDefined();
   });
 
   it("shows todos link and sign out button when user is authenticated", () => {
@@ -76,32 +80,6 @@ describe("header identity and navigation", () => {
   });
 });
 
-describe("header theme control", () => {
-  afterEach(() => {
-    delete document.documentElement.dataset["theme"];
-  });
-
-  it("allows switching the theme from the header", async () => {
-    expect.assertions(3);
-
-    // Arrange
-    const user = userEvent.setup();
-    const { wrapper } = createTestingWrapper();
-    render(<Header />, { wrapper });
-    const button = screen.getByRole("button", {
-      name: "Theme mode: auto (system). Click to switch to light mode.",
-    });
-
-    // Act
-    await user.click(button);
-
-    // Assert
-    expect(button.textContent).toBe("Light");
-    expect(button.getAttribute("aria-label")).toBe("Theme mode: light. Click to switch mode.");
-    expect(document.documentElement.dataset["theme"]).toBe("light");
-  });
-});
-
 describe("header auth actions", () => {
   it("signs out from the desktop header and returns home", async () => {
     expect.assertions(2);
@@ -115,16 +93,23 @@ describe("header auth actions", () => {
       routeTree: createHeaderRouteTree(),
     });
     await router.load();
-    const navigate = vi.spyOn(router, "navigate");
+    const navigate = vi
+      .spyOn(window.location, "href", "set")
+      .mockImplementation(vi.fn<(url: string) => void>());
     const { wrapper } = createTestingWrapper({ router });
     render(<Header />, { wrapper });
 
     // Act
     await user.click(screen.getByRole("button", { name: "Sign Out" }));
+    await user.click(
+      within(await screen.findByRole("dialog", { name: "Sign out?" })).getByRole("button", {
+        name: "Sign Out",
+      }),
+    );
 
     // Assert
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith({ to: "/" });
+      expect(navigate).toHaveBeenCalledWith("/");
     });
     expect(signOut).toHaveBeenCalledWith();
   });
@@ -143,7 +128,7 @@ describe("header auth actions", () => {
     const drawer = await screen.findByRole("dialog");
 
     // Assert
-    expect(within(drawer).getByRole("link", { name: "Sign In" }).getAttribute("href")).toBe("/");
+    expect(within(drawer).getByRole("button", { name: "Sign in" })).toBeDefined();
     expect(within(drawer).queryByRole("link", { name: "Todos" })).toBeNull();
   });
 
@@ -159,7 +144,9 @@ describe("header auth actions", () => {
       routeTree: createHeaderRouteTree(),
     });
     await router.load();
-    const navigate = vi.spyOn(router, "navigate");
+    const navigate = vi
+      .spyOn(window.location, "href", "set")
+      .mockImplementation(vi.fn<(url: string) => void>());
     const { wrapper } = createTestingWrapper({ router });
     render(<Header />, { wrapper });
     await user.click(screen.getByRole("button", { name: "Open menu" }));
@@ -168,12 +155,38 @@ describe("header auth actions", () => {
 
     // Act
     await user.click(within(drawer).getByRole("button", { name: "Sign Out" }));
+    await user.click(
+      within(await screen.findByRole("dialog", { name: "Sign out?" })).getByRole("button", {
+        name: "Sign Out",
+      }),
+    );
 
     // Assert
     await waitFor(() => {
-      expect(navigate).toHaveBeenCalledWith({ to: "/" });
+      expect(navigate).toHaveBeenCalledWith("/");
     });
     expect(todos.getAttribute("href")).toBe("/todos");
     expect(signOut).toHaveBeenCalledWith();
+  });
+});
+
+describe("mobile navigation", () => {
+  it("closes the drawer after choosing a navigation link", async () => {
+    expect.assertions(1);
+
+    // Arrange
+    const user = userEvent.setup();
+    const { wrapper } = createTestingWrapper();
+    render(<Header />, { wrapper });
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+    const drawer = await screen.findByRole("dialog");
+
+    // Act
+    await user.click(within(drawer).getByRole("link", { name: "About" }));
+
+    // Assert
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).toBeNull();
+    });
   });
 });

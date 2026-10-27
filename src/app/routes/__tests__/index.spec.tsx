@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import { Route as HomeRoute } from "@/app/routes/index";
@@ -76,6 +76,6 @@ describe("home route content", () => {
 
     // Assert
     expect(screen.getByRole("heading", { name: "Sign In" })).toBeDefined();
-    expect(screen.getByRole("button", { name: "Sign in" })).toBeDefined();
+    expect(within(screen.getByRole("main")).getByRole("button", { name: "Sign in" })).toBeDefined();
   });
 });

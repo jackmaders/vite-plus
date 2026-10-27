@@ -21,7 +21,9 @@ class HomePage {
     this.emailInput = page.getByLabel("Email");
     this.passwordInput = page.getByLabel("Password");
     this.nameInput = page.getByLabel("Name");
-    this.submitButton = page.getByRole("button", { name: /sign in|create account/iu });
+    this.submitButton = page
+      .getByRole("main")
+      .getByRole("button", { name: /sign in|create account/iu });
   }
 
   public async goto() {

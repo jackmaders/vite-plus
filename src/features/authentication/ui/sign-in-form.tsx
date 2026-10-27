@@ -1,30 +1,26 @@
 import { cn } from "cn";
 import { z } from "zod";
 
-import { signUp } from "@/shared/auth";
+import { signIn } from "@/shared/auth";
 import { useAppForm, type AppForm } from "@/shared/ui/form";
 
-const signUpSchema = z.object({
+const signInSchema = z.object({
   email: z.email("Enter a valid email address"),
-  name: z.string().min(1, "Name is required"),
   password: z.string().min(1, "Password is required"),
 });
 
-export function SignUpForm({ className, ...props }: AppForm) {
+export function SignInForm({ className, ...props }: AppForm) {
   const form = useAppForm({
-    defaultValues: { email: "", name: "", password: "" },
-    onSubmit: async ({ value }) => await signUp.email(value),
-    validators: { onChange: signUpSchema },
+    defaultValues: { email: "", password: "" },
+    onSubmit: async ({ value }) => {
+      await submitSignIn(value);
+    },
+    validators: { onChange: signInSchema },
   });
 
   return (
     <form.AppForm>
       <form.Form className={cn("flex flex-col gap-4", className)} {...props}>
-        <form.AppField name="name">
-          {(field) => (
-            <field.TextField label="Name" autoComplete="name" required placeholder="Your name" />
-          )}
-        </form.AppField>
         <form.AppField name="email">
           {(field) => (
             <field.TextField
@@ -41,14 +37,24 @@ export function SignUpForm({ className, ...props }: AppForm) {
             <field.TextField
               label="Password"
               type="password"
-              autoComplete="new-password"
+              autoComplete="current-password"
               required
             />
           )}
         </form.AppField>
         <form.FormError />
-        <form.SubmitButton className="w-full">Create account</form.SubmitButton>
+        <form.SubmitButton className="w-full">Sign in</form.SubmitButton>
       </form.Form>
     </form.AppForm>
   );
+}
+
+async function submitSignIn(value: z.input<typeof signInSchema>) {
+  const response = await signIn.email(value).catch(() => {
+    throw new Error("An unexpected error occurred");
+  });
+  if (response.error) {
+    throw new Error(response.error.message ?? "Authentication failed");
+  }
+  window.location.href = "/todos";
 }

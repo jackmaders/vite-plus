@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test"
 import { getRouter } from "@/app/router";
 import { todosQueryOptions } from "@/pages/todos";
 import { createTodoFn, getTodosFn } from "@/pages/todos/api/todos.functions";
-import { getSessionFn } from "@/shared/auth";
+import { getSessionFn, useSession } from "@/shared/auth";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 import { createTodoFixture, TEST_TODOS } from "@test/vitest/fixtures/todos";
 
@@ -38,6 +38,7 @@ async function createTodoThroughForm(user: ReturnType<typeof userEvent.setup>, t
 describe("authenticated todos route", () => {
   beforeEach(() => {
     vi.mocked(getSessionFn).mockResolvedValue(TEST_SESSION);
+    vi.mocked(useSession).mockReturnValue({ data: TEST_SESSION, isPending: false } as never);
     vi.mocked(getTodosFn).mockResolvedValue(TEST_TODOS);
   });
 

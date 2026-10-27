@@ -3,9 +3,7 @@ import { cn } from "cn";
 import { CheckSquare } from "lucide-react";
 import type { ComponentProps } from "react";
 
-import { SignInDialog } from "@/features/sign-in";
-import { SignOutDialog } from "@/features/sign-out";
-import { SignUpDialog } from "@/features/sign-up";
+import { SignInDialog, SignOutDialog, SignUpDialog } from "@/features/authentication";
 import { useSession } from "@/shared/auth";
 
 import { MobileDrawer } from "../navigation/mobile-drawer";
