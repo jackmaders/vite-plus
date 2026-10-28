@@ -113,9 +113,10 @@ gh repo edit --default-branch main \
   --enable-merge-commit=false --enable-rebase-merge=false
 ```
 
-Apply the main-branch ruleset:
+Apply the repository settings and main-branch ruleset:
 
 ```bash
+gh api --method PATCH 'repos/{owner}/{repo}' --input .github/settings.json
 gh api --method POST 'repos/{owner}/{repo}/rulesets' \
   --input .github/rulesets/protect-main.json
 gh api 'repos/{owner}/{repo}/rules/branches/main'
