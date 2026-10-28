@@ -113,12 +113,24 @@ gh repo edit --default-branch main \
   --enable-merge-commit=false --enable-rebase-merge=false
 ```
 
-Apply the main-branch ruleset:
+Restrict pull request creation to repository collaborators (users with write
+access) and apply the main-branch ruleset. These commands require repository
+admin access:
 
 ```bash
+gh api --method PATCH 'repos/{owner}/{repo}' --input .github/settings.json
+gh api 'repos/{owner}/{repo}' --jq '{has_pull_requests, pull_request_creation_policy}'
 gh api --method POST 'repos/{owner}/{repo}/rulesets' \
   --input .github/rulesets/protect-main.json
 gh api 'repos/{owner}/{repo}/rules/branches/main'
 ```
+
+The settings payload uses GitHub's permanent
+[collaborators-only pull request policy](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/disabling-pull-requests).
+Only collaborators can create new pull requests; existing pull requests remain
+visible. Committing or merging `.github/settings.json` does not apply it
+automatically: run the PATCH command above for both new and existing repositories.
+To allow public contributions again, set `pull_request_creation_policy` to `all`
+in the payload and reapply it.
 
 AI reviews require a Gemini API key stored as a repository secret: `gh secret set GEMINI_API_KEY`.
