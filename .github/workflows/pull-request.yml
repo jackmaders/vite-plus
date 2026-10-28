@@ -33,6 +33,8 @@ jobs:
         run: vp check
       - name: Check architecture
         run: vp run lint:arch --fail-on-warnings
+      - name: Check exports
+        run: vp run lint:exports
 
   build:
     name: 🏗️ Build
