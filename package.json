@@ -9,7 +9,6 @@
     "db:migrate": "wrangler d1 migrations apply DB",
     "deploy": "wrangler deploy",
     "dev": "vp dev",
-    "github:settings": "gh api --method PATCH 'repos/{owner}/{repo}' --input .github/settings.json",
     "lint:arch": "steiger ./src",
     "lint:exports": "knip",
     "prepare": "vp config",
