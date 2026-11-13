@@ -52,6 +52,11 @@ Applies when implementing new behavior or writing, reviewing, or organizing test
   identifies the behavior that broke.
 - Keep unit tests fast and runnable in any order. Isolate mutable state
   and control external inputs such as time, randomness, and network responses.
+- Write branch-free test bodies (`vitest(no-conditional-in-test)`); keep all
+  assertion flows linear inside `it()` blocks.
+- Never write conditional assertions (if (...) expect(...)) or try/catch in tests; use expect(() => fn()).toThrow(...).
+- Place `waitFor` expectations within Act/Assert blocks; assert mocked call counts
+  explicitly (`toHaveBeenCalledTimes`) for memoization and caching verifications.
 
 ## Browser tests and Page Object Model
 
@@ -61,10 +66,21 @@ Applies when implementing new behavior or writing, reviewing, or organizing test
 - Encapsulate navigation and user actions as intent-revealing methods on page objects (e.g. `goto()`, `submitCreate()`, `deleteItem()`).
 - Keep test assertions in the test files. Page objects encapsulate elements and interaction mechanics; test files state expectations and verify behavior.
 - Decompose complex dialogs and nested forms into discrete component objects under `tests/browser/page-objects/components/` (one class per file) to keep classes focused and comply with class length limits.
+- Run browser test suites with `vpr test:browser`.
 
 ## Diagnostics and reporters
 
 - Test and check outputs default to minimal reporters (such as `dot` reporter) to keep tool output concise.
+- When running targeted tests during development, execute `vp test <path>`. Do NOT pass `--coverage` on single test paths, because Vitest enforces a 100% per-file coverage threshold across the entire project, which will fail on single-file subsets. Full coverage must be run exclusively via `vp test --coverage` across the complete suite.
 - When diagnosing a test or typecheck failure, pass explicit reporter or verbose flags for detailed traces:
   - Run unit tests with `--reporter=default` or `--reporter=verbose` (e.g. `vp test <path> --reporter=default`).
   - Run `vp check --fix` to automatically format and resolve linting issues.
+
+## Browser test execution and preview
+
+Run browser checks with `vpr test:browser` (or `vpr test:browser --project=chromium` for PR parity). Playwright launches the local preview server automatically (`vp preview`) with fallback auth configuration when `PLAYWRIGHT_BASE_URL` is not provided. The current Cloudflare Vite plugin configuration disables remote bindings (`remoteBindings: false`) for local development, preview, and Workers unit tests.
+
+## Worktree and subagent hygiene
+
+- **Workspace confinement**: Confine all file inspection, creation, edits, and file tool searches (`read_file`, `find_by_name`, `grep_search`) strictly to the active workspace. Herdr and Git worktrees contain `.git` pointer files referencing parent repository metadata; avoid traversing parent directories.
+- **Workspace-root Git operations**: Run all Git commands (`git status`, `git diff`, `git log`, `git checkout`, `git merge`) via `run_command` directly within the active workspace root.
