@@ -3,39 +3,16 @@ import { describe, expect, it, vi } from "vite-plus/test";
 
 import { Route as IndexRoute } from "@/app/routes/index";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
+import { getRouteOption } from "@test/vitest/helpers/route";
 
-vi.mock(
-  import("@/pages/home"),
-  () =>
-    ({
-      HomePage: () => <h1>Home Page</h1>,
-    }) as never,
-);
-
-function getBeforeLoad() {
-  const options = IndexRoute.options as unknown as { beforeLoad?: (ctx: unknown) => unknown };
-  const { beforeLoad } = options;
-  if (!beforeLoad) {
-    throw new TypeError("Expected beforeLoad to be defined");
-  }
-  return beforeLoad;
-}
-
-function getComponent() {
-  const options = IndexRoute.options as unknown as { component?: React.ComponentType };
-  const { component } = options;
-  if (!component) {
-    throw new TypeError("Expected component to be defined");
-  }
-  return component;
-}
+vi.mock(import("@/pages/home"));
 
 describe("index route beforeLoad guard", () => {
   it("redirects authenticated user to /todos", () => {
     expect.assertions(1);
 
     // Arrange
-    const beforeLoad = getBeforeLoad();
+    const beforeLoad = getRouteOption(IndexRoute, "beforeLoad") as (ctx: unknown) => unknown;
     const args = { context: { session: TEST_SESSION } };
 
     // Assert
@@ -52,7 +29,7 @@ describe("index route beforeLoad guard", () => {
     expect.assertions(1);
 
     // Arrange
-    const beforeLoad = getBeforeLoad();
+    const beforeLoad = getRouteOption(IndexRoute, "beforeLoad") as (ctx: unknown) => unknown;
     const args = { context: { session: null } };
 
     // Assert
@@ -67,7 +44,7 @@ describe("index route presentation", () => {
     expect.assertions(1);
 
     // Arrange
-    const Component = getComponent();
+    const Component = getRouteOption(IndexRoute, "component") as React.ComponentType;
 
     // Act
     render(<Component />);

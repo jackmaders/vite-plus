@@ -3,6 +3,12 @@ import imageCompression from "browser-image-compression";
 import { describe, expect, it, vi } from "vite-plus/test";
 
 import { compressImage } from "@/shared/lib/compress-image.client";
+import {
+  TEST_COMPRESSED_IMAGE_FILE,
+  TEST_IMAGE_DATA_URL,
+  TEST_IMAGE_FILE,
+  TEST_TEMP_IMAGE_KEY,
+} from "@test/vitest/fixtures/images";
 import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
 
 import { uploadTodoImageFn } from "../todos.functions";
@@ -17,26 +23,22 @@ describe("useUploadTodoImage mutation hook", () => {
     expect.hasAssertions();
 
     // Arrange
-    const rawFile = new File(["raw"], "photo.png", { type: "image/png" });
-    const compressedFile = new File(["webp"], "photo.webp", { type: "image/webp" });
-    vi.mocked(compressImage).mockResolvedValueOnce(compressedFile);
-    vi.mocked(imageCompression.getDataUrlFromFile).mockResolvedValueOnce(
-      "data:image/webp;base64,d2VicA==",
-    );
-    vi.mocked(uploadTodoImageFn).mockResolvedValueOnce({ tempKey: "temp/user-1/pic.webp" });
+    vi.mocked(compressImage).mockResolvedValueOnce(TEST_COMPRESSED_IMAGE_FILE);
+    vi.mocked(imageCompression.getDataUrlFromFile).mockResolvedValueOnce(TEST_IMAGE_DATA_URL);
+    vi.mocked(uploadTodoImageFn).mockResolvedValueOnce({ tempKey: TEST_TEMP_IMAGE_KEY });
     const { wrapper } = createTestingWrapper();
     const { result } = renderHook(() => useUploadTodoImage(), { wrapper });
 
     // Act
-    const response = await result.current.mutateAsync(rawFile);
+    const response = await result.current.mutateAsync(TEST_IMAGE_FILE);
 
     // Assert
-    expect(compressImage).toHaveBeenCalledWith(rawFile);
-    expect(imageCompression.getDataUrlFromFile).toHaveBeenCalledWith(compressedFile);
+    expect(compressImage).toHaveBeenCalledWith(TEST_IMAGE_FILE);
+    expect(imageCompression.getDataUrlFromFile).toHaveBeenCalledWith(TEST_COMPRESSED_IMAGE_FILE);
     expect(uploadTodoImageFn).toHaveBeenCalledWith({
-      data: { base64: "data:image/webp;base64,d2VicA==", contentType: "image/webp" },
+      data: { base64: TEST_IMAGE_DATA_URL, contentType: "image/webp" },
     });
-    expect(response).toStrictEqual({ tempKey: "temp/user-1/pic.webp" });
+    expect(response).toStrictEqual({ tempKey: TEST_TEMP_IMAGE_KEY });
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);
     });
@@ -46,13 +48,9 @@ describe("useUploadTodoImage mutation hook", () => {
     expect.assertions(1);
 
     // Arrange
-    const rawFile = new File(["raw"], "photo.png", { type: "image/png" });
-    const compressedFile = new File(["webp"], "photo.webp", { type: "image/webp" });
-    vi.mocked(compressImage).mockResolvedValueOnce(compressedFile);
-    vi.mocked(imageCompression.getDataUrlFromFile).mockResolvedValueOnce(
-      "data:image/webp;base64,d2VicA==",
-    );
-    vi.mocked(uploadTodoImageFn).mockResolvedValueOnce({ tempKey: "temp/user-1/pic.webp" });
+    vi.mocked(compressImage).mockResolvedValueOnce(TEST_COMPRESSED_IMAGE_FILE);
+    vi.mocked(imageCompression.getDataUrlFromFile).mockResolvedValueOnce(TEST_IMAGE_DATA_URL);
+    vi.mocked(uploadTodoImageFn).mockResolvedValueOnce({ tempKey: TEST_TEMP_IMAGE_KEY });
     const customOnSuccess = vi.fn<() => void>();
     const { wrapper } = createTestingWrapper();
     const { result } = renderHook(() => useUploadTodoImage({ onSuccess: customOnSuccess }), {
@@ -60,7 +58,7 @@ describe("useUploadTodoImage mutation hook", () => {
     });
 
     // Act
-    await result.current.mutateAsync(rawFile);
+    await result.current.mutateAsync(TEST_IMAGE_FILE);
 
     // Assert
     expect(customOnSuccess).toHaveBeenCalledOnce();

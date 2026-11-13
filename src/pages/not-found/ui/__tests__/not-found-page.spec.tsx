@@ -1,25 +1,15 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vite-plus/test";
+import { screen } from "@testing-library/react";
+import { describe, expect, it } from "vite-plus/test";
+
+import { renderWithProviders } from "@test/vitest/wrappers/testing-wrapper";
 
 import { NotFoundPage } from "../not-found-page";
-
-vi.mock(
-  import("@tanstack/react-router"),
-  () =>
-    ({
-      Link: ({ children, to, ...props }: { children?: React.ReactNode; to?: string }) => (
-        <a href={to} {...props}>
-          {children}
-        </a>
-      ),
-    }) as never,
-);
 
 describe("not found page", () => {
   it("renders heading and link back to home", () => {
     expect.assertions(3);
 
-    render(<NotFoundPage />);
+    renderWithProviders(<NotFoundPage />);
 
     expect(screen.getByRole("heading", { name: "Page Not Found" })).toBeDefined();
     expect(

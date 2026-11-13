@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 
 import { Route } from "@/app/routes/api/images/$";
 import { getImage } from "@/shared/images/index.server";
+import { createMockR2Object } from "@test/vitest/fixtures/images";
 
 interface ImageRouteRequestContext {
   params?: {
@@ -23,23 +24,6 @@ function getGetHandler(): ImageServerRouteHandler {
     throw new TypeError("Expected GET handler to be defined");
   }
   return getHandler;
-}
-
-function createMockR2Object(overrides?: Partial<R2ObjectBody>): R2ObjectBody {
-  const bytes = new Uint8Array([1, 2, 3, 4]);
-  const stream = new ReadableStream({
-    start(controller) {
-      controller.enqueue(bytes);
-      controller.close();
-    },
-  });
-
-  return {
-    body: stream,
-    httpEtag: '"etag-123"',
-    httpMetadata: { contentType: "image/webp" },
-    ...overrides,
-  } as unknown as R2ObjectBody;
 }
 
 describe("api images route handler", () => {

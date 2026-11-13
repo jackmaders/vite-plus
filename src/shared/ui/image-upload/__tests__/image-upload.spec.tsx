@@ -1,48 +1,9 @@
-/* eslint-disable testing-library/prefer-user-event, prefer-arrow-callback, react/button-has-type */
+/* eslint-disable testing-library/prefer-user-event */
 import { fireEvent, render, renderHook, screen } from "@testing-library/react";
-import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { useImageUpload } from "../image-upload-context";
 import { ImageUpload } from "../index";
-
-vi.mock(
-  import("lucide-react"),
-  () =>
-    ({
-      UploadIcon: () => <span />,
-      Loader2Icon: () => <span />,
-      ImagePlus: () => <span />,
-      Loader2: () => <span />,
-      Trash2: () => <span />,
-      Upload: () => <span />,
-      XIcon: () => <span />,
-    }) as never,
-);
-
-vi.mock(
-  import("@/shared/ui/shadcn/button"),
-  () =>
-    ({
-      Button: React.forwardRef<HTMLButtonElement, React.ComponentProps<"button">>(function Button(
-        { children, disabled, onClick, type = "button", ...props },
-        ref,
-      ) {
-        let buttonType: "button" | "submit" | "reset" = "button";
-        if (type === "submit") {
-          buttonType = "submit";
-        } else if (type === "reset") {
-          buttonType = "reset";
-        }
-        return (
-          <button ref={ref} disabled={disabled} onClick={onClick} type={buttonType} {...props}>
-            {children}
-          </button>
-        );
-      }),
-      buttonVariants: () => "",
-    }) as never,
-);
 
 function noopRevoke(): void {
   // Empty mock for URL.revokeObjectURL

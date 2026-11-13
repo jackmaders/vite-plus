@@ -18,20 +18,32 @@ Applies when implementing new behavior or writing, reviewing, or organizing test
 
 ## Fixtures
 
-- Place complex, reusable test data and mock factories in `tests/vitest/fixtures/`
-  and import them via `@test/vitest/fixtures/<fixture>`.
-- Name fixture files by domain (`session.ts`, `records.ts`, `db.ts`) without
-  `test-` or `mock-` prefixes.
+- Place test data and mock factories in `tests/vitest/fixtures/` by domain
+  (`session.ts`, `records.ts`, `images.ts`, `db.ts`) without `test-` or `mock-`
+  prefixes, and import them via `@test/vitest/fixtures/<fixture>`.
 - Name static reference records with `TEST_<ENTITY>` (e.g. `TEST_USER`,
   `TEST_RECORD`) and enforce deterministic timestamps and IDs.
 - Provide `create<Entity>Fixture(overrides?)` factory functions when tests
   require customized copies of domain entities.
 - Provide `createMock<Service>(...)` factory functions for mocked runtimes or
   databases.
-- Place slice-private fixtures exclusively used by a single test suite in
-  `__tests__/fixtures/` within that slice.
 - Never place test fixtures or mock helpers in un-prefixed directories under
   `src/` (such as `src/**/testing/`).
+
+## Wrappers and mocks
+
+- Test provider-backed libraries without mocking them:
+  - Use `createTestingWrapper` or `renderWithProviders` from
+    `tests/vitest/wrappers/testing-wrapper.tsx` (`@test/vitest/wrappers/testing-wrapper`)
+    for `@tanstack/react-query` and `@tanstack/react-router`.
+  - Use `createFormWrapper` or `renderWithForm` from
+    `tests/vitest/wrappers/form-wrapper.tsx` (`@test/vitest/wrappers/form-wrapper`)
+    for `@tanstack/react-form` components.
+- Avoid inline `vi.mock(import(...), () => ...)` factory functions in spec files.
+  Use colocated `__mocks__/` files for local modules, `{ spy: true }` when
+  spying on real implementations, or root `__mocks__/` files for third-party
+  packages.
+- Use `Promise.withResolvers<T>()` instead of custom `createDeferred` helpers.
 
 ## Unit tests
 
