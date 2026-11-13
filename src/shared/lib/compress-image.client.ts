@@ -27,7 +27,6 @@ class ImageCompressionError extends Error {
   }
 }
 
-/** @public Tracked in #175. */
 export async function compressImage(file: File): Promise<File> {
   validateImageFile(file);
 
