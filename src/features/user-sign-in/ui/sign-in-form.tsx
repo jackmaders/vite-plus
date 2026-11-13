@@ -1,7 +1,7 @@
 import { cn } from "cn";
 import { z } from "zod";
 
-import { signIn } from "@/shared/auth";
+import { useAuth } from "@/shared/auth";
 import { useAppForm, type AppFormProps } from "@/shared/ui/form";
 
 const signInSchema = z.object({
@@ -10,9 +10,13 @@ const signInSchema = z.object({
 });
 
 export function SignInForm({ className, ...props }: AppFormProps) {
+  const { signInEmail } = useAuth();
+
   const form = useAppForm({
     defaultValues: { email: "", password: "" },
-    onSubmit: async ({ value }) => await signIn.email(value),
+    onSubmit: async ({ value }) => {
+      await signInEmail(value);
+    },
     validators: { onChange: signInSchema },
   });
 

@@ -26,35 +26,40 @@ function getBeforeLoad() {
 type BeforeLoadArgs = NonNullable<Parameters<ReturnType<typeof getBeforeLoad>>[0]>;
 
 describe("home route beforeLoad guard", () => {
-  it("redirects authenticated user to /todos", async () => {
+  it("redirects authenticated user to /todos", () => {
     expect.assertions(1);
 
     // Arrange
-    vi.mocked(getSessionFn).mockResolvedValueOnce(TEST_SESSION);
     const beforeLoad = getBeforeLoad();
-    const emptyArgs = {} as unknown as BeforeLoadArgs;
+    const args = { context: { session: TEST_SESSION } } as unknown as BeforeLoadArgs;
 
     // Act
-    async function act() {
-      await beforeLoad(emptyArgs);
+    function act() {
+      beforeLoad(args);
     }
 
     // Assert
-    await expect(act).rejects.toMatchObject({
-      options: { to: "/todos" },
-    });
+    expect(act).toThrow(
+      expect.objectContaining({
+        options: expect.objectContaining({ to: "/todos" }) as unknown,
+      }),
+    );
   });
 
-  it("does not redirect unauthenticated user", async () => {
+  it("does not redirect unauthenticated user", () => {
     expect.assertions(1);
 
     // Arrange
-    vi.mocked(getSessionFn).mockResolvedValueOnce(null);
     const beforeLoad = getBeforeLoad();
-    const emptyArgs = {} as unknown as BeforeLoadArgs;
+    const args = { context: { session: null } } as unknown as BeforeLoadArgs;
 
-    // Act & Assert
-    await expect(beforeLoad(emptyArgs)).resolves.toBeUndefined();
+    // Act
+    function act() {
+      beforeLoad(args);
+    }
+
+    // Assert
+    expect(act).not.toThrow();
   });
 });
 
@@ -65,7 +70,7 @@ describe("home route content", () => {
     // Arrange
     vi.mocked(getSessionFn).mockResolvedValue(null);
     const router = createRouter({
-      context: { queryClient: new QueryClient() },
+      context: { queryClient: new QueryClient(), session: null },
       history: createMemoryHistory({ initialEntries: ["/"] }),
       routeTree,
     });

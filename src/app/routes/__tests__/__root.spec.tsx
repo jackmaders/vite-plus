@@ -7,12 +7,19 @@ import {
   RouterProvider,
 } from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
+import { Route as RootRoute } from "@/app/routes/__root";
 import { routeTree } from "@/app/routeTree.gen";
 import { ErrorPage } from "@/pages/error";
+import { getSessionFn } from "@/shared/auth";
+import { TEST_SESSION } from "@test/vitest/fixtures/session";
 
 vi.mock(import("@/shared/auth"));
+
+beforeEach(() => {
+  vi.mocked(getSessionFn).mockResolvedValue(null);
+});
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -24,13 +31,52 @@ vi.mock(import("@tanstack/react-devtools"));
 vi.mock(import("@tanstack/react-router-devtools"));
 vi.mock(import("@tanstack/react-query-devtools"));
 
+function getBeforeLoad() {
+  const options = RootRoute.options as unknown as { beforeLoad?: (ctx: never) => unknown };
+  const { beforeLoad } = options;
+  if (!beforeLoad) {
+    throw new TypeError("Expected beforeLoad to be defined");
+  }
+  return beforeLoad;
+}
+
+describe("root route beforeLoad", () => {
+  it("populates session context from getSessionFn when authenticated", async () => {
+    expect.assertions(1);
+
+    // Arrange
+    vi.mocked(getSessionFn).mockResolvedValueOnce(TEST_SESSION);
+    const beforeLoad = getBeforeLoad();
+
+    // Act
+    const context = await beforeLoad({} as never);
+
+    // Assert
+    expect(context).toStrictEqual({ session: TEST_SESSION });
+  });
+
+  it("populates null session context when unauthenticated", async () => {
+    expect.assertions(1);
+
+    // Arrange
+    vi.mocked(getSessionFn).mockResolvedValueOnce(null);
+    const beforeLoad = getBeforeLoad();
+
+    // Act
+    const context = await beforeLoad({} as never);
+
+    // Assert
+    expect(context).toStrictEqual({ session: null });
+  });
+});
+
 describe("root route document metadata", () => {
   it("sets the title and viewport metadata", async () => {
     expect.assertions(2);
 
     // Arrange
     const router = createRouter({
-      context: { queryClient: new QueryClient() },
+      context: { queryClient: new QueryClient(), session: null },
       history: createMemoryHistory({ initialEntries: ["/"] }),
       routeTree,
     });
@@ -57,7 +103,7 @@ describe("root route layout", () => {
 
     // Arrange
     const router = createRouter({
-      context: { queryClient: new QueryClient() },
+      context: { queryClient: new QueryClient(), session: null },
       history: createMemoryHistory({ initialEntries: ["/"] }),
       routeTree,
     });
@@ -79,7 +125,7 @@ describe("root route devtools panels", () => {
 
     // Arrange
     const router = createRouter({
-      context: { queryClient: new QueryClient() },
+      context: { queryClient: new QueryClient(), session: null },
       history: createMemoryHistory({ initialEntries: ["/"] }),
       routeTree,
     });
@@ -100,7 +146,7 @@ describe("root route notFoundComponent", () => {
 
     // Arrange
     const router = createRouter({
-      context: { queryClient: new QueryClient() },
+      context: { queryClient: new QueryClient(), session: null },
       history: createMemoryHistory({ initialEntries: ["/non-existent-page"] }),
       routeTree,
     });

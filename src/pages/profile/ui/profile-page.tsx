@@ -1,7 +1,7 @@
-import { useSession } from "@/shared/auth/index.client";
+import { useAuth } from "@/shared/auth";
 
 function ProfilePage() {
-  const { data: sessionData } = useSession();
+  const { data: sessionData } = useAuth();
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8">
@@ -15,6 +15,7 @@ function ProfilePage() {
         <div className="mt-4 rounded-xl border border-border bg-card p-4">
           <p className="font-semibold text-foreground">Name: {sessionData.user.name}</p>
           <p className="text-sm text-muted-foreground">Email: {sessionData.user.email}</p>
+          <p className="text-sm text-muted-foreground">Role: {sessionData.user.role}</p>
         </div>
       )}
     </div>

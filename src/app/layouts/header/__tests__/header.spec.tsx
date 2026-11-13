@@ -10,7 +10,8 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { Header } from "@/app/layouts/header";
-import { signOut, useSession } from "@/shared/auth";
+import type { RootRouterContext } from "@/app/routes/__root";
+import { signOut, useSession, type Session } from "@/shared/auth";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
 
@@ -21,22 +22,37 @@ afterEach(() => {
 });
 
 function createHeaderRouteTree() {
-  const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()();
+  const rootRoute = createRootRouteWithContext<RootRouterContext>()();
   const homeRoute = createRoute({ getParentRoute: () => rootRoute, path: "/" });
   const aboutRoute = createRoute({ getParentRoute: () => rootRoute, path: "/about" });
   const todosRoute = createRoute({ getParentRoute: () => rootRoute, path: "/todos" });
   return rootRoute.addChildren([homeRoute, aboutRoute, todosRoute]);
 }
 
+async function renderHeader({
+  initialEntry = "/",
+  session = null,
+}: {
+  initialEntry?: string;
+  session?: Session | null;
+} = {}) {
+  vi.mocked(useSession).mockReturnValue({ data: session, isPending: false } as never);
+  const router = createRouter({
+    context: { queryClient: new QueryClient(), session },
+    history: createMemoryHistory({ initialEntries: [initialEntry] }),
+    routeTree: createHeaderRouteTree(),
+  });
+  await router.load();
+  const { wrapper } = createTestingWrapper({ router });
+  render(<Header />, { wrapper });
+}
+
 describe("header identity and navigation", () => {
-  it("provides a branded home link and navigation links", () => {
+  it("provides a branded home link and navigation links", async () => {
     expect.assertions(3);
 
-    // Arrange
-    const { wrapper } = createTestingWrapper();
-
-    // Act
-    render(<Header />, { wrapper });
+    // Arrange & Act
+    await renderHeader();
     const banner = screen.getByRole("banner");
 
     // Assert
@@ -45,34 +61,21 @@ describe("header identity and navigation", () => {
     expect(within(banner).getByRole("link", { name: "About" }).getAttribute("href")).toBe("/about");
   });
 
-  it("shows sign in button when user is unauthenticated", () => {
+  it("shows sign in button when user is unauthenticated", async () => {
     expect.assertions(1);
 
-    // Arrange
-    vi.mocked(useSession).mockReturnValue({ data: null, isPending: false } as never);
-    const { wrapper } = createTestingWrapper();
-
-    // Act
-    render(<Header />, { wrapper });
+    // Arrange & Act
+    await renderHeader({ session: null });
 
     // Assert
     expect(screen.getByRole("button", { name: "Sign in" })).toBeDefined();
   });
 
-  it("shows todos link and sign out button when user is authenticated", () => {
+  it("shows todos link and sign out button when user is authenticated", async () => {
     expect.assertions(2);
 
-    // Arrange
-    vi.mocked(useSession).mockReturnValue({ data: TEST_SESSION, isPending: false } as never);
-    const router = createRouter({
-      context: { queryClient: new QueryClient() },
-      history: createMemoryHistory({ initialEntries: ["/todos"] }),
-      routeTree: createHeaderRouteTree(),
-    });
-    const { wrapper } = createTestingWrapper({ router });
-
-    // Act
-    render(<Header />, { wrapper });
+    // Arrange & Act
+    await renderHeader({ initialEntry: "/todos", session: TEST_SESSION });
 
     // Assert
     expect(screen.getByRole("link", { name: "Todos" }).getAttribute("href")).toBe("/todos");
@@ -85,16 +88,8 @@ describe("header auth actions", () => {
     expect.assertions(1);
 
     // Arrange
-    vi.mocked(useSession).mockReturnValue({ data: TEST_SESSION, isPending: false } as never);
     const user = userEvent.setup();
-    const router = createRouter({
-      context: { queryClient: new QueryClient() },
-      history: createMemoryHistory({ initialEntries: ["/todos"] }),
-      routeTree: createHeaderRouteTree(),
-    });
-    await router.load();
-    const { wrapper } = createTestingWrapper({ router });
-    render(<Header />, { wrapper });
+    await renderHeader({ initialEntry: "/todos", session: TEST_SESSION });
 
     // Act
     await user.click(screen.getByRole("button", { name: "Sign Out" }));
@@ -114,10 +109,8 @@ describe("header auth actions", () => {
     // Arrange
     const error = vi.spyOn(console, "error");
     const warning = vi.spyOn(console, "warn");
-    vi.mocked(useSession).mockReturnValue({ data: null, isPending: false } as never);
     const user = userEvent.setup();
-    const { wrapper } = createTestingWrapper();
-    render(<Header />, { wrapper });
+    await renderHeader({ session: null });
 
     // Act
     await user.click(screen.getByRole("button", { name: "Open menu" }));
@@ -134,16 +127,8 @@ describe("header auth actions", () => {
     expect.assertions(2);
 
     // Arrange
-    vi.mocked(useSession).mockReturnValue({ data: TEST_SESSION, isPending: false } as never);
     const user = userEvent.setup();
-    const router = createRouter({
-      context: { queryClient: new QueryClient() },
-      history: createMemoryHistory({ initialEntries: ["/todos"] }),
-      routeTree: createHeaderRouteTree(),
-    });
-    await router.load();
-    const { wrapper } = createTestingWrapper({ router });
-    render(<Header />, { wrapper });
+    await renderHeader({ initialEntry: "/todos", session: TEST_SESSION });
     await user.click(screen.getByRole("button", { name: "Open menu" }));
     const drawer = await screen.findByRole("dialog");
     const todos = within(drawer).getByRole("link", { name: "Todos" });
@@ -168,8 +153,7 @@ describe("mobile navigation", () => {
 
     // Arrange
     const user = userEvent.setup();
-    const { wrapper } = createTestingWrapper();
-    render(<Header />, { wrapper });
+    await renderHeader();
     await user.click(screen.getByRole("button", { name: "Open menu" }));
     const drawer = await screen.findByRole("dialog");
     const aboutLink = within(drawer).getByRole("link", { name: "About" });

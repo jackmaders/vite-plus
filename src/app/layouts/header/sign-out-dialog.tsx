@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 
-import { signOut } from "@/shared/auth";
+import { useAuth } from "@/shared/auth";
 import { Button } from "@/shared/ui/shadcn/button";
 import {
   Dialog,
@@ -14,6 +14,8 @@ import {
 } from "@/shared/ui/shadcn/dialog";
 
 export function SignOutDialog({ ...props }: ComponentProps<typeof DialogTrigger>) {
+  const { signOut } = useAuth();
+
   return (
     <Dialog>
       <DialogTrigger render={<Button />} {...props}>

@@ -13,6 +13,8 @@ export {
   type RateLimit,
   type Session,
   type User,
+  type UserRole,
+  userRoles,
   type Verification,
 } from "./auth";
 export { insertTodoSchema, selectTodoSchema, todos, updateTodoSchema, type Todo } from "./todos";

@@ -1,16 +1,12 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
-import { getSessionFn } from "@/shared/auth";
-
 const Route = createFileRoute("/_authenticated")({
-  beforeLoad: async () => {
-    const session = await getSessionFn();
-
-    if (!session) {
+  beforeLoad: ({ context }) => {
+    if (!context.session) {
       throw redirect({ to: "/" });
     }
 
-    return { session };
+    return { session: context.session };
   },
   component: AuthenticatedLayout,
 });

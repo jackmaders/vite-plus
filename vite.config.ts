@@ -392,6 +392,7 @@ const testConfig = defineConfig(async () => ({
         "src/shared/ui/shadcn/**",
         "src/**/__mocks__/**",
         "src/shared/db/schema/**",
+        "src/shared/db/seed/**",
       ],
       include: ["src/**/*.{ts,tsx}"],
       provider: "v8",

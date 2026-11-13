@@ -27,38 +27,38 @@ function getBeforeLoad() {
 type BeforeLoadArgs = NonNullable<Parameters<ReturnType<typeof getBeforeLoad>>[0]>;
 
 describe("_authenticated route beforeLoad guard", () => {
-  it("returns session context when user is authenticated", async () => {
+  it("returns session context when user is authenticated", () => {
     expect.assertions(1);
 
     // Arrange
-    vi.mocked(getSessionFn).mockResolvedValueOnce(TEST_SESSION);
     const beforeLoad = getBeforeLoad();
-    const emptyArgs = {} as unknown as BeforeLoadArgs;
+    const args = { context: { session: TEST_SESSION } } as unknown as BeforeLoadArgs;
 
     // Act
-    const context: unknown = await beforeLoad(emptyArgs);
+    const context: unknown = beforeLoad(args);
 
     // Assert
     expect(context).toStrictEqual({ session: TEST_SESSION });
   });
 
-  it("throws a redirect to root when user is unauthenticated", async () => {
+  it("throws a redirect to root when user is unauthenticated", () => {
     expect.assertions(1);
 
     // Arrange
-    vi.mocked(getSessionFn).mockResolvedValueOnce(null);
     const beforeLoad = getBeforeLoad();
-    const emptyArgs = {} as unknown as BeforeLoadArgs;
+    const args = { context: { session: null } } as unknown as BeforeLoadArgs;
 
     // Act
-    async function act() {
-      await beforeLoad(emptyArgs);
+    function act() {
+      beforeLoad(args);
     }
 
     // Assert
-    await expect(act).rejects.toMatchObject({
-      options: { to: "/" },
-    });
+    expect(act).toThrow(
+      expect.objectContaining({
+        options: expect.objectContaining({ to: "/" }) as unknown,
+      }),
+    );
   });
 });
 
@@ -67,9 +67,9 @@ describe("_authenticated route layout and navigation", () => {
     expect.assertions(1);
 
     // Arrange
-    vi.mocked(getSessionFn).mockResolvedValueOnce(null);
+    vi.mocked(getSessionFn).mockResolvedValue(null);
     const router = createRouter({
-      context: { queryClient: new QueryClient() },
+      context: { queryClient: new QueryClient(), session: null },
       history: createMemoryHistory({ initialEntries: ["/profile"] }),
       routeTree,
     });
@@ -88,7 +88,7 @@ describe("_authenticated route layout and navigation", () => {
     // Arrange
     vi.mocked(getSessionFn).mockResolvedValue(TEST_SESSION);
     const router = createRouter({
-      context: { queryClient: new QueryClient() },
+      context: { queryClient: new QueryClient(), session: null },
       history: createMemoryHistory({ initialEntries: ["/profile"] }),
       routeTree,
     });

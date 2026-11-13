@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 
 import { HomePage } from "../home-page";
 
-vi.mock(import("@/shared/auth/index.client"));
+vi.mock(import("@/shared/auth"));
 
 describe("home page auth card", () => {
   it("renders the sign in form by default", () => {

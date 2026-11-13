@@ -4,13 +4,23 @@ import { useEffect } from "react";
 
 import { ErrorPage } from "@/pages/error";
 import { NotFoundPage } from "@/pages/not-found";
+import { getSessionFn, type Session } from "@/shared/auth";
 import { Toaster } from "@/shared/ui/shadcn/toast";
 
 import { Devtools, Footer, Header } from "../layouts";
 
 import appCss from "../styles/index.css?url";
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+export interface RootRouterContext {
+  queryClient: QueryClient;
+  session?: Session | null;
+}
+
+export const Route = createRootRouteWithContext<RootRouterContext>()({
+  beforeLoad: async () => {
+    const session = await getSessionFn();
+    return { session };
+  },
   errorComponent: ErrorPage,
   head: () => ({
     links: [

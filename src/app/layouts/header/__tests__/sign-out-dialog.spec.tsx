@@ -34,4 +34,17 @@ describe("sign out confirmation", () => {
     expect(signOut).not.toHaveBeenCalled();
     expect(screen.queryByRole("dialog")).toBeNull();
   });
+
+  it("signs out on confirmation", async () => {
+    expect.assertions(1);
+
+    // Arrange
+    const { dialog, user } = await openDialog();
+
+    // Act
+    await user.click(within(dialog).getByRole("button", { name: "Sign Out" }));
+
+    // Assert
+    expect(signOut).toHaveBeenCalledOnce();
+  });
 });

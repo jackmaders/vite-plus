@@ -1,7 +1,7 @@
 import { cn } from "cn";
 import { z } from "zod";
 
-import { signUp } from "@/shared/auth";
+import { useAuth } from "@/shared/auth";
 import { useAppForm, type AppFormProps } from "@/shared/ui/form";
 
 const signUpSchema = z.object({
@@ -11,9 +11,13 @@ const signUpSchema = z.object({
 });
 
 export function SignUpForm({ className, ...props }: AppFormProps) {
+  const { signUpEmail } = useAuth();
+
   const form = useAppForm({
     defaultValues: { email: "", name: "", password: "" },
-    onSubmit: async ({ value }) => await signUp.email(value),
+    onSubmit: async ({ value }) => {
+      await signUpEmail(value);
+    },
     validators: { onChange: signUpSchema },
   });
 

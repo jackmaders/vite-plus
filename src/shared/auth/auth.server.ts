@@ -4,7 +4,7 @@ import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { env } from "cloudflare:workers";
 
 import { getDb } from "../db/index.server";
-import { account, rateLimit, session, user, verification } from "../db/schema";
+import { account, rateLimit, session, user, userRoles, verification } from "../db/schema";
 
 const auth = betterAuth({
   advanced: {
@@ -23,6 +23,16 @@ const auth = betterAuth({
     storage: "database",
   },
   secret: env.BETTER_AUTH_SECRET,
+  user: {
+    additionalFields: {
+      role: {
+        defaultValue: "user",
+        input: false,
+        required: true,
+        type: userRoles,
+      },
+    },
+  },
 });
 
 export { auth };

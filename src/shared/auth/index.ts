@@ -1,4 +1,6 @@
-export { authClient, signIn, signOut, signUp, useSession } from "./auth.client";
+export { useAuth } from "./use-auth";
+export { signIn, signOut, signUp, useSession } from "./auth.client";
 export { getSessionFn } from "./session.functions";
-export { authMiddleware } from "./middleware";
-export type { Session, User } from "../db/schema";
+export { permissionMiddleware } from "./middleware";
+export { hasPermission } from "./permissions";
+export type { Session } from "./session.types";
