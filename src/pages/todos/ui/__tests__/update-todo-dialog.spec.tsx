@@ -74,7 +74,7 @@ describe("update todo dialog", () => {
       feedbackVisibleAfterEdit: false,
       message: "Todo item not found.",
       retainedTitle: "Edited draft",
-      retryDisabled: true,
+      retryDisabled: false,
       retryDisabledAfterEdit: false,
     });
     expect(toast.add).toHaveBeenCalledOnce();

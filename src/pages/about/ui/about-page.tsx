@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/sha
 
 export function AboutPage() {
   return (
-    <main className="container mx-auto max-w-2xl px-4 py-12">
+    <div className="container mx-auto max-w-2xl px-4 py-12">
       <Card>
         <CardHeader>
           <CardTitle>
@@ -17,6 +17,6 @@ export function AboutPage() {
           </p>
         </CardContent>
       </Card>
-    </main>
+    </div>
   );
 }

@@ -98,7 +98,7 @@ describe("create todo form", () => {
       feedbackVisibleAfterEdit: false,
       message: "save failed",
       retainedTitle: "Draft title",
-      retryDisabled: true,
+      retryDisabled: false,
       retryDisabledAfterEdit: false,
     });
     await waitFor(() => {
@@ -126,8 +126,8 @@ describe("create todo form", () => {
     expect(createTodoFn).not.toHaveBeenCalled();
   });
 
-  it("disables submit when the title becomes empty or whitespace", async () => {
-    expect.assertions(2);
+  it("keeps submit enabled when the title is empty or whitespace and blocks server submission", async () => {
+    expect.assertions(4);
 
     // Arrange
     const { user, title } = renderCreateForm();
@@ -138,10 +138,14 @@ describe("create todo form", () => {
     await user.clear(title);
     const emptyDisabled = submit.disabled;
     await user.type(title, "   ");
+    await user.click(submit);
+    const feedback = await screen.findByText("Title is required");
 
     // Assert
-    expect(emptyDisabled).toBe(true);
-    expect(submit.disabled).toBe(true);
+    expect(emptyDisabled).toBe(false);
+    expect(submit.disabled).toBe(false);
+    expect(feedback).toBeDefined();
+    expect(createTodoFn).not.toHaveBeenCalled();
   });
 });
 

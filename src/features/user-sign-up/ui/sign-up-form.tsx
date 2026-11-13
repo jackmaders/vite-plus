@@ -2,7 +2,7 @@ import { cn } from "cn";
 import { z } from "zod";
 
 import { signUp } from "@/shared/auth";
-import { useAppForm, type AppForm } from "@/shared/ui/form";
+import { useAppForm, type AppFormProps } from "@/shared/ui/form";
 
 const signUpSchema = z.object({
   email: z.email("Enter a valid email address"),
@@ -10,7 +10,7 @@ const signUpSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
-export function SignUpForm({ className, ...props }: AppForm) {
+export function SignUpForm({ className, ...props }: AppFormProps) {
   const form = useAppForm({
     defaultValues: { email: "", name: "", password: "" },
     onSubmit: async ({ value }) => await signUp.email(value),

@@ -1,4 +1,4 @@
-import { useAppForm, type AppForm } from "@/shared/ui/form";
+import { useAppForm, type AppFormProps } from "@/shared/ui/form";
 import { Card } from "@/shared/ui/shadcn/card";
 
 import { useCreateTodo } from "../api/use-create-todo";
@@ -9,7 +9,7 @@ const DEFAULT_FORM_VALUES: CreateTodoInput = {
   title: "",
 };
 
-function CreateTodoForm({ ...props }: AppForm) {
+function CreateTodoForm({ ...props }: AppFormProps) {
   const { mutateAsync: createTodo } = useCreateTodo();
 
   const form = useAppForm({
@@ -26,7 +26,7 @@ function CreateTodoForm({ ...props }: AppForm) {
       <form.AppForm>
         <form.Form className="flex flex-col gap-3" {...props}>
           <form.AppField name="title">
-            {(field) => <field.TextField label="Title" placeholder="Title" />}
+            {(field) => <field.TextField label="Title" placeholder="Title" required />}
           </form.AppField>
           <form.AppField name="description">
             {(field) => <field.TextField label="Description" placeholder="Description" />}

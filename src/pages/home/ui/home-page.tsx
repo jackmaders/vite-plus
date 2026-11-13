@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/shadcn/tab
 
 export function HomePage() {
   return (
-    <main className="flex flex-1 items-center justify-center p-4">
+    <div className="flex flex-1 items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <Tabs defaultValue="signin">
           <TabsList className="grid w-full grid-cols-2">
@@ -19,6 +19,6 @@ export function HomePage() {
           </TabsContent>
         </Tabs>
       </div>
-    </main>
+    </div>
   );
 }

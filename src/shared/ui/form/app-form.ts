@@ -1,4 +1,9 @@
-import { createFormHook } from "@tanstack/react-form";
+import {
+  createFormHook,
+  type FormAsyncValidateOrFn,
+  type FormOptions,
+  type FormValidateOrFn,
+} from "@tanstack/react-form";
 import type { ComponentProps } from "react";
 
 import { Form } from "./form";
@@ -8,13 +13,47 @@ import { SubmitButton } from "./submit-button";
 import { TextField } from "./text-field";
 
 const { useAppForm } = createFormHook({
-  fieldComponents: { TextField },
+  fieldComponents: {
+    TextField,
+  },
   fieldContext,
   formComponents: { Form, FormError, SubmitButton },
   formContext,
 });
 
-type AppForm = ComponentProps<ReturnType<typeof useAppForm>["Form"]>;
+type AppFormProps = ComponentProps<ReturnType<typeof useAppForm>["Form"]>;
+
+type AppFormOptions<TFormData> = FormOptions<
+  TFormData,
+  FormValidateOrFn<TFormData>,
+  FormValidateOrFn<TFormData>,
+  FormAsyncValidateOrFn<TFormData>,
+  FormValidateOrFn<TFormData>,
+  FormAsyncValidateOrFn<TFormData>,
+  FormValidateOrFn<TFormData>,
+  FormAsyncValidateOrFn<TFormData>,
+  FormValidateOrFn<TFormData>,
+  FormAsyncValidateOrFn<TFormData>,
+  FormAsyncValidateOrFn<TFormData>,
+  undefined
+>;
+
+type AppFormApi<TFormData> = ReturnType<
+  typeof useAppForm<
+    TFormData,
+    FormValidateOrFn<TFormData>,
+    FormValidateOrFn<TFormData>,
+    FormAsyncValidateOrFn<TFormData>,
+    FormValidateOrFn<TFormData>,
+    FormAsyncValidateOrFn<TFormData>,
+    FormValidateOrFn<TFormData>,
+    FormAsyncValidateOrFn<TFormData>,
+    FormValidateOrFn<TFormData>,
+    FormAsyncValidateOrFn<TFormData>,
+    FormAsyncValidateOrFn<TFormData>,
+    undefined
+  >
+>;
 
 export { useAppForm };
-export type { AppForm };
+export type { AppFormProps, AppFormOptions, AppFormApi };

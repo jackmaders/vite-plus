@@ -72,7 +72,7 @@ function UpdateTodoForm({ todo, onSuccess, onCancel }: UpdateTodoFormProps) {
     <form.AppForm>
       <form.Form className="flex flex-col gap-4">
         <form.AppField name="title">
-          {(field) => <field.TextField label="Title" placeholder="Title" />}
+          {(field) => <field.TextField label="Title" placeholder="Title" required />}
         </form.AppField>
 
         <form.AppField name="description">

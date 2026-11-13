@@ -8,7 +8,7 @@ function TodosPage() {
   const { data: todos } = useSuspenseQuery(todosQueryOptions());
 
   return (
-    <main className="container mx-auto flex flex-col gap-6 px-4 py-8">
+    <div className="container mx-auto flex flex-col gap-6 px-4 py-8">
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold tracking-tight">Todos</h1>
         <p className="text-sm text-muted-foreground">Manage your personal todo items</p>
@@ -27,7 +27,7 @@ function TodosPage() {
         </h2>
         <TodoList todos={todos} />
       </section>
-    </main>
+    </div>
   );
 }
 

@@ -10,7 +10,7 @@ import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { routeTree } from "@/app/routeTree.gen";
-import { ServerErrorPage } from "@/pages/server-error";
+import { ErrorPage } from "@/pages/error";
 
 vi.mock(import("@/shared/auth"));
 
@@ -144,7 +144,7 @@ describe("route error boundary", () => {
 function createFailedRoute() {
   const error = new Error("private server detail");
   const loader = vi.fn<() => Promise<void>>().mockRejectedValue(error);
-  const rootRoute = createRootRoute({ errorComponent: ServerErrorPage });
+  const rootRoute = createRootRoute({ errorComponent: ErrorPage });
   const indexRoute = createRoute({
     component: () => <p>Page loaded</p>,
     getParentRoute: () => rootRoute,

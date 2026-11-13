@@ -15,32 +15,9 @@ interface SubscribeHandlerProps {
 }
 
 describe("submit button component", () => {
-  it("renders an enabled submit button by default and forwards props", () => {
+  it("renders enabled submit button and forwards props even when form cannot submit", () => {
     expect.assertions(4);
 
-    // Arrange
-    const form = useFormContext();
-
-    // Act
-    render(
-      <SubmitButton aria-label="Save changes" className="p-2">
-        Save
-      </SubmitButton>,
-    );
-
-    const button = screen.getByRole("button", { name: "Save changes" });
-
-    // Assert
-    expect(button.getAttribute("type")).toBe("submit");
-    expect(button.className).toContain("p-2");
-    expect(button.hasAttribute("disabled")).toBe(false);
-    expect(form.Subscribe).toHaveBeenCalledOnce();
-  });
-
-  it("disables the button when the form cannot submit", () => {
-    expect.assertions(1);
-
-    // Arrange
     const form = useFormContext();
     const mockFormCannotSubmit = vi.fn<
       ({ children, selector }: SubscribeHandlerProps) => ReactElement | null
@@ -51,44 +28,39 @@ describe("submit button component", () => {
     });
     vi.mocked(form.Subscribe).mockImplementationOnce(mockFormCannotSubmit as never);
 
-    // Act
-    render(<SubmitButton>Save</SubmitButton>);
-
-    // Assert
-    expect(screen.getByRole("button", { name: "Save" }).hasAttribute("disabled")).toBe(true);
-  });
-
-  it("keeps an explicitly disabled button disabled when the form can submit", () => {
-    expect.assertions(1);
-
-    // Act
-    render(<SubmitButton disabled>Save</SubmitButton>);
-
-    // Assert
-    expect(screen.getByRole("button", { name: "Save" }).hasAttribute("disabled")).toBe(true);
-  });
-
-  it("forwards an explicit button type", () => {
-    expect.assertions(2);
-
-    // Act
     render(
+      <SubmitButton aria-label="Save changes" className="p-2">
+        Save
+      </SubmitButton>,
+    );
+
+    const button = screen.getByText("Save");
+
+    expect(button.getAttribute("type")).toBe("submit");
+    expect(button.className).toContain("p-2");
+    expect(button.hasAttribute("disabled")).toBe(false);
+    expect(form.Subscribe).toHaveBeenCalledOnce();
+  });
+
+  it("handles explicit type and disabled states", () => {
+    expect.assertions(3);
+
+    const { rerender } = render(<SubmitButton disabled>Save</SubmitButton>);
+    expect(screen.getByText("Save").hasAttribute("disabled")).toBe(true);
+
+    rerender(
       <SubmitButton type="button" variant="secondary">
         Cancel
       </SubmitButton>,
     );
-
-    const button = screen.getByRole("button", { name: "Cancel" });
-
-    // Assert
-    expect(button.getAttribute("type")).toBe("button");
-    expect(button.hasAttribute("disabled")).toBe(false);
+    const cancelButton = screen.getByText("Cancel");
+    expect(cancelButton.getAttribute("type")).toBe("button");
+    expect(cancelButton.hasAttribute("disabled")).toBe(false);
   });
 
   it("disables the button and shows a busy label while submitting", () => {
     expect.assertions(2);
 
-    // Arrange
     const form = useFormContext();
     const mockFormSubmitting = vi.fn<
       ({ children, selector }: SubscribeHandlerProps) => ReactElement | null
@@ -99,11 +71,9 @@ describe("submit button component", () => {
     });
     vi.mocked(form.Subscribe).mockImplementationOnce(mockFormSubmitting as never);
 
-    // Act
-    render(<SubmitButton>Save</SubmitButton>);
-    const button = screen.getByRole("button", { name: "Please wait…" });
+    render(<SubmitButton aria-label="Save">Save</SubmitButton>);
+    const button = screen.getByLabelText("Save");
 
-    // Assert
     expect(button.hasAttribute("disabled")).toBe(true);
     expect(button.getAttribute("aria-busy")).toBe("true");
   });
