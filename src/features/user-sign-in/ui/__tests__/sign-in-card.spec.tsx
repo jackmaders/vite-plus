@@ -1,40 +1,20 @@
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
-
-import { signIn } from "@/shared/auth";
+import { describe, expect, it, vi } from "vite-plus/test";
 
 import { SignInCard } from "../sign-in-card";
 
-vi.mock(import("@/shared/auth"));
-
-afterEach(() => {
-  vi.restoreAllMocks();
-});
-
-async function fillForm() {
-  const user = userEvent.setup();
-  render(<SignInCard />);
-  await user.type(screen.getByLabelText("Email"), "test@example.com");
-  await user.type(screen.getByLabelText("Password"), "password123");
-  return user;
-}
+vi.mock(import("../sign-in-form"), () => ({
+  SignInForm: () => <div>Sign In Form</div>,
+}));
 
 describe("sign in card", () => {
-  it("submits credentials", async () => {
-    expect.assertions(1);
+  it("renders todo-focused description copy and sign in form", () => {
+    expect.assertions(3);
 
-    // Arrange
-    vi.mocked(signIn.email).mockResolvedValue({ data: {}, error: null });
-    const user = await fillForm();
+    render(<SignInCard />);
 
-    // Act
-    await user.click(screen.getByRole("button", { name: "Sign in" }));
-
-    // Assert
-    expect(signIn.email).toHaveBeenCalledWith({
-      email: "test@example.com",
-      password: "password123",
-    });
+    expect(screen.getByText("Enter your credentials to access your todos")).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Sign In" })).toBeDefined();
+    expect(screen.getByText("Sign In Form")).toBeDefined();
   });
 });

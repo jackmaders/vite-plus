@@ -12,10 +12,12 @@ pnpm dev
 For local production preview, build with the preview configuration:
 
 ```bash
-CLOUDFLARE_ENV=preview vp run build
-vp run db:migrate --local --env preview
+CLOUDFLARE_ENV=preview vp build
+vpr db:migrate --local --env preview
 vp preview
 ```
+
+Optional: seed local data when a seed script is configured (`vpr db:seed`), and run full CI parity checks locally with `vpr check:ci`.
 
 Provide `BETTER_AUTH_SECRET` through `.dev.vars` or the process environment.
 

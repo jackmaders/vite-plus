@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "tanstack-start-app",
-  "compatibility_date": "2025-09-02",
+  "compatibility_date": "2025-12-04",
   "compatibility_flags": ["nodejs_compat"],
   "d1_databases": [
     {
@@ -10,6 +10,13 @@
       "database_id": "00000000-0000-0000-0000-000000000002",
       "migrations_dir": "./drizzle",
       "migrations_pattern": "drizzle/*/migration.sql"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "IMAGES",
+      "bucket_name": "tanstack-start-images-dev",
+      "preview_bucket_name": "tanstack-start-images-preview"
     }
   ],
   "main": "@tanstack/react-start/server-entry",
@@ -36,6 +43,12 @@
           "migrations_pattern": "drizzle/*/migration.sql"
         }
       ],
+      "r2_buckets": [
+        {
+          "binding": "IMAGES",
+          "bucket_name": "tanstack-start-images-preview"
+        }
+      ],
       "vars": {
         "BETTER_AUTH_URL": "http://localhost:4173"
       },
@@ -51,6 +64,12 @@
           "database_id": "00000000-0000-0000-0000-000000000000",
           "migrations_dir": "./drizzle",
           "migrations_pattern": "drizzle/*/migration.sql"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "IMAGES",
+          "bucket_name": "set-your-production-images-bucket-name"
         }
       ],
       "vars": {

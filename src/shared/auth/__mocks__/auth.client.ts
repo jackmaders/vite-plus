@@ -1,22 +1,33 @@
 import { vi } from "vite-plus/test";
 
 const signIn = {
-  email: vi.fn<() => Promise<unknown>>(),
+  email: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
 };
-const signOut = vi.fn<() => Promise<unknown>>().mockResolvedValue({});
+const signOut = vi.fn<(...args: unknown[]) => Promise<unknown>>().mockResolvedValue({});
 const signUp = {
-  email: vi.fn<() => Promise<unknown>>(),
+  email: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
 };
-const useSession = vi.fn<() => { data: unknown; isPending: boolean }>().mockReturnValue({
-  data: null,
-  isPending: false,
-});
-
+const useSession = vi
+  .fn<
+    () => {
+      data: unknown;
+      error: unknown;
+      isPending: boolean;
+      refetch: () => Promise<unknown>;
+    }
+  >()
+  .mockReturnValue({
+    data: null,
+    error: null,
+    isPending: false,
+    refetch: vi.fn<() => Promise<unknown>>().mockResolvedValue(null),
+  });
 const authClient = {
   signIn,
   signOut,
   signUp,
   useSession,
 };
+const mockAuthClient = authClient;
 
-export { authClient, signIn, signOut, signUp, useSession };
+export { authClient, mockAuthClient, signIn, signOut, signUp, useSession };

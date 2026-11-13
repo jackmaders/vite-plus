@@ -12,6 +12,9 @@ const user = sqliteTable("user", {
     .$defaultFn(() => crypto.randomUUID()),
   image: text("image"),
   name: text("name").notNull(),
+  role: text("role", { enum: ["user", "admin"] })
+    .default("user")
+    .notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp_ms" })
     .default(sql`(cast(unixepoch('subsecond') * 1000 as integer))`)
     .$onUpdate(() => new Date())
@@ -102,6 +105,9 @@ const rateLimit = sqliteTable("rate_limit", {
   lastRequest: integer("last_request", { mode: "number" }).notNull(),
 });
 
+const userRoles = user.role.enumValues;
+
+type UserRole = (typeof user.$inferSelect)["role"];
 type User = typeof user.$inferSelect;
 type NewUser = typeof user.$inferInsert;
 type Session = typeof session.$inferSelect;
@@ -128,5 +134,7 @@ export {
   type RateLimit,
   type Session,
   type User,
+  type UserRole,
+  userRoles,
   type Verification,
 };

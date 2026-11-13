@@ -2,38 +2,49 @@ import { vi } from "vite-plus/test";
 
 import type { useFieldContext } from "@/shared/ui/form/form-context";
 
-type Field = ReturnType<typeof useFieldContext<string>>;
+type Field<FieldValue = string> = ReturnType<typeof useFieldContext<FieldValue>>;
 
-interface CreateFormFieldFixtureProps {
-  handleBlur?: Field["handleBlur"];
-  handleChange?: Field["handleChange"];
-  name?: string;
-  state?: {
-    meta?: {
-      errors?: { message?: string }[];
-      isTouched?: boolean;
-      isValid?: boolean;
-    };
-    value?: string;
-  };
+interface CreateFormFieldFixtureProps<FieldValue = string> {
+  form?: unknown;
+  handleBlur?: Field<FieldValue>["handleBlur"];
+  handleChange?: Field<FieldValue>["handleChange"];
+  name?: string | undefined;
+  state?:
+    | {
+        meta?:
+          | {
+              errors?: { message?: string }[] | undefined;
+              isBlurred?: boolean | undefined;
+              isTouched?: boolean | undefined;
+              isValid?: boolean | undefined;
+            }
+          | undefined;
+        value?: FieldValue | undefined;
+      }
+    | undefined;
 }
 
-function createFormFieldFixture({
+function createFormFieldFixture<FieldValue = string>({
+  form = { state: { submissionAttempts: 0 } },
   state: { meta = {}, ...state } = {},
   ...overrides
-}: CreateFormFieldFixtureProps = {}) {
+}: CreateFormFieldFixtureProps<FieldValue> = {}) {
   return {
-    handleBlur: vi.fn<Field["handleBlur"]>(),
-    handleChange: vi.fn<Field["handleChange"]>(),
+    form,
+    handleBlur: vi.fn<Field<FieldValue>["handleBlur"]>(),
+    handleChange: vi.fn<Field<FieldValue>["handleChange"]>(),
     name: "email",
     state: {
-      meta: { errors: [], isTouched: false, isValid: true, ...meta },
-      value: "",
+      meta: { errors: [], isBlurred: false, isTouched: false, isValid: true, ...meta },
+      value: "" as FieldValue,
       ...state,
     },
     ...overrides,
-  } as unknown as Field;
+  } as unknown as Field<FieldValue>;
 }
 
-export { createFormFieldFixture, createFormFieldFixture as createTextFieldFixture };
-export type { CreateFormFieldFixtureProps };
+export {
+  createFormFieldFixture,
+  createFormFieldFixture as createTextFieldFixture,
+  createFormFieldFixture as createToggleGroupFieldFixture,
+};

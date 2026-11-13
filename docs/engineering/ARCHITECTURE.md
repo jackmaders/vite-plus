@@ -21,19 +21,19 @@ src/
 │   └── routeTree.gen.ts          # Auto-generated route tree
 ├── pages/                        # Page slices composed of views and features
 │   └── <entity>/
-│       ├── api/                  # Server functions, query options, and mutation hooks
+│       ├── api/                  # Server functions, operation schemas, queries, and mutations
 │       │   ├── <entity>.functions.ts
+│       │   ├── <operation>-schema.ts
 │       │   ├── <entity>-query-options.ts
 │       │   └── use-<action>-<entity>.ts
-│       ├── model/                # Domain schemas and client-safe validation types
-│       │   └── <entity>-schema.ts
+│       ├── model/                # Domain types and client-safe domain logic
 │       ├── ui/                   # Entity page view and decomposed form/dialog components
 │       │   └── <entity>-page.tsx
 │       └── index.ts              # Public API barrel exporting page component
 └── shared/                       # Shared reusable infrastructure and primitives
     ├── auth/                     # Better Auth client, server, and session middleware
     ├── db/                       # Drizzle client, connection runtime, and table schemas
-    │   └── schema/               # Table definitions (<entity>.ts, auth.ts)
+    │   └── schema/               # Table definitions and inferred row types (<entity>.ts, auth.ts)
     ├── errors/                   # ApplicationError, transport serialization, and logging
     ├── lib/                      # Pure utilities and constants
     └── ui/                       # Reusable UI component libraries
@@ -65,6 +65,19 @@ tests/
   Otherwise, keep the design simple.
 - When exposing helpers would couple callers to changing implementation
   details, keep those helpers private. Expose the operations callers need.
+- Import directly from concrete module files within a slice. Export public slice
+  contracts exclusively from the slice root (`index.ts` or `index.{client,server}.ts`).
+  Ban internal segment barrel re-exports entirely.
+
+## Schema ownership
+
+- Keep `shared/db/schema/` limited to Drizzle table definitions and types
+  inferred directly from those tables. This layer describes persisted shape.
+- Put validation schemas for operation inputs and outputs in the owning slice's
+  `api/*-schema.ts` modules. These schemas describe caller-facing contracts and
+  may derive, narrow, or extend fields from the database table.
+- Keep domain types and logic in `model/` when they are not operation-specific
+  validation contracts.
 
 ## Dependency boundaries
 
@@ -82,12 +95,16 @@ tests/
 
 ## Routes
 
+- Follow the [route and page naming rules](CODING_STANDARDS.md#route-and-page-components).
+
 - Place TanStack Router file routes in `src/app/routes` as thin wrappers
   that delegate to `src/pages`.
 - When a route requires authentication, place it under
   `src/app/routes/_authenticated`.
 - When a route uses TanStack Query for data required on initial render,
   populate the query cache in its loader before rendering.
+- Return promises directly from data loaders; omit redundant `async () => await`
+  wrappers around dynamic imports.
 
 ## Server functions
 
@@ -105,8 +122,24 @@ tests/
 
 ## Components
 
+- For every UI addition, reuse existing application components and shadcn
+  primitives with their default styles and supported variants before adding
+  custom styling. Use the active theme's semantic tokens so switching themes
+  updates every page automatically.
+- Add custom styling only when required behavior or layout cannot be expressed
+  through those components and variants. Keep it minimal and theme-aware;
+  avoid hardcoded colors or page-specific overrides of shared component
+  appearance. Put reusable visual changes in the owning shared component.
 - Place shadcn UI primitives in `src/shared/ui/shadcn`.
 - Place reusable TanStack Form components in `src/shared/ui/form`.
+- Co-locate single-page forms, dialogs, and views inside `src/pages/<entity>/ui/`
+  to comply with Steiger architecture rules (`fsd/insignificant-slice`). Extract
+  logic into `src/features/` strictly when reused across 2 or more distinct pages.
+- Keep JSX presentation strictly in `ui/` segments; place pure utilities and domain
+  helpers in `lib/` or `model/`.
+- Structure clickable cards by rendering interactive buttons as sibling elements
+  or CSS overlay elements (`after:absolute after:inset-0`) relative to title links,
+  ensuring valid non-nested interactive HTML (`<button>` beside `<a>`).
 
 ## TanStack integration
 
@@ -234,12 +267,9 @@ function useCreateRecord() {
   boundary messaging generic so loader diagnostics do not reach the page.
 - Keep failed confirmation dialogs open with inline mutation feedback so users
   can retry.
-- Use `/error-test` to trigger known and unexpected failures with buttons.
-  `tests/browser/error-response.test.ts` verifies actual server-function
-  responses
-  through the normal browser test suite. This diagnostic page is excluded from
-  unit coverage because the browser tests exercise it against the built application.
 - Pass Zod schemas directly to `useAppForm` validators through Standard Schema.
+- Subscribe to form state using `useSelector` (replace deprecated `useStore`).
+- Parameterize form field components with explicit field generics (replace `AnyFieldApi`).
 - Use `z.input<typeof schema>` for form values. Form passes original input to
   `onSubmit`; call `schema.parse(value)` when transformed output is needed.
 - Start's `.validator(schema)` passes validated and transformed output to its

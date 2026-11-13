@@ -1,44 +1,101 @@
 import { describe, expect, it, vi } from "vite-plus/test";
 
-vi.mock(import("better-auth/react"));
-vi.mock(import("@/shared/auth/session.functions"));
+import {
+  getSessionFn,
+  hasPermission,
+  permissionMiddleware,
+  signIn,
+  signOut,
+  signUp,
+  useAuth,
+  useSession,
+} from "../index";
+
+vi.mock(
+  import("../auth.client"),
+  () =>
+    ({
+      authClient: {},
+      signIn: vi.fn<() => void>(),
+      signOut: vi.fn<() => void>(),
+      signUp: vi.fn<() => void>(),
+      useSession: vi.fn<() => void>(),
+    }) as never,
+);
+
+vi.mock(
+  import("../session.functions"),
+  () =>
+    ({
+      getSessionFn: vi.fn<() => void>(),
+    }) as never,
+);
+
+vi.mock(
+  import("../middleware"),
+  () =>
+    ({
+      permissionMiddleware: vi.fn<() => void>(),
+    }) as never,
+);
+
+vi.mock(
+  import("../permissions"),
+  () =>
+    ({
+      hasPermission: vi.fn<() => boolean>(),
+    }) as never,
+);
+
+vi.mock(
+  import("../use-auth"),
+  () =>
+    ({
+      useAuth: vi.fn<() => void>(),
+    }) as never,
+);
 
 describe("shared/auth barrel exports", () => {
-  it("exports universal client utilities from index.ts", async () => {
-    expect.assertions(5);
-
+  it("exports universal client utilities from index.ts", () => {
     // Arrange
-    const universalAuth = await import("@/shared/auth");
+    expect.assertions(4);
 
     // Assert
-    expect(universalAuth.authClient).toBeDefined();
-    expect(universalAuth.signIn).toBeDefined();
-    expect(universalAuth.signOut).toBeDefined();
-    expect(universalAuth.signUp).toBeDefined();
-    expect(universalAuth.useSession).toBeDefined();
+    expect(signIn).toBeDefined();
+    expect(signOut).toBeDefined();
+    expect(signUp).toBeDefined();
+    expect(useSession).toBeDefined();
   });
 
-  it("exports server functions from index.ts", async () => {
+  it("exports auth hook from index.ts", () => {
+    // Arrange
     expect.assertions(1);
 
-    // Arrange
-    const universalAuth = await import("@/shared/auth");
-
     // Assert
-    expect(universalAuth.getSessionFn).toBeDefined();
+    expect(useAuth).toBeDefined();
   });
 
-  it("exports client authentication utilities from index.client", async () => {
-    expect.assertions(5);
-
+  it("exports authorization helpers from index.ts", () => {
     // Arrange
-    const clientAuth = await import("@/shared/auth/index.client");
+    expect.assertions(1);
 
     // Assert
-    expect(clientAuth.authClient).toBeDefined();
-    expect(clientAuth.signIn).toBeDefined();
-    expect(clientAuth.signOut).toBeDefined();
-    expect(clientAuth.signUp).toBeDefined();
-    expect(clientAuth.useSession).toBeDefined();
+    expect(hasPermission).toBeDefined();
+  });
+
+  it("exports server functions from index.ts", () => {
+    // Arrange
+    expect.assertions(1);
+
+    // Assert
+    expect(getSessionFn).toBeDefined();
+  });
+
+  it("exports middleware from index.ts", () => {
+    // Arrange
+    expect.assertions(1);
+
+    // Assert
+    expect(permissionMiddleware).toBeDefined();
   });
 });

@@ -1,19 +1,27 @@
-import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
-import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
-import { HeadContent, Link, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
 import { useEffect } from "react";
 
-import { ServerErrorPage } from "@/pages/server-error";
+import { ErrorPage } from "@/pages/error";
+import { NotFoundPage } from "@/pages/not-found";
+import { getSessionFn, type Session } from "@/shared/auth";
 import { Toaster } from "@/shared/ui/shadcn/toast";
 
-import { Footer, Header } from "../layouts";
+import { Devtools, Footer, Header } from "../layouts";
 
 import appCss from "../styles/index.css?url";
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
-  errorComponent: ServerErrorPage,
+export interface RootRouterContext {
+  queryClient: QueryClient;
+  session?: Session | null;
+}
+
+export const Route = createRootRouteWithContext<RootRouterContext>()({
+  beforeLoad: async () => {
+    const session = await getSessionFn();
+    return { session };
+  },
+  errorComponent: ErrorPage,
   head: () => ({
     links: [
       {
@@ -34,30 +42,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
     ],
   }),
-  notFoundComponent: NotFound,
+  notFoundComponent: NotFoundPage,
   shellComponent: RootDocument,
 });
-
-function NotFound() {
-  return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-16 text-center">
-      <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-        Page Not Found
-      </h1>
-      <p className="mt-4 text-base text-muted-foreground">
-        The page you are looking for does not exist or has been moved.
-      </p>
-      <div className="mt-8">
-        <Link
-          className="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-xs transition hover:opacity-90"
-          to="/"
-        >
-          Return Home
-        </Link>
-      </div>
-    </main>
-  );
-}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   useEffect(() => {
@@ -74,23 +61,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         data-hydrated="false"
       >
         <Header />
-        {children}
+        <main className="container mx-auto flex flex-1 flex-col px-4 py-8">{children}</main>
         <Footer />
         <Toaster />
-        <TanStackDevtools
-          config={{ position: "bottom-right" }}
-          plugins={[
-            {
-              name: "Tanstack Router",
-              render: () => <TanStackRouterDevtoolsPanel />,
-            },
-            {
-              id: "react-query",
-              name: "React Query",
-              render: () => <ReactQueryDevtoolsPanel />,
-            },
-          ]}
-        />
+        <Devtools />
         <Scripts />
       </body>
     </html>

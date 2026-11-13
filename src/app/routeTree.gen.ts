@@ -12,10 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as AboutRouteImport } from './routes/about'
-import { Route as ErrorTestRouteImport } from './routes/error-test'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedTodosRouteImport } from './routes/_authenticated/todos'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiImagesSplatRouteImport } from './routes/api/images/$'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,11 +29,6 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ErrorTestRoute = ErrorTestRouteImport.update({
-  id: '/error-test',
-  path: '/error-test',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
@@ -51,56 +46,61 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiImagesSplatRoute = ApiImagesSplatRouteImport.update({
+  id: '/api/images/$',
+  path: '/api/images/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/error-test': typeof ErrorTestRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/todos': typeof AuthenticatedTodosRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/images/$': typeof ApiImagesSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
-  '/error-test': typeof ErrorTestRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/todos': typeof AuthenticatedTodosRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/images/$': typeof ApiImagesSplatRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/about': typeof AboutRoute
-  '/error-test': typeof ErrorTestRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/todos': typeof AuthenticatedTodosRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/images/$': typeof ApiImagesSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/about' | '/error-test' | '/profile' | '/todos' | '/api/auth/$'
+    '/' | '/about' | '/profile' | '/todos' | '/api/auth/$' | '/api/images/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/error-test' | '/profile' | '/todos' | '/api/auth/$'
+  to: '/' | '/about' | '/profile' | '/todos' | '/api/auth/$' | '/api/images/$'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/about'
-    | '/error-test'
     | '/_authenticated/profile'
     | '/_authenticated/todos'
     | '/api/auth/$'
+    | '/api/images/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AboutRoute: typeof AboutRoute
-  ErrorTestRoute: typeof ErrorTestRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiImagesSplatRoute: typeof ApiImagesSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -126,13 +126,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/error-test': {
-      id: '/error-test'
-      path: '/error-test'
-      fullPath: '/error-test'
-      preLoaderRoute: typeof ErrorTestRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
@@ -152,6 +145,13 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/images/$': {
+      id: '/api/images/$'
+      path: '/api/images/$'
+      fullPath: '/api/images/$'
+      preLoaderRoute: typeof ApiImagesSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -175,8 +175,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AboutRoute: AboutRoute,
-  ErrorTestRoute: ErrorTestRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiImagesSplatRoute: ApiImagesSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

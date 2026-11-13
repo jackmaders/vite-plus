@@ -23,3 +23,20 @@ specifications, and unresolved ideas out of the glossary.
 Record a decision in `docs/adr/` only when it is hard to reverse, surprising
 without context, and the result of a real trade-off. Create the directory when
 the first decision needs recording.
+
+## Decision changes
+
+When an accepted decision changes, search for its old terminology, assumptions,
+and references across documentation, the glossary, agent instructions, and
+skills. Reconcile conflicting guidance in the same change, including outdated
+examples and navigation pointers. Update or remove glossary entries whose
+meaning no longer applies.
+
+Preserve historical ADR reasoning, but mark superseded decisions in the original
+ADR's status and link to the replacement. For partially superseded decisions,
+identify which parts remain current. Record a new ADR only when the criteria
+above apply; ordinary documentation corrections do not require one.
+
+Before completion, account for each conflicting reference found: update it,
+label it as historical with a pointer to current guidance, or report an
+unresolved conflict explicitly.

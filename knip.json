@@ -1,9 +1,11 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
   "entry": [
-    "src/app/start.ts",
-    "src/app/router.tsx",
-    "src/app/routes/**/*.{ts,tsx}",
+    "src/app/start.ts!",
+    "src/app/router.tsx!",
+    "src/app/routes/**/*.{ts,tsx}!",
+    "src/**/index.ts!",
+    "src/shared/ui/shadcn/**!",
     "tests/browser/**/*.test.ts",
     "tests/vitest/worker-entry.ts",
     "tests/vitest/setup/*.ts",
@@ -12,13 +14,17 @@
     "tests/vitest/fixtures/**/*.{ts,tsx}",
     "tests/vitest/wrappers/**/*.{ts,tsx}"
   ],
-  "project": ["src/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"],
-  "ignore": ["src/shared/lib/utils.ts", "src/shared/ui/shadcn/**"],
+  "includeEntryExports": true,
+  "project": [
+    "src/**/*.{ts,tsx,css}!",
+    "!src/**/__tests__/**",
+    "!src/**/__mocks__/**",
+    "tests/**/*.{ts,tsx}"
+  ],
+  "tags": ["+public", "+internal"],
+  "ignore": [],
   "ignoreDependencies": ["cloudflare"],
-  "ignoreExportsUsedInFile": {
-    "interface": true,
-    "type": true
-  },
+  "ignoreExportsUsedInFile": false,
   "rules": {
     "binaries": "error",
     "catalog": "error",
@@ -26,15 +32,15 @@
     "cycles": "error",
     "dependencies": "off",
     "devDependencies": "off",
-    "duplicates": "error",
-    "enumMembers": "error",
-    "exports": "error",
     "files": "error",
     "namespaceMembers": "error",
+    "unlisted": "error",
+    "unresolved": "error",
+    "exports": "error",
+    "types": "error",
     "nsExports": "error",
     "nsTypes": "error",
-    "types": "error",
-    "unlisted": "error",
-    "unresolved": "error"
+    "enumMembers": "error",
+    "duplicates": "error"
   }
 }

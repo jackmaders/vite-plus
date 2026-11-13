@@ -9,16 +9,33 @@ interface MockSubscribeProps<TValue = unknown> {
 const mockForm = {
   Subscribe: vi.fn<({ children, selector }: MockSubscribeProps) => ReactElement | null>(
     ({ children, selector }: MockSubscribeProps) =>
-      children(selector({ canSubmit: true, errorMap: {}, isSubmitting: false })),
+      children(
+        selector({ canSubmit: true, errorMap: {}, isSubmitting: false, submissionAttempts: 0 }),
+      ),
   ),
   handleSubmit: vi.fn<() => Promise<void>>(async () => {
     await Promise.resolve();
   }),
   reset: vi.fn<() => void>(),
   setErrorMap: vi.fn<(map: unknown) => void>(),
+  state: {
+    canSubmit: true,
+    errorMap: {},
+    isSubmitting: false,
+    submissionAttempts: 0,
+  },
 };
 
-const mockField = {};
+const mockField = {
+  form: mockForm,
+  handleBlur: vi.fn<() => void>(),
+  handleChange: vi.fn<(value: unknown) => void>(),
+  name: "email",
+  state: {
+    meta: { errors: [], isBlurred: false, isTouched: false, isValid: true },
+    value: "",
+  },
+};
 
 const contexts = {
   fieldContext: createContext(null),

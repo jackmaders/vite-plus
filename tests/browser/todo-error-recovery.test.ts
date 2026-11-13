@@ -21,7 +21,7 @@ test("retries a create draft after editing a field following a real duplicate-ti
   expect(body).toContain("TODO_CREATE_FAILED");
   await expect(form.alert).toHaveText("Todo item could not be created.");
   await expect(form.titleInput).toHaveValue(EXISTING_TITLE);
-  await expect(form.submitButton).toBeDisabled();
+  await expect(form.submitButton).toBeEnabled();
 
   // Act
   await retryCreateAfterConflictResolved(todosPage);
@@ -46,7 +46,7 @@ test("keeps an update draft open after a real constraint failure and allows reco
   expect(body).toContain("INTERNAL_SERVER_ERROR");
   await expect(dialog.alert).toHaveText("Something went wrong.");
   await expect(dialog.titleInput).toHaveValue(EXISTING_TITLE);
-  await expect(dialog.submitButton).toBeDisabled();
+  await expect(dialog.submitButton).toBeEnabled();
 
   // Act
   await retryUpdate(dialog);

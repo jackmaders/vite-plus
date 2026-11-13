@@ -14,7 +14,7 @@ interface MockServerFnBuilder {
     fn: (args: { context: Record<string, unknown>; data: unknown }) => unknown,
   ) => (opts?: { data?: unknown }) => Promise<unknown>;
   middleware: (middlewareList: MiddlewareOption[]) => MockServerFnBuilder;
-  validator: (val: unknown) => MockServerFnBuilder;
+  validator: (val: { parse: (data: unknown) => unknown }) => MockServerFnBuilder;
 }
 
 interface MockMiddlewareBuilder {
@@ -24,6 +24,7 @@ interface MockMiddlewareBuilder {
 
 function createMockServerFn(): MockServerFnBuilder {
   const middlewares: MiddlewareOption[] = [];
+  let validator: ((data: unknown) => unknown) | undefined = undefined;
 
   const builder: MockServerFnBuilder = {
     handler: (fn) => async (opts) => {
@@ -43,13 +44,17 @@ function createMockServerFn(): MockServerFnBuilder {
           });
         }
       }
-      return fn({ context, data: opts?.data });
+      const data = validator ? validator(opts?.data) : opts?.data;
+      return fn({ context, data });
     },
     middleware: (list) => {
       middlewares.push(...list);
       return builder;
     },
-    validator: () => builder,
+    validator: (schema) => {
+      validator = (data) => schema.parse(data);
+      return builder;
+    },
   };
   return builder;
 }

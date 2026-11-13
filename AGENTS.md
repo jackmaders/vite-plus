@@ -27,81 +27,35 @@ release. Add a tool name to select part of the graph. For example, run
 
 <!--VITE PLUS END-->
 
-## Context
+## Universal Operating Directives
 
-- When adding or changing project-specific concepts or repo-defined terminology,
-  read and update [GLOSSARY.md](GLOSSARY.md) in the same change. Follow
-  [domain doc guidance](docs/agents/domain.md).
-- When naming server or client modules, exports, functions, variables, or SQL
-  columns, or changing database schemas, validation schemas, queries, component
-  props, error handling, object design, code organization, comments, or function
-  signatures, read [coding standards](docs/engineering/CODING_STANDARDS.md).
-- When designing module interfaces, adapting vendor SDKs, adding routes, placing
-  UI or form primitives, or changing route authentication, loader prefetching,
-  or server functions, read [architecture](docs/engineering/ARCHITECTURE.md).
-- When working with TanStack Start, Router, Query, or Form, first read
-  [architecture](docs/engineering/ARCHITECTURE.md). Follow its integration
-  guidance when managed skills conflict.
-- When implementing new behavior or writing, reviewing, or organizing tests, read
-  [testing](docs/engineering/TESTING.md).
-- When organizing FSD layers, slices, or segments, defining slice public APIs,
-  resolving cross-imports, or placing code or static assets, read
-  [feature-sliced-design](.agents/skills/feature-sliced-design/SKILL.md).
-- When adding, styling, composing, or debugging shadcn/ui components,
-  registries, or presets, read [shadcn](.agents/skills/shadcn/SKILL.md).
-- When auditing UI design, UX, or accessibility against web interface
-  guidelines, read
-  [web-design-guidelines](.agents/skills/web-design-guidelines/SKILL.md).
-- When auditing or optimizing page load performance, interaction latency, Core
-  Web Vitals, or Lighthouse scores, read
-  [web-perf](.agents/skills/web-perf/SKILL.md).
-- When configuring TanStack Start, SSR, streaming, server functions,
-  middleware, or API routes, read
-  [tanstack-start](.agents/skills/tanstack-start/SKILL.md).
-- When configuring TanStack Router, route trees, file-based routes, search
-  params, loaders, or navigation, read
-  [tanstack-router](.agents/skills/tanstack-router/SKILL.md).
-- When managing server state with TanStack Query, query keys, caching,
-  prefetching, mutations, optimistic updates, or infinite queries, read
-  [tanstack-query](.agents/skills/tanstack-query/SKILL.md).
-- When building forms with TanStack Form, field or form validation, array or
-  linked fields, or schema adapters, read
-  [tanstack-form](.agents/skills/tanstack-form/SKILL.md).
-- When building tables or datagrids with TanStack Table, column definitions,
-  sorting, filtering, pagination, grouping, or row selection, read
-  [tanstack-table](.agents/skills/tanstack-table/SKILL.md).
-- When configuring TanStack Devtools panels or custom devtools plugins, read
-  [tanstack-devtools](.agents/skills/tanstack-devtools/SKILL.md).
-- When configuring Better Auth server or client instances, database adapters,
-  sessions, OAuth, or plugins, read
-  [better-auth-best-practices](.agents/skills/better-auth-best-practices/SKILL.md).
-- When configuring Better Auth email and password authentication, email
-  verification, password reset flows, or password hashing, read
-  [email-and-password-best-practices](.agents/skills/email-and-password-best-practices/SKILL.md).
-- When hardening Better Auth with rate limiting, secret management, CSRF
-  protection, trusted origins, cookie security, token encryption, IP tracking,
-  or audit logging, read
-  [better-auth-security-best-practices](.agents/skills/better-auth-security-best-practices/SKILL.md).
-- When defining or querying Drizzle schemas, tables, indexes, relations, joins,
-  or inferred types, read [drizzle](.agents/skills/drizzle/SKILL.md).
-- When performing a security review or applying secure-by-default TypeScript and
-  JavaScript practices, read
-  [security-best-practices](.agents/skills/security-best-practices/SKILL.md).
-- When configuring Vite build options, plugins, SSR, or Rolldown migration, read
-  [vite](.agents/skills/vite/SKILL.md).
-- When selecting Cloudflare products or designing architecture across Workers,
-  storage, networking, AI, or security, read
-  [cloudflare](.agents/skills/cloudflare/SKILL.md).
-- When writing, reviewing, or configuring Cloudflare Workers, bindings, or
-  runtime APIs, read
-  [workers-best-practices](.agents/skills/workers-best-practices/SKILL.md).
-- When running or troubleshooting Wrangler CLI commands, local dev, previews,
-  deployments, or `wrangler.jsonc`, read
-  [wrangler](.agents/skills/wrangler/SKILL.md).
-- When writing or configuring Vitest tests, mocks, fixtures, filtering, or
-  coverage, read [vitest](.agents/skills/vitest/SKILL.md).
-- When writing, debugging, or configuring Playwright browser tests, component
-  tests, API tests, visual tests, accessibility tests, or security tests, read
-  [playwright-best-practices](.agents/skills/playwright-best-practices/SKILL.md).
-- When automating browser interactions or inspecting live web pages from the
-  CLI, read [playwright-cli](.agents/skills/playwright-cli/SKILL.md).
+### Configuration Gate
+
+- Change project configuration strictly with explicit user approval for the proposed change. This applies to `package.json`, dependencies, build scripts, linter rules, test configurations, deployment definitions, and CI pipelines. Implement features and repairs within existing settings, or request user authorization with a clear explanation of why a configuration modification is required.
+
+### Command Hygiene & Sandbox Auto-Approval
+
+- Standalone prefix-matchable binaries only (`rg`, `vp`, `vpr`, `git`).
+- Zero shell chaining: Never use pipes (`|`), `xargs`, `&&`, `;`, `||`, subshells `$()`, or backticks.
+- For file inspection and edits: Use native tools (`read_file`, `edit_file`, `write_file`) with absolute workspace paths instead of shell commands (`cat`, `head`, `tail`, `ls`).
+- For code search: Use `rg "<pattern>" <path>` directly instead of `find | grep` or `find | xargs`.
+- Do not read or write `/tmp/` files; subagents return all findings, summaries, and status reports directly via `send_message`.
+- Use workspace-relative paths (`src/...`, `tests/...`, `docs/...`, `AGENTS.md`) for all command arguments passed to `run_command` binaries (`git`, `vp`, `vpr`, `rg`).
+- Validate full repository health with `vpr check:full`, full CI parity with `vpr check:ci`, and complete test coverage with `vp test --coverage` (do not pass `--coverage` on single test paths).
+- Maintain standard sandbox enforcement (`BypassSandbox: false`) at all times.
+- Preserve Herdr worktree integrity: worktrees contain `.git` pointer files; execute git status or inspection commands directly within the active workspace root without traversing parent directories.
+
+---
+
+## Sharp Context Pointers
+
+- Consult only the specific pointer matching the active task. When identifying applicable guidelines or answering routing requests, cite only the positively applicable documents matching the branch; omit unselected or unrelated skills.
+- When managing development workflow or pull requests, read [workflow](docs/agents/workflow.md).
+- When updating architecture decisions, read [domain](docs/agents/domain.md).
+- When defining domain terminology, read [glossary](GLOSSARY.md).
+- When reviewing coding conventions or error structures, read [coding standards](docs/engineering/CODING_STANDARDS.md).
+- When designing routes, FSD slices, or server functions, read [architecture](docs/engineering/ARCHITECTURE.md).
+- When working with TanStack Start, Router, Query, or Form, first read [architecture](docs/engineering/ARCHITECTURE.md). Follow its integration guidance when managed skills conflict.
+- When writing unit tests or coverage assertions, read [testing](docs/engineering/TESTING.md).
+- When managing GitHub issues or specifications, read [issue tracker](docs/agents/issue-tracker.md).
+- When assigning triage roles, read [triage labels](docs/agents/triage-labels.md).

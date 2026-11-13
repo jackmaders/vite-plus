@@ -4,7 +4,7 @@
 
 Prerequisites:
 
-- [Vite+](https://viteplus.dev/guide/) 1.3.0: validate with `vp --version`.
+- [Vite+](https://viteplus.dev/guide/) 1.5.1: validate with `vp --version`.
 - [Git](https://git-scm.com/downloads) 2.28 or newer: validate with `git --version`.
 - [GitHub CLI](https://cli.github.com/) 2.x: validate with `gh --version` and authenticate with `gh auth login`.
 - [jq](https://jqlang.org/): validate with `jq --version`.
@@ -37,7 +37,10 @@ Generate a local secret, migrate local D1, and start development:
 sed "s/<your-generated-secret>/$(openssl rand -hex 32)/" .dev.vars.example > .dev.vars
 
 # Apply local database migrations.
-vp run db:migrate --local
+vpr db:migrate --local
+
+# Optional: seed initial local data when a seed script is configured.
+vpr db:seed
 
 # Start the development server.
 vp dev
@@ -47,9 +50,15 @@ vp dev
 # The local secret in .dev.vars is shared by development and preview.
 
 # Build for the local preview origin and migrate its local D1 binding.
-CLOUDFLARE_ENV=preview vp run build
-vp run db:migrate --local --env preview
+CLOUDFLARE_ENV=preview vp build
+vpr db:migrate --local --env preview
 vp preview
+```
+
+Validate full CI parity locally before opening or updating a pull request:
+
+```bash
+vpr check:ci
 ```
 
 ## Cloudflare Workers production setup
@@ -79,7 +88,7 @@ Run once from Bash. Enter your account ID and workers.dev subdomain when prompte
 
   # Create and bind production D1, retaining the existing migration settings.
   pnpm exec wrangler d1 create "${WORKER_NAME}-db" --binding DB --update-config --env production
-  vp run cf:generate
+  vpr cf:generate
 
   # Generate a production auth secret; remove the temporary file on exit.
   ENV_FILE="$(mktemp "${TMPDIR:-/tmp}/worker-secrets.XXXXXX")"
@@ -88,11 +97,11 @@ Run once from Bash. Enter your account ID and workers.dev subdomain when prompte
   install -m 600 "$ENV_FILE" .dev.vars
 
   # Build and validate the deployment without changing remote resources.
-  CLOUDFLARE_ENV=production vp run build
+  CLOUDFLARE_ENV=production vp build
   pnpm exec wrangler deploy --dry-run --secrets-file "$ENV_FILE"
 
   # Migrate production D1 and deploy code with the generated secret.
-  vp run db:migrate --remote --env production
+  vpr db:migrate --remote --env production
   pnpm exec wrangler deploy --secrets-file "$ENV_FILE"
 )
 ```
@@ -113,13 +122,16 @@ gh repo edit --default-branch main \
   --enable-merge-commit=false --enable-rebase-merge=false
 ```
 
-Apply the repository settings and main-branch ruleset:
+Apply the repository settings to restrict pull request creation to collaborators:
 
 ```bash
 gh api --method PATCH 'repos/{owner}/{repo}' --input .github/settings.json
+```
+
+Apply the main-branch ruleset:
+
+```bash
 gh api --method POST 'repos/{owner}/{repo}/rulesets' \
   --input .github/rulesets/protect-main.json
 gh api 'repos/{owner}/{repo}/rules/branches/main'
 ```
-
-AI reviews require a Gemini API key stored as a repository secret: `gh secret set GEMINI_API_KEY`.

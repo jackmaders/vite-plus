@@ -14,12 +14,12 @@ function SubmitButton({
   const form = useFormContext();
 
   return (
-    <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting] as const}>
-      {([canSubmit, isSubmitting]) => (
+    <form.Subscribe selector={(state) => state.isSubmitting}>
+      {(isSubmitting) => (
         <Button
           {...props}
           aria-busy={isSubmitting}
-          disabled={Boolean(disabled) || !canSubmit || isSubmitting}
+          disabled={Boolean(disabled) || isSubmitting}
           type={type}
         >
           {isSubmitting ? (
