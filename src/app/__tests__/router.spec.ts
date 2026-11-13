@@ -70,6 +70,17 @@ describe("router auth route matching", () => {
     // Assert
     expect(matches.map((match) => match.routeId)).toStrictEqual(["__root__", "/api/auth/$"]);
   });
+
+  it("matches api images splat routes within the root document", () => {
+    expect.assertions(1);
+
+    // Act
+    const router = getRouter();
+    const matches = router.matchRoutes("/api/images/todos/todo-1/pic.webp");
+
+    // Assert
+    expect(matches.map((match) => match.routeId)).toStrictEqual(["__root__", "/api/images/$"]);
+  });
 });
 
 describe("router instance isolation", () => {

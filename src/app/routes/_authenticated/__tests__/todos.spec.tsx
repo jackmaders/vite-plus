@@ -130,7 +130,9 @@ describe("authenticated todos route", () => {
     const newTodo = await screen.findByText("New Todo");
 
     // Assert
-    expect(createTodoFn).toHaveBeenCalledWith({ data: { description: "", title: "New Todo" } });
+    expect(createTodoFn).toHaveBeenCalledWith({
+      data: { description: "", imageKey: null, title: "New Todo" },
+    });
     expect(newTodo).toBeDefined();
   });
 });

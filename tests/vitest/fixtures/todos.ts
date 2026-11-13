@@ -5,6 +5,7 @@ const TEST_TODO: Todo = {
   createdAt: new Date("2026-10-14T00:00:00Z"),
   description: "Test Description",
   id: "todo-1",
+  imageKey: null,
   title: "Test Todo",
   updatedAt: new Date("2026-10-14T00:00:00Z"),
   userId: "user-1",

@@ -7,7 +7,14 @@ import { getDb } from "@/shared/db/index.server";
 import { user } from "@/shared/db/schema";
 import { ApplicationError } from "@/shared/errors";
 
-import { createTodo, deleteTodo, getTodos, updateTodo } from "../../todos-service";
+import {
+  createTodo,
+  deleteTodo,
+  getTodos,
+  promoteTempTodoImage,
+  updateTodo,
+  uploadTempTodoImage,
+} from "../../todos-service";
 
 beforeEach(async () => {
   const db = getDb(env.DB);
@@ -247,5 +254,186 @@ describe("todos-service deleteTodo", () => {
 
     // Assert
     await expect(action).rejects.toThrow(new ApplicationError("TODO_NOT_FOUND"));
+  });
+
+  it("deletes the associated R2 image when deleting a todo that has one", async () => {
+    expect.assertions(2);
+
+    // Arrange
+    const db = getDb(env.DB);
+    const { tempKey } = await uploadTempTodoImage(
+      { base64: "data:image/webp;base64,d2VicA==", contentType: "image/webp" },
+      { images: env.IMAGES, userId: "user-a" },
+    );
+    const created = await createTodo(
+      { imageKey: tempKey, title: "Todo with image" },
+      { db, images: env.IMAGES, userId: "user-a" },
+    );
+
+    // Act
+    await deleteTodo(created.id, { db, images: env.IMAGES, userId: "user-a" });
+
+    // Assert
+    expect(created.imageKey).not.toBeNull();
+    await expect(env.IMAGES.get(String(created.imageKey))).resolves.toBeNull();
+  });
+});
+
+describe("todos-service image lifecycle", () => {
+  it("uploads a temporary todo image into the user temp prefix", async () => {
+    expect.assertions(3);
+
+    // Act
+    const { tempKey } = await uploadTempTodoImage(
+      { base64: "data:image/webp;base64,d2VicA==", contentType: "image/webp" },
+      { images: env.IMAGES, userId: "user-a" },
+    );
+    const stored = await env.IMAGES.get(tempKey);
+
+    // Assert
+    expect(tempKey.startsWith("temp/user-a/")).toBe(true);
+    expect(stored).not.toBeNull();
+    expect(stored?.httpMetadata?.contentType).toBe("image/webp");
+  });
+
+  it("returns missing or non-user temp keys unchanged in promoteTempTodoImage", async () => {
+    expect.assertions(3);
+
+    // Act
+    const ignored = await promoteTempTodoImage("todos/todo-1/pic.webp", {
+      images: env.IMAGES,
+      todoId: "todo-1",
+      userId: "user-a",
+    });
+    const missing = await promoteTempTodoImage("temp/user-a/missing.webp", {
+      images: env.IMAGES,
+      todoId: "todo-1",
+      userId: "user-a",
+    });
+    const nullResult = await promoteTempTodoImage(null, {
+      todoId: "todo-1",
+      userId: "user-a",
+    });
+
+    // Assert
+    expect(ignored).toBe("todos/todo-1/pic.webp");
+    expect(missing).toBe("temp/user-a/missing.webp");
+    expect(nullResult).toBeNull();
+  });
+
+  it("promotes temp image on create and deletes temp key", async () => {
+    expect.assertions(3);
+
+    // Arrange
+    const db = getDb(env.DB);
+    const { tempKey } = await uploadTempTodoImage(
+      { base64: "data:image/webp;base64,d2VicA==", contentType: "image/webp" },
+      { images: env.IMAGES, userId: "user-a" },
+    );
+
+    // Act
+    const created = await createTodo(
+      { imageKey: tempKey, title: "With image" },
+      { db, images: env.IMAGES, userId: "user-a" },
+    );
+
+    // Assert
+    expect(created.imageKey?.startsWith(`todos/${created.id}/`)).toBe(true);
+    await expect(env.IMAGES.get(tempKey)).resolves.toBeNull();
+    await expect(env.IMAGES.get(String(created.imageKey))).resolves.not.toBeNull();
+  });
+
+  it("cleans up newly promoted image when create fails on duplicate title", async () => {
+    expect.assertions(2);
+
+    // Arrange
+    const db = getDb(env.DB);
+    await createTodo({ title: "Duplicate image title" }, { db, userId: "user-a" });
+    const { tempKey } = await uploadTempTodoImage(
+      { base64: "data:image/webp;base64,d2VicA==", contentType: "image/webp" },
+      { images: env.IMAGES, userId: "user-a" },
+    );
+
+    // Act
+    const action = createTodo(
+      { imageKey: tempKey, title: "Duplicate image title" },
+      { db, images: env.IMAGES, userId: "user-a" },
+    );
+
+    // Assert
+    await expect(action).rejects.toThrow(new ApplicationError("TODO_CREATE_FAILED"));
+    const remaining = await env.IMAGES.list();
+    expect(remaining.objects).toHaveLength(0);
+  });
+
+  it("replaces and preserves images cleanly on updateTodo", async () => {
+    expect.assertions(3);
+
+    // Arrange
+    const db = getDb(env.DB);
+    const firstUpload = await uploadTempTodoImage(
+      { base64: "data:image/webp;base64,d2VicA==", contentType: "image/webp" },
+      { images: env.IMAGES, userId: "user-a" },
+    );
+    const created = await createTodo(
+      { imageKey: firstUpload.tempKey, title: "Updatable image todo" },
+      { db, images: env.IMAGES, userId: "user-a" },
+    );
+    const firstPermanentKey = String(created.imageKey);
+    const secondUpload = await uploadTempTodoImage(
+      { base64: "data:image/webp;base64,d2VicA==", contentType: "image/webp" },
+      { images: env.IMAGES, userId: "user-a" },
+    );
+
+    // Act
+    const kept = await updateTodo(
+      created.id,
+      { imageKey: firstPermanentKey },
+      { db, images: env.IMAGES, userId: "user-a" },
+    );
+    const replaced = await updateTodo(
+      created.id,
+      { imageKey: secondUpload.tempKey },
+      { db, images: env.IMAGES, userId: "user-a" },
+    );
+
+    // Assert
+    expect(kept.imageKey).toBe(firstPermanentKey);
+    expect(replaced.imageKey?.startsWith(`todos/${created.id}/`)).toBe(true);
+    await expect(env.IMAGES.get(firstPermanentKey)).resolves.toBeNull();
+  });
+
+  it("clears existing image on updateTodo and throws when todo is missing", async () => {
+    expect.assertions(3);
+
+    // Arrange
+    const db = getDb(env.DB);
+    const upload = await uploadTempTodoImage(
+      { base64: "data:image/webp;base64,d2VicA==", contentType: "image/webp" },
+      { images: env.IMAGES, userId: "user-a" },
+    );
+    const created = await createTodo(
+      { imageKey: upload.tempKey, title: "Clearable image todo" },
+      { db, images: env.IMAGES, userId: "user-a" },
+    );
+    const oldKey = String(created.imageKey);
+
+    // Act
+    const cleared = await updateTodo(
+      created.id,
+      { imageKey: null },
+      { db, images: env.IMAGES, userId: "user-a" },
+    );
+
+    // Assert
+    expect(cleared.imageKey).toBeNull();
+    await expect(env.IMAGES.get(oldKey)).resolves.toBeNull();
+    await expect(
+      updateTodo(
+        "non-existent-id",
+        { imageKey: null },
+        { db, images: env.IMAGES, userId: "user-a" },
+      ),
+    ).rejects.toThrow(new ApplicationError("TODO_NOT_FOUND"));
   });
 });

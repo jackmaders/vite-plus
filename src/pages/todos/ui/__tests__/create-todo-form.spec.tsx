@@ -1,22 +1,38 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import imageCompression from "browser-image-compression";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { getRouter } from "@/app/router";
 import { ApplicationError, applicationErrorAdapter } from "@/shared/errors";
+import { compressImage } from "@/shared/lib/compress-image.client";
 import { toast } from "@/shared/ui/shadcn/toast";
 import { retryFailedSave } from "@test/vitest/fixtures/form-submissions";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
 import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
 
-import { createTodoFn } from "../../api/todos.functions";
+import { createTodoFn, uploadTodoImageFn } from "../../api/todos.functions";
 import { CreateTodoForm } from "../create-todo-form";
 
 vi.mock(import("../../api/todos.functions"));
+vi.mock(import("@/shared/lib/compress-image.client"));
+vi.mock(import("browser-image-compression"));
 vi.mock(import("@/shared/ui/shadcn/toast"));
+
+function createDeferred<TValue>() {
+  const holder: { resolve?: (value: TValue) => void } = {};
+  const promise = new Promise<TValue>((resolve) => {
+    holder.resolve = resolve;
+  });
+  return { promise, resolve: (value: TValue) => holder.resolve?.(value) };
+}
 
 beforeEach(() => {
   vi.mocked(createTodoFn).mockReset().mockResolvedValue(TEST_TODO);
+  vi.mocked(compressImage).mockImplementation(async (file) => await Promise.resolve(file));
+  vi.mocked(imageCompression.getDataUrlFromFile).mockResolvedValue(
+    "data:image/webp;base64,d2VicA==",
+  );
 });
 
 describe("create todo form", () => {
@@ -31,7 +47,7 @@ describe("create todo form", () => {
 
     // Assert
     expect(createTodoFn).toHaveBeenCalledWith({
-      data: { description: "New Description", title: "New Todo" },
+      data: { description: "New Description", imageKey: null, title: "New Todo" },
     });
     await waitFor(() => {
       expect({
@@ -51,7 +67,9 @@ describe("create todo form", () => {
     await fillAndSubmit(user, "Title Only");
 
     // Assert
-    expect(createTodoFn).toHaveBeenCalledWith({ data: { description: "", title: "Title Only" } });
+    expect(createTodoFn).toHaveBeenCalledWith({
+      data: { description: "", imageKey: null, title: "Title Only" },
+    });
     await waitFor(() => {
       expect(title.value).toBe("");
     });
@@ -105,7 +123,7 @@ describe("create todo form", () => {
       expect(title.value).toBe("");
     });
     expect(createTodoFn).toHaveBeenLastCalledWith({
-      data: { description: " revised", title: "Draft title" },
+      data: { description: " revised", imageKey: null, title: "Draft title" },
     });
   });
 
@@ -146,6 +164,41 @@ describe("create todo form", () => {
     expect(submit.disabled).toBe(false);
     expect(feedback).toBeDefined();
     expect(createTodoFn).not.toHaveBeenCalled();
+  });
+
+  it("disables submit while an image is uploading and submits the uploaded tempKey", async () => {
+    expect.assertions(4);
+
+    // Arrange
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:http://localhost/create-preview");
+    vi.spyOn(URL, "revokeObjectURL").mockReturnValue();
+    const uploadDeferred = createDeferred<{ tempKey: string }>();
+    vi.mocked(uploadTodoImageFn).mockImplementationOnce(async () => await uploadDeferred.promise);
+    const { user } = renderCreateForm();
+    const file = new File(["img"], "todo.png", { type: "image/png" });
+
+    // Act
+    await user.type(screen.getByRole("textbox", { name: "Title" }), "Todo with image");
+    await user.upload(screen.getByLabelText<HTMLInputElement>("Image"), file);
+
+    // Assert uploading state
+    const uploadingButton = await screen.findByRole<HTMLButtonElement>("button", {
+      name: "Uploading image…",
+    });
+    expect(uploadingButton.disabled).toBe(true);
+
+    // Finish upload and submit
+    uploadDeferred.resolve({ tempKey: "temp/user-1/todo.webp" });
+    const readyButton = await screen.findByRole<HTMLButtonElement>("button", { name: "Add Todo" });
+    expect(readyButton.disabled).toBe(false);
+
+    await user.click(readyButton);
+    expect(createTodoFn).toHaveBeenCalledWith({
+      data: { description: "", imageKey: "temp/user-1/todo.webp", title: "Todo with image" },
+    });
+    await waitFor(() => {
+      expect(screen.getByRole<HTMLInputElement>("textbox", { name: "Title" }).value).toBe("");
+    });
   });
 });
 

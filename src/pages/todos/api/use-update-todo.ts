@@ -3,8 +3,8 @@ import { useServerFn } from "@tanstack/react-start";
 
 import type { Todo } from "@/shared/db";
 
-import type { UpdateTodoInput } from "../model/todo-schema";
 import { todoKeys } from "./todo-query-options";
+import type { UpdateTodoInput } from "./todo-schema";
 import { updateTodoFn } from "./todos.functions";
 
 type UpdateTodoMutationOptions = Omit<

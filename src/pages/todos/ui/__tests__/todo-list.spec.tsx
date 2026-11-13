@@ -128,4 +128,22 @@ describe("todo list items rendering in table", () => {
     expect(screen.getAllByRole("button", { name: "Edit todo" })).toHaveLength(2);
     expect(screen.getAllByRole("button", { name: "Delete todo" })).toHaveLength(2);
   });
+
+  it("renders a thumbnail image when todo has a non-null imageKey", () => {
+    expect.assertions(2);
+
+    // Arrange
+    const todoWithImage = {
+      ...firstTodo,
+      imageKey: "todos/todo-1/thumb.webp",
+    };
+
+    // Act
+    render(<TodoList todos={[todoWithImage, secondTodo]} />);
+    const thumbnail = screen.getByAltText<HTMLImageElement>(firstTodo.title);
+
+    // Assert
+    expect(thumbnail.getAttribute("src")).toBe("/api/images/todos/todo-1/thumb.webp");
+    expect(screen.queryByAltText(secondTodo.title)).toBeNull();
+  });
 });

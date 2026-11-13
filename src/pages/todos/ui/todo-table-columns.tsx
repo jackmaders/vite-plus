@@ -2,6 +2,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import { ArrowUpDown } from "lucide-react";
 
 import type { Todo } from "@/shared/db";
+import { getImageUrl } from "@/shared/images";
 import type { DataTableFeatures } from "@/shared/ui/data-table";
 import { Badge } from "@/shared/ui/shadcn/badge";
 import { Button } from "@/shared/ui/shadcn/button";
@@ -19,14 +20,21 @@ const todoTableColumns = columnHelper.columns([
     header: "Status",
   }),
   columnHelper.accessor("title", {
-    cell: ({ row, getValue }) => (
-      <div className="flex items-center gap-2">
-        <span>{getValue()}</span>
-        <Badge variant={row.original.completed ? "secondary" : "outline"}>
-          {row.original.completed ? "Done" : "Pending"}
-        </Badge>
-      </div>
-    ),
+    cell: ({ row, getValue }) => {
+      const imageUrl = getImageUrl(row.original.imageKey);
+
+      return (
+        <div className="flex items-center gap-2">
+          {imageUrl === null ? null : (
+            <img alt={row.original.title} className="size-8 rounded object-cover" src={imageUrl} />
+          )}
+          <span>{getValue()}</span>
+          <Badge variant={row.original.completed ? "secondary" : "outline"}>
+            {row.original.completed ? "Done" : "Pending"}
+          </Badge>
+        </div>
+      );
+    },
     header: ({ column }) => (
       <Button
         variant="ghost"

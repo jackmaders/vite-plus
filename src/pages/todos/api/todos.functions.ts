@@ -6,8 +6,9 @@ import {
   createTodoInputSchema,
   deleteTodoInputSchema,
   updateTodoInputSchema,
-} from "../model/todo-schema";
-import { createTodo, deleteTodo, getTodos, updateTodo } from "./todos-service";
+  uploadTodoImageInputSchema,
+} from "./todo-schema";
+import { createTodo, deleteTodo, getTodos, updateTodo, uploadTempTodoImage } from "./todos-service";
 
 const getTodosFn = createServerFn({ method: "GET" })
   .middleware([permissionMiddleware("todos:read")])
@@ -30,4 +31,11 @@ const deleteTodoFn = createServerFn({ method: "POST" })
   .validator(deleteTodoInputSchema)
   .handler(async ({ context, data }) => await deleteTodo(data.id, { userId: context.user.id }));
 
-export { createTodoFn, deleteTodoFn, getTodosFn, updateTodoFn };
+const uploadTodoImageFn = createServerFn({ method: "POST" })
+  .middleware([permissionMiddleware("todos:create")])
+  .validator(uploadTodoImageInputSchema)
+  .handler(
+    async ({ context, data }) => await uploadTempTodoImage(data, { userId: context.user.id }),
+  );
+
+export { createTodoFn, deleteTodoFn, getTodosFn, updateTodoFn, uploadTodoImageFn };

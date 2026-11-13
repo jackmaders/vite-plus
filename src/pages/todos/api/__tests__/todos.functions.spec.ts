@@ -6,8 +6,20 @@ import { ApplicationError } from "@/shared/errors";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
 
-import { createTodo, deleteTodo, getTodos, updateTodo } from "../todos-service";
-import { createTodoFn, deleteTodoFn, getTodosFn, updateTodoFn } from "../todos.functions";
+import {
+  createTodo,
+  deleteTodo,
+  getTodos,
+  updateTodo,
+  uploadTempTodoImage,
+} from "../todos-service";
+import {
+  createTodoFn,
+  deleteTodoFn,
+  getTodosFn,
+  updateTodoFn,
+  uploadTodoImageFn,
+} from "../todos.functions";
 
 vi.mock(import("@tanstack/react-start"));
 vi.mock(import("@/shared/auth/session.server"));
@@ -201,5 +213,39 @@ describe("todos functions deleteTodoFn", () => {
     // Assert
     await expect(action).rejects.toMatchObject({ code: "USER_FORBIDDEN", statusCode: 403 });
     expect(deleteTodo).not.toHaveBeenCalled();
+  });
+});
+
+describe("todos functions uploadTodoImageFn", () => {
+  it("uploads a temporary todo image for an authenticated user", async () => {
+    expect.assertions(3);
+
+    // Arrange
+    const uploadInput = { base64: "data:image/webp;base64,AAAA", contentType: "image/webp" };
+    vi.mocked(uploadTempTodoImage).mockResolvedValueOnce({ tempKey: "temp/user-1/pic.webp" });
+
+    // Act
+    const result = await uploadTodoImageFn({ data: uploadInput });
+
+    // Assert
+    expect(hasPermission).toHaveBeenCalledWith("user", "todos:create");
+    expect(uploadTempTodoImage).toHaveBeenCalledWith(uploadInput, { userId: TEST_SESSION.user.id });
+    expect(result).toStrictEqual({ tempKey: "temp/user-1/pic.webp" });
+  });
+
+  it("rejects uploadTodoImageFn with USER_FORBIDDEN when permission is denied", async () => {
+    expect.assertions(2);
+
+    // Arrange
+    vi.mocked(hasPermission).mockReturnValueOnce(false);
+
+    // Act
+    const action = uploadTodoImageFn({
+      data: { base64: "data:image/webp;base64,AAAA", contentType: "image/webp" },
+    });
+
+    // Assert
+    await expect(action).rejects.toMatchObject({ code: "USER_FORBIDDEN", statusCode: 403 });
+    expect(uploadTempTodoImage).not.toHaveBeenCalled();
   });
 });

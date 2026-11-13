@@ -4,14 +4,19 @@ import {
   createTodoInputSchema,
   deleteTodoInputSchema,
   updateTodoInputSchema,
+  uploadTodoImageInputSchema,
 } from "../todo-schema";
 
 describe("create todo input schema valid inputs", () => {
   it("parses valid input and trims title", () => {
-    expect.assertions(2);
+    expect.assertions(3);
 
     // Arrange
-    const rawInput = { description: "Paperwork", title: "  Clean desk  " };
+    const rawInput = {
+      description: "Paperwork",
+      imageKey: "temp/user-1/pic.webp",
+      title: "  Clean desk  ",
+    };
 
     // Act
     const parsed = createTodoInputSchema.parse(rawInput);
@@ -19,13 +24,14 @@ describe("create todo input schema valid inputs", () => {
     // Assert
     expect(parsed.title).toBe("Clean desk");
     expect(parsed.description).toBe("Paperwork");
+    expect(parsed.imageKey).toBe("temp/user-1/pic.webp");
   });
 
-  it("parses valid input with null description", () => {
-    expect.assertions(2);
+  it("parses valid input with null description and null imageKey", () => {
+    expect.assertions(3);
 
     // Arrange
-    const rawInput = { description: null, title: "Buy milk" };
+    const rawInput = { description: null, imageKey: null, title: "Buy milk" };
 
     // Act
     const parsed = createTodoInputSchema.parse(rawInput);
@@ -33,6 +39,7 @@ describe("create todo input schema valid inputs", () => {
     // Assert
     expect(parsed.title).toBe("Buy milk");
     expect(parsed.description).toBeNull();
+    expect(parsed.imageKey).toBeNull();
   });
 });
 
@@ -85,13 +92,14 @@ describe("create todo input schema invalid inputs", () => {
 
 describe("update todo input schema valid inputs", () => {
   it("parses valid update input with all fields provided", () => {
-    expect.assertions(4);
+    expect.assertions(5);
 
     // Arrange
     const rawInput = {
       data: {
         completed: true,
         description: "New desc",
+        imageKey: "todos/todo-1/pic.webp",
         title: "  New title  ",
       },
       id: "todo-1",
@@ -105,10 +113,11 @@ describe("update todo input schema valid inputs", () => {
     expect(parsed.data.title).toBe("New title");
     expect(parsed.data.description).toBe("New desc");
     expect(parsed.data.completed).toBe(true);
+    expect(parsed.data.imageKey).toBe("todos/todo-1/pic.webp");
   });
 
   it("parses valid update input with empty data", () => {
-    expect.assertions(4);
+    expect.assertions(5);
 
     // Arrange
     const rawInput = { data: {}, id: "todo-1" };
@@ -121,6 +130,7 @@ describe("update todo input schema valid inputs", () => {
     expect(parsed.data.title).toBeUndefined();
     expect(parsed.data.description).toBeUndefined();
     expect(parsed.data.completed).toBeUndefined();
+    expect(parsed.data.imageKey).toBeUndefined();
   });
 });
 
@@ -214,5 +224,36 @@ describe("delete todo input schema", () => {
 
     // Assert
     expect(parse).toThrow(/too_small/iu);
+  });
+});
+
+describe("upload todo image input schema", () => {
+  it("parses valid upload input and defaults contentType", () => {
+    expect.assertions(2);
+
+    // Arrange
+    const rawInput = { base64: "data:image/webp;base64,AAAA" };
+
+    // Act
+    const parsed = uploadTodoImageInputSchema.parse(rawInput);
+
+    // Assert
+    expect(parsed.base64).toBe("data:image/webp;base64,AAAA");
+    expect(parsed.contentType).toBe("image/webp");
+  });
+
+  it("throws when base64 is empty", () => {
+    expect.assertions(1);
+
+    // Arrange
+    const invalidInput = { base64: "" };
+
+    // Act
+    function parse() {
+      uploadTodoImageInputSchema.parse(invalidInput);
+    }
+
+    // Assert
+    expect(parse).toThrow("Image data is required");
   });
 });
