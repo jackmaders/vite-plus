@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["*.config.ts"],
+  "include": ["*.config.ts", "scripts/**/*.ts"],
   "compilerOptions": {
     "lib": ["ES2023"],
     "types": ["node"]

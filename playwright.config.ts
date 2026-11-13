@@ -11,6 +11,10 @@ const baseURL = PLAYWRIGHT_BASE_URL || PREVIEW_URL;
 
 const webServer = {
   command: "vp preview",
+  env: {
+    BETTER_AUTH_SECRET: process.env["BETTER_AUTH_SECRET"] ?? "template-ci-local-only-secret-value",
+    BETTER_AUTH_URL: process.env["BETTER_AUTH_URL"] ?? "http://localhost:4173",
+  },
   reuseExistingServer: !CI,
   stderr: "ignore" as const,
   stdout: "ignore" as const,

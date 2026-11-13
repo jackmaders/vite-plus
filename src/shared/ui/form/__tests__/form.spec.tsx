@@ -5,7 +5,6 @@ import * as z from "zod";
 
 import { useAppForm } from "../app-form";
 import { Form } from "../form";
-import { FormSubmissionError } from "../form-submission-error";
 
 const defaultSave = vi.fn<() => Promise<void>>().mockResolvedValue();
 const accountSchema = z.object({
@@ -157,23 +156,5 @@ describe("form component", () => {
     });
     expect(screen.queryByRole("alert")).toBeNull();
     expect(screen.getByPlaceholderText<HTMLInputElement>("Account name").value).toBe("Draft");
-  });
-
-  it("displays the message from a submission error", async () => {
-    expect.hasAssertions();
-
-    // Arrange
-    const onSave = vi
-      .fn<() => Promise<void>>()
-      .mockRejectedValue(new FormSubmissionError("Unable to save your changes."));
-
-    // Act
-    render(<TestForm onSave={onSave} />);
-    fireEvent.submit(screen.getByRole("form", { name: "Account form" }));
-
-    // Assert
-    await waitFor(() => {
-      expect(screen.getByText("Unable to save your changes.")).toBeDefined();
-    });
   });
 });

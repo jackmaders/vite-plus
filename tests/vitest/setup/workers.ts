@@ -16,7 +16,5 @@ beforeAll(async () => {
 
 afterEach(async () => {
   const db = getDb(env.DB);
-  await db.delete(todos);
-  await db.delete(user);
-  await db.delete(rateLimit);
+  await Promise.all([db.delete(todos), db.delete(user), db.delete(rateLimit)]);
 });

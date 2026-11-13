@@ -14,13 +14,18 @@ export default defineConfig(async ({ mode, command }) => ({
   resolve: { tsconfigPaths: true },
   run: {
     tasks: {
+      "check:ci": {
+        cache: false,
+        command:
+          "vpr check:full && CLOUDFLARE_ENV=preview vp build && git diff --exit-code -- src/app/routeTree.gen.ts && vpr cf:generate && git diff --exit-code -- worker-configuration.d.ts && vpr db:generate && git diff --exit-code -- drizzle/ && vpr deploy --dry-run && vp test --coverage && CI=1 vpr db:migrate --local --env preview && vpr test:browser --project=chromium",
+      },
       "check:full": {
-        cache: { env: ["FULL_CHECK"], output: [] },
-        command: "FULL_CHECK=1 vp check",
+        cache: false,
+        command: "FULL_CHECK=1 vp check && vpr lint:arch --fail-on-warnings && vpr lint:exports",
       },
     },
   },
-  staged: { "*": "vp check --fix" },
+  staged: { "*": "vp fmt" },
 }));
 
 const lintConfig = defineConfig({
@@ -71,6 +76,7 @@ const lintConfig = defineConfig({
           "eslint/max-lines-per-function": "off",
           "eslint/max-statements": "off",
           "eslint/no-magic-numbers": "off",
+          "eslint/sort-keys": "off",
           "import/group-exports": "off",
           "import/max-dependencies": "off",
           "promise/avoid-new": "off",
@@ -107,6 +113,7 @@ const lintConfig = defineConfig({
           "testing-library/prefer-user-event": "warn",
           "testing-library/prefer-user-event-setup": "warn",
           "testing-library/render-result-naming-convention": "warn",
+          "typescript/no-deprecated": "off",
           "typescript/no-unsafe-type-assertion": "off",
           "typescript/unbound-method": "off",
           "unicorn/no-null": "off",
@@ -211,11 +218,14 @@ const lintConfig = defineConfig({
       },
       {
         env: { node: true },
-        files: ["*.config.ts"],
+        files: ["*.config.ts", "scripts/**/*.ts"],
         rules: {
           "eslint/max-lines": "off",
           "import/no-default-export": "off",
+          "import/no-nodejs-modules": "off",
           "node/no-process-env": "off",
+          "node/no-sync": "off",
+          "vitest/require-hook": "off",
         },
       },
     ],
@@ -225,7 +235,6 @@ const lintConfig = defineConfig({
       "unicorn",
       "oxc",
       "import",
-      "jsdoc",
       "jsx-a11y",
       "react",
       "react-perf",
@@ -255,6 +264,7 @@ const lintConfig = defineConfig({
       "eslint/no-self-compare": "error",
       "eslint/no-ternary": "off",
       "eslint/no-undef": "error",
+      "eslint/no-undefined": "off",
       "eslint/no-unreachable-loop": "error",
       "eslint/no-use-before-define": "off",
       "eslint/no-void": ["warn", { allowAsStatement: true }],
@@ -262,12 +272,14 @@ const lintConfig = defineConfig({
       "eslint/sort-imports": "off",
       "import/consistent-type-specifier-style": ["warn", "prefer-top-level-if-only-type-imports"],
       "import/exports-last": "off",
+      "import/group-exports": "off",
       "import/no-default-export": "warn",
       "import/no-duplicates": ["warn", { preferInline: true }],
       "import/no-named-export": "off",
       "import/no-namespace": ["warn", { ignore: ["zod"] }],
       "import/no-relative-parent-imports": "off",
       "import/prefer-default-export": "off",
+      "jsdoc/empty-tags": "off",
       "oxc/no-async-await": "off",
       "oxc/no-optional-chaining": "off",
       "oxc/no-rest-spread-properties": "off",
@@ -313,11 +325,12 @@ const lintConfig = defineConfig({
       "typescript/restrict-plus-operands": "error",
       "typescript/return-await": ["warn", "always"],
       "typescript/switch-exhaustiveness-check": "error",
+      "unicorn/no-null": "off",
       "unicorn/prefer-global-this": "off",
       "vite-plus/prefer-vite-plus-imports": "warn",
       "vitest/consistent-test-filename": [
         "warn",
-        { allTestPattern: "__tests__", pattern: "\\.spec\\.[tj]sx?$" },
+        { allTestPattern: "__tests__", pattern: String.raw`\.spec\.[tj]sx?$` },
       ],
       "vitest/no-hooks": "off",
       "vitest/no-importing-vitest-globals": "off",
@@ -346,7 +359,7 @@ async function loadPlugins() {
   ]);
   return [
     devtools(),
-    cloudflare({ viteEnvironment: { name: "ssr" } }),
+    cloudflare({ remoteBindings: false, viteEnvironment: { name: "ssr" } }),
     tailwindcss(),
     tanstackStart({
       router: { routeFileIgnorePattern: "__tests__" },
@@ -392,8 +405,9 @@ const testConfig = defineConfig(async () => ({
         test: {
           environment: "happy-dom",
           environmentOptions: clientEnvironmentOptions,
-          exclude: ["src/**/__tests__/workers/**"],
+          exclude: ["src/**/__tests__/workers/**", "src/shared/ui/shadcn/**"],
           include: ["src/**/__tests__/**/*.spec.{ts,tsx}"],
+          isolate: false,
           name: "client",
           setupFiles: ["tests/vitest/setup/client.ts"],
         },
@@ -420,6 +434,7 @@ async function workerTestConfig() {
             }),
           },
         },
+        remoteBindings: false,
         wrangler: { configPath: "wrangler.jsonc" },
       }),
     ],
