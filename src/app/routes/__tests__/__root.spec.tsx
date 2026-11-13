@@ -6,81 +6,28 @@ import { ErrorPage } from "@/pages/error";
 import { NotFoundPage } from "@/pages/not-found";
 import { getSessionFn } from "@/shared/auth";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
+import { getRouteOption } from "@test/vitest/helpers/route";
+import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
 
-vi.mock(import("@/shared/auth"), (async (importOriginal: () => Promise<unknown>) => {
-  const actual = await importOriginal();
-  return {
-    ...(actual as Record<string, unknown>),
-    getSessionFn: vi.fn<() => Promise<unknown>>(),
-  };
-}) as never);
-vi.mock(import("@/app/styles/index.css?url"), () => ({ default: "/index.css" }) as never);
-vi.mock(
-  import("@/app/layouts"),
-  () =>
-    ({
-      Devtools: () => <div>Devtools</div>,
-      Footer: () => <footer role="contentinfo">Footer</footer>,
-      Header: () => <header role="banner">Header</header>,
-    }) as never,
-);
-vi.mock(
-  import("@/shared/ui/shadcn/toast"),
-  () =>
-    ({
-      Toaster: () => <div />,
-    }) as never,
-);
-vi.mock(import("@tanstack/react-router"), (async () => {
-  const actual = await vi.importActual<Record<string, unknown>>("@tanstack/react-router");
-  return {
-    ...actual,
-    HeadContent: () => null,
-    Scripts: () => null,
-  };
-}) as never);
+import appCss from "@/app/styles/index.css?url";
+
+vi.mock(import("@/shared/auth"));
+vi.mock(import("@/app/layouts"));
+vi.mock(import("@/shared/ui/shadcn/toast"));
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
-
-function getBeforeLoad() {
-  const options = RootRoute.options as unknown as { beforeLoad?: (ctx: never) => unknown };
-  const { beforeLoad } = options;
-  if (!beforeLoad) {
-    throw new TypeError("Expected beforeLoad to be defined");
-  }
-  return beforeLoad;
-}
-
-function getHead() {
-  const options = RootRoute.options as unknown as {
-    head?: (ctx: never) => { meta?: Record<string, unknown>[]; links?: Record<string, unknown>[] };
-  };
-  const { head } = options;
-  if (!head) {
-    throw new TypeError("Expected head to be defined");
-  }
-  return head;
-}
-
-function getShellComponent() {
-  const options = RootRoute.options as unknown as {
-    shellComponent?: React.ComponentType<{ children?: React.ReactNode }>;
-  };
-  const { shellComponent } = options;
-  if (!shellComponent) {
-    throw new TypeError("Expected shellComponent to be defined");
-  }
-  return shellComponent;
-}
 
 describe("root route document metadata", () => {
   it("defines title, charset, viewport, and stylesheet metadata in head", () => {
     expect.assertions(4);
 
     // Arrange
-    const head = getHead();
+    const head = getRouteOption(RootRoute, "head") as (ctx: never) => {
+      meta?: Record<string, unknown>[];
+      links?: Record<string, unknown>[];
+    };
 
     // Act
     const result = head({} as never);
@@ -94,7 +41,7 @@ describe("root route document metadata", () => {
     });
     expect(result.links).toContainEqual(
       expect.objectContaining({
-        href: "/index.css",
+        href: appCss,
         rel: "stylesheet",
       }),
     );
@@ -106,14 +53,17 @@ describe("root route layout and shellComponent", () => {
     expect.assertions(5);
 
     // Arrange
-    const Shell = getShellComponent();
+    const Shell = getRouteOption(RootRoute, "shellComponent") as React.ComponentType<{
+      children?: React.ReactNode;
+    }>;
+    const { wrapper } = createTestingWrapper();
 
     // Act
     render(
       <Shell>
         <p>Child content</p>
       </Shell>,
-      { container: document },
+      { container: document, wrapper },
     );
 
     // Assert
@@ -147,7 +97,7 @@ describe("root route beforeLoad", () => {
 
     // Arrange
     vi.mocked(getSessionFn).mockResolvedValueOnce(TEST_SESSION);
-    const beforeLoad = getBeforeLoad();
+    const beforeLoad = getRouteOption(RootRoute, "beforeLoad") as (ctx: never) => Promise<unknown>;
 
     // Act
     const context = await beforeLoad({} as never);
@@ -161,7 +111,7 @@ describe("root route beforeLoad", () => {
 
     // Arrange
     vi.mocked(getSessionFn).mockResolvedValueOnce(null);
-    const beforeLoad = getBeforeLoad();
+    const beforeLoad = getRouteOption(RootRoute, "beforeLoad") as (ctx: never) => Promise<unknown>;
 
     // Act
     const context = await beforeLoad({} as never);

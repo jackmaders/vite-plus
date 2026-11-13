@@ -1,34 +1,26 @@
+import { QueryClient } from "@tanstack/react-query";
+import {
+  createMemoryHistory,
+  createRootRouteWithContext,
+  createRoute,
+  createRouter,
+  RouterProvider,
+} from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vite-plus/test";
+import { describe, expect, it } from "vite-plus/test";
 
 import { Route as AuthenticatedRoute } from "@/app/routes/_authenticated";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
-
-vi.mock(import("@tanstack/react-router"), (async (importOriginal: () => Promise<unknown>) => {
-  const actual = await importOriginal();
-  return {
-    ...(actual as Record<string, unknown>),
-    Outlet: () => <div data-testid="outlet">Outlet Content</div>,
-  };
-}) as never);
-
-function getBeforeLoad() {
-  const options = AuthenticatedRoute.options as unknown as {
-    beforeLoad?: (ctx: unknown) => unknown;
-  };
-  const { beforeLoad } = options;
-  if (!beforeLoad) {
-    throw new TypeError("Expected beforeLoad to be defined");
-  }
-  return beforeLoad;
-}
+import { getRouteOption } from "@test/vitest/helpers/route";
 
 describe("_authenticated route beforeLoad guard", () => {
   it("returns session context when user is authenticated", () => {
     expect.assertions(1);
 
     // Arrange
-    const beforeLoad = getBeforeLoad();
+    const beforeLoad = getRouteOption(AuthenticatedRoute, "beforeLoad") as (
+      ctx: unknown,
+    ) => unknown;
     const args = { context: { session: TEST_SESSION } };
 
     // Act
@@ -42,11 +34,15 @@ describe("_authenticated route beforeLoad guard", () => {
     expect.assertions(1);
 
     // Arrange
-    const beforeLoad = getBeforeLoad();
+    const beforeLoad = getRouteOption(AuthenticatedRoute, "beforeLoad") as (
+      ctx: unknown,
+    ) => unknown;
     const args = { context: { session: null } };
 
     // Assert
-    expect(() => beforeLoad(args)).toThrow(
+    expect(() => {
+      beforeLoad(args);
+    }).toThrow(
       expect.objectContaining({
         options: expect.objectContaining({ to: "/" }) as unknown,
       }),
@@ -55,17 +51,30 @@ describe("_authenticated route beforeLoad guard", () => {
 });
 
 describe("_authenticated route layout", () => {
-  it("renders AuthenticatedLayout component with outlet", () => {
+  it("renders AuthenticatedLayout component with outlet", async () => {
     expect.assertions(1);
 
     // Arrange
-    const options = AuthenticatedRoute.options as unknown as { component: React.ComponentType };
-    const Component = options.component;
+    const Component = getRouteOption(AuthenticatedRoute, "component") as () => React.ReactNode;
+    const rootRoute = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+      component: Component,
+    });
+    const childRoute = createRoute({
+      component: () => <div>Outlet Content</div>,
+      getParentRoute: () => rootRoute,
+      path: "/",
+    });
+    const router = createRouter({
+      context: { queryClient: new QueryClient() },
+      history: createMemoryHistory({ initialEntries: ["/"] }),
+      routeTree: rootRoute.addChildren([childRoute]),
+    });
+    await router.load();
 
     // Act
-    render(<Component />);
+    render(<RouterProvider router={router} />);
 
     // Assert
-    expect(screen.getByText("Outlet Content")).toBeDefined();
+    await expect(screen.findByText("Outlet Content")).resolves.toBeDefined();
   });
 });

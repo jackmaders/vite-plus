@@ -1,16 +1,8 @@
-import { QueryClient } from "@tanstack/react-query";
-import {
-  createMemoryHistory,
-  createRootRouteWithContext,
-  createRoute,
-  createRouter,
-} from "@tanstack/react-router";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { Header } from "@/app/layouts/header";
-import type { RootRouterContext } from "@/app/routes/__root";
 import { signOut, useSession, type Session } from "@/shared/auth";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
@@ -21,14 +13,6 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function createHeaderRouteTree() {
-  const rootRoute = createRootRouteWithContext<RootRouterContext>()();
-  const homeRoute = createRoute({ getParentRoute: () => rootRoute, path: "/" });
-  const aboutRoute = createRoute({ getParentRoute: () => rootRoute, path: "/about" });
-  const todosRoute = createRoute({ getParentRoute: () => rootRoute, path: "/todos" });
-  return rootRoute.addChildren([homeRoute, aboutRoute, todosRoute]);
-}
-
 async function renderHeader({
   initialEntry = "/",
   session = null,
@@ -37,13 +21,12 @@ async function renderHeader({
   session?: Session | null;
 } = {}) {
   vi.mocked(useSession).mockReturnValue({ data: session, isPending: false } as never);
-  const router = createRouter({
-    context: { queryClient: new QueryClient(), session },
-    history: createMemoryHistory({ initialEntries: [initialEntry] }),
-    routeTree: createHeaderRouteTree(),
+  const { router, wrapper } = createTestingWrapper({
+    context: { session },
+    initialLocation: initialEntry,
+    routePaths: ["/", "/about", "/todos"],
   });
   await router.load();
-  const { wrapper } = createTestingWrapper({ router });
   render(<Header />, { wrapper });
 }
 

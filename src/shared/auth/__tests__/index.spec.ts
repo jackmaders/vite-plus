@@ -11,49 +11,11 @@ import {
   useSession,
 } from "../index";
 
-vi.mock(
-  import("../auth.client"),
-  () =>
-    ({
-      authClient: {},
-      signIn: vi.fn<() => void>(),
-      signOut: vi.fn<() => void>(),
-      signUp: vi.fn<() => void>(),
-      useSession: vi.fn<() => void>(),
-    }) as never,
-);
-
-vi.mock(
-  import("../session.functions"),
-  () =>
-    ({
-      getSessionFn: vi.fn<() => void>(),
-    }) as never,
-);
-
-vi.mock(
-  import("../middleware"),
-  () =>
-    ({
-      permissionMiddleware: vi.fn<() => void>(),
-    }) as never,
-);
-
-vi.mock(
-  import("../permissions"),
-  () =>
-    ({
-      hasPermission: vi.fn<() => boolean>(),
-    }) as never,
-);
-
-vi.mock(
-  import("../use-auth"),
-  () =>
-    ({
-      useAuth: vi.fn<() => void>(),
-    }) as never,
-);
+vi.mock(import("../auth.client"));
+vi.mock(import("../session.functions"));
+vi.mock(import("../middleware"));
+vi.mock(import("../permissions"));
+vi.mock(import("../use-auth"));
 
 describe("shared/auth barrel exports", () => {
   it("exports universal client utilities from index.ts", () => {

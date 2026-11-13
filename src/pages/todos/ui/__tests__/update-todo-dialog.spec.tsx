@@ -1,5 +1,5 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { screen, waitFor } from "@testing-library/react";
+import type userEvent from "@testing-library/user-event";
 import imageCompression from "browser-image-compression";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -8,8 +8,14 @@ import { ApplicationError } from "@/shared/errors";
 import { compressImage } from "@/shared/lib/compress-image.client";
 import { toast } from "@/shared/ui/shadcn/toast";
 import { retryFailedSave } from "@test/vitest/fixtures/form-submissions";
+import {
+  TEST_IMAGE_DATA_URL,
+  TEST_IMAGE_FILE,
+  TEST_TEMP_IMAGE_KEY,
+} from "@test/vitest/fixtures/images";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
-import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
+import { createDeferred } from "@test/vitest/helpers/deferred";
+import { renderWithProviders } from "@test/vitest/wrappers/testing-wrapper";
 
 import { updateTodoFn, uploadTodoImageFn } from "../../api/todos.functions";
 import { UpdateTodoDialog } from "../update-todo-dialog";
@@ -19,20 +25,10 @@ vi.mock(import("@/shared/lib/compress-image.client"));
 vi.mock(import("browser-image-compression"));
 vi.mock(import("@/shared/ui/shadcn/toast"));
 
-function createDeferred<TValue>() {
-  const holder: { resolve?: (value: TValue) => void } = {};
-  const promise = new Promise<TValue>((resolve) => {
-    holder.resolve = resolve;
-  });
-  return { promise, resolve: (value: TValue) => holder.resolve?.(value) };
-}
-
 beforeEach(() => {
   vi.mocked(updateTodoFn).mockReset().mockResolvedValue(TEST_TODO);
   vi.mocked(compressImage).mockImplementation(async (file) => await Promise.resolve(file));
-  vi.mocked(imageCompression.getDataUrlFromFile).mockResolvedValue(
-    "data:image/webp;base64,d2VicA==",
-  );
+  vi.mocked(imageCompression.getDataUrlFromFile).mockResolvedValue(TEST_IMAGE_DATA_URL);
 });
 
 describe("update todo dialog", () => {
@@ -165,16 +161,15 @@ describe("update todo dialog", () => {
     vi.mocked(uploadTodoImageFn).mockImplementationOnce(async () => await uploadDeferred.promise);
     const { user } = renderUpdateDialog();
     await user.click(screen.getByRole("button", { name: "Update Item" }));
-    const file = new File(["img"], "updated.png", { type: "image/png" });
 
     // Act
-    await user.upload(screen.getByLabelText<HTMLInputElement>("Image"), file);
+    await user.upload(screen.getByLabelText<HTMLInputElement>("Image"), TEST_IMAGE_FILE);
     const uploadingButton = await screen.findByRole<HTMLButtonElement>("button", {
       name: "Uploading image…",
     });
     expect(uploadingButton.disabled).toBe(true);
 
-    uploadDeferred.resolve({ tempKey: "temp/user-1/updated.webp" });
+    uploadDeferred.resolve({ tempKey: TEST_TEMP_IMAGE_KEY });
     const updateButton = await screen.findByRole<HTMLButtonElement>("button", { name: "Update" });
     expect(updateButton.disabled).toBe(false);
 
@@ -182,9 +177,9 @@ describe("update todo dialog", () => {
     expect(updateTodoFn).toHaveBeenCalledWith({
       data: {
         data: {
-          description: "Test Description",
-          imageKey: "temp/user-1/updated.webp",
-          title: "Test Todo",
+          description: TEST_TODO.description,
+          imageKey: TEST_TEMP_IMAGE_KEY,
+          title: TEST_TODO.title,
         },
         id: TEST_TODO.id,
       },
@@ -193,11 +188,10 @@ describe("update todo dialog", () => {
 });
 
 function renderUpdateDialog(todo = TEST_TODO) {
-  const { wrapper } = createTestingWrapper({
+  const { user } = renderWithProviders(<UpdateTodoDialog todo={todo} />, {
     queryClient: getRouter().options.context.queryClient,
   });
-  render(<UpdateTodoDialog todo={todo} />, { wrapper });
-  return { user: userEvent.setup() };
+  return { user };
 }
 
 async function openAndEditTitle(user: ReturnType<typeof userEvent.setup>, title: string) {

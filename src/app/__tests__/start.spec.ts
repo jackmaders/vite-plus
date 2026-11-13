@@ -5,13 +5,7 @@ import { applicationErrorAdapter, errorMiddleware } from "@/shared/errors";
 
 import { startInstance } from "../start";
 
-vi.mock(import("@tanstack/react-start"), async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    createCsrfMiddleware: vi.fn<typeof actual.createCsrfMiddleware>(actual.createCsrfMiddleware),
-  };
-});
+vi.mock(import("@tanstack/react-start"), { spy: true });
 
 describe("start middleware configuration", () => {
   it("registers application error transport", async () => {

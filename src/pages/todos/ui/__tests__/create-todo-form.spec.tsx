@@ -1,5 +1,5 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
+import type userEvent from "@testing-library/user-event";
 import imageCompression from "browser-image-compression";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
@@ -8,8 +8,14 @@ import { ApplicationError, applicationErrorAdapter } from "@/shared/errors";
 import { compressImage } from "@/shared/lib/compress-image.client";
 import { toast } from "@/shared/ui/shadcn/toast";
 import { retryFailedSave } from "@test/vitest/fixtures/form-submissions";
+import {
+  TEST_IMAGE_DATA_URL,
+  TEST_IMAGE_FILE,
+  TEST_TEMP_IMAGE_KEY,
+} from "@test/vitest/fixtures/images";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
-import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
+import { createDeferred } from "@test/vitest/helpers/deferred";
+import { renderWithProviders } from "@test/vitest/wrappers/testing-wrapper";
 
 import { createTodoFn, uploadTodoImageFn } from "../../api/todos.functions";
 import { CreateTodoForm } from "../create-todo-form";
@@ -19,20 +25,10 @@ vi.mock(import("@/shared/lib/compress-image.client"));
 vi.mock(import("browser-image-compression"));
 vi.mock(import("@/shared/ui/shadcn/toast"));
 
-function createDeferred<TValue>() {
-  const holder: { resolve?: (value: TValue) => void } = {};
-  const promise = new Promise<TValue>((resolve) => {
-    holder.resolve = resolve;
-  });
-  return { promise, resolve: (value: TValue) => holder.resolve?.(value) };
-}
-
 beforeEach(() => {
   vi.mocked(createTodoFn).mockReset().mockResolvedValue(TEST_TODO);
   vi.mocked(compressImage).mockImplementation(async (file) => await Promise.resolve(file));
-  vi.mocked(imageCompression.getDataUrlFromFile).mockResolvedValue(
-    "data:image/webp;base64,d2VicA==",
-  );
+  vi.mocked(imageCompression.getDataUrlFromFile).mockResolvedValue(TEST_IMAGE_DATA_URL);
 });
 
 describe("create todo form", () => {
@@ -175,11 +171,10 @@ describe("create todo form", () => {
     const uploadDeferred = createDeferred<{ tempKey: string }>();
     vi.mocked(uploadTodoImageFn).mockImplementationOnce(async () => await uploadDeferred.promise);
     const { user } = renderCreateForm();
-    const file = new File(["img"], "todo.png", { type: "image/png" });
 
     // Act
     await user.type(screen.getByRole("textbox", { name: "Title" }), "Todo with image");
-    await user.upload(screen.getByLabelText<HTMLInputElement>("Image"), file);
+    await user.upload(screen.getByLabelText<HTMLInputElement>("Image"), TEST_IMAGE_FILE);
 
     // Assert uploading state
     const uploadingButton = await screen.findByRole<HTMLButtonElement>("button", {
@@ -188,13 +183,13 @@ describe("create todo form", () => {
     expect(uploadingButton.disabled).toBe(true);
 
     // Finish upload and submit
-    uploadDeferred.resolve({ tempKey: "temp/user-1/todo.webp" });
+    uploadDeferred.resolve({ tempKey: TEST_TEMP_IMAGE_KEY });
     const readyButton = await screen.findByRole<HTMLButtonElement>("button", { name: "Add Todo" });
     expect(readyButton.disabled).toBe(false);
 
     await user.click(readyButton);
     expect(createTodoFn).toHaveBeenCalledWith({
-      data: { description: "", imageKey: "temp/user-1/todo.webp", title: "Todo with image" },
+      data: { description: "", imageKey: TEST_TEMP_IMAGE_KEY, title: "Todo with image" },
     });
     await waitFor(() => {
       expect(screen.getByRole<HTMLInputElement>("textbox", { name: "Title" }).value).toBe("");
@@ -203,13 +198,12 @@ describe("create todo form", () => {
 });
 
 function renderCreateForm() {
-  const { wrapper } = createTestingWrapper({
+  const { user } = renderWithProviders(<CreateTodoForm aria-label="Create todo" />, {
     queryClient: getRouter().options.context.queryClient,
   });
-  render(<CreateTodoForm aria-label="Create todo" />, { wrapper });
   return {
     title: screen.getByRole<HTMLInputElement>("textbox", { name: "Title" }),
-    user: userEvent.setup(),
+    user,
   };
 }
 
