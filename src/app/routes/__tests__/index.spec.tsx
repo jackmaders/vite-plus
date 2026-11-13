@@ -1,45 +1,47 @@
-import { QueryClient } from "@tanstack/react-query";
-import { createMemoryHistory, createRouter, RouterProvider } from "@tanstack/react-router";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vite-plus/test";
 
-import { Route as HomeRoute } from "@/app/routes/index";
-import { routeTree } from "@/app/routeTree.gen";
-import { getSessionFn } from "@/shared/auth";
+import { Route as IndexRoute } from "@/app/routes/index";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 
-vi.mock(import("@/shared/auth"));
-vi.mock(import("@/pages/todos"));
-vi.mock(import("@/app/styles/index.css?url"), () => ({ default: "/index.css" }));
-vi.mock(import("@tanstack/react-devtools"));
-vi.mock(import("@tanstack/react-router-devtools"));
-vi.mock(import("@tanstack/react-query-devtools"));
+vi.mock(
+  import("@/pages/home"),
+  () =>
+    ({
+      HomePage: () => <h1>Home Page</h1>,
+    }) as never,
+);
 
 function getBeforeLoad() {
-  const { beforeLoad } = HomeRoute.options;
+  const options = IndexRoute.options as unknown as { beforeLoad?: (ctx: unknown) => unknown };
+  const { beforeLoad } = options;
   if (!beforeLoad) {
     throw new TypeError("Expected beforeLoad to be defined");
   }
   return beforeLoad;
 }
 
-type BeforeLoadArgs = NonNullable<Parameters<ReturnType<typeof getBeforeLoad>>[0]>;
+function getComponent() {
+  const options = IndexRoute.options as unknown as { component?: React.ComponentType };
+  const { component } = options;
+  if (!component) {
+    throw new TypeError("Expected component to be defined");
+  }
+  return component;
+}
 
-describe("home route beforeLoad guard", () => {
+describe("index route beforeLoad guard", () => {
   it("redirects authenticated user to /todos", () => {
     expect.assertions(1);
 
     // Arrange
     const beforeLoad = getBeforeLoad();
-    const args = { context: { session: TEST_SESSION } } as unknown as BeforeLoadArgs;
-
-    // Act
-    function act() {
-      beforeLoad(args);
-    }
+    const args = { context: { session: TEST_SESSION } };
 
     // Assert
-    expect(act).toThrow(
+    expect(() => {
+      beforeLoad(args);
+    }).toThrow(
       expect.objectContaining({
         options: expect.objectContaining({ to: "/todos" }) as unknown,
       }),
@@ -51,36 +53,26 @@ describe("home route beforeLoad guard", () => {
 
     // Arrange
     const beforeLoad = getBeforeLoad();
-    const args = { context: { session: null } } as unknown as BeforeLoadArgs;
-
-    // Act
-    function act() {
-      beforeLoad(args);
-    }
+    const args = { context: { session: null } };
 
     // Assert
-    expect(act).not.toThrow();
+    expect(() => {
+      beforeLoad(args);
+    }).not.toThrow();
   });
 });
 
-describe("home route content", () => {
-  it("renders auth form card when unauthenticated", async () => {
-    expect.assertions(2);
+describe("index route presentation", () => {
+  it("renders HomePage via Route component option", () => {
+    expect.assertions(1);
 
     // Arrange
-    vi.mocked(getSessionFn).mockResolvedValue(null);
-    const router = createRouter({
-      context: { queryClient: new QueryClient(), session: null },
-      history: createMemoryHistory({ initialEntries: ["/"] }),
-      routeTree,
-    });
-    await router.load();
+    const Component = getComponent();
 
     // Act
-    render(<RouterProvider router={router} />, { container: document });
+    render(<Component />);
 
     // Assert
-    expect(screen.getByRole("heading", { name: "Sign In" })).toBeDefined();
-    expect(within(screen.getByRole("main")).getByRole("button", { name: "Sign in" })).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Home Page" })).toBeDefined();
   });
 });

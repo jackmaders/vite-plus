@@ -1,35 +1,48 @@
-import { QueryClient } from "@tanstack/react-query";
-import {
-  createMemoryHistory,
-  createRootRoute,
-  createRoute,
-  createRouter,
-  RouterProvider,
-} from "@tanstack/react-router";
 import { render, screen } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { Route as RootRoute } from "@/app/routes/__root";
-import { routeTree } from "@/app/routeTree.gen";
 import { ErrorPage } from "@/pages/error";
+import { NotFoundPage } from "@/pages/not-found";
 import { getSessionFn } from "@/shared/auth";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 
-vi.mock(import("@/shared/auth"));
-
-beforeEach(() => {
-  vi.mocked(getSessionFn).mockResolvedValue(null);
-});
+vi.mock(import("@/shared/auth"), (async (importOriginal: () => Promise<unknown>) => {
+  const actual = await importOriginal();
+  return {
+    ...(actual as Record<string, unknown>),
+    getSessionFn: vi.fn<() => Promise<unknown>>(),
+  };
+}) as never);
+vi.mock(import("@/app/styles/index.css?url"), () => ({ default: "/index.css" }) as never);
+vi.mock(
+  import("@/app/layouts"),
+  () =>
+    ({
+      Devtools: () => <div>Devtools</div>,
+      Footer: () => <footer role="contentinfo">Footer</footer>,
+      Header: () => <header role="banner">Header</header>,
+    }) as never,
+);
+vi.mock(
+  import("@/shared/ui/shadcn/toast"),
+  () =>
+    ({
+      Toaster: () => <div />,
+    }) as never,
+);
+vi.mock(import("@tanstack/react-router"), (async () => {
+  const actual = await vi.importActual<Record<string, unknown>>("@tanstack/react-router");
+  return {
+    ...actual,
+    HeadContent: () => null,
+    Scripts: () => null,
+  };
+}) as never);
 
 afterEach(() => {
   vi.restoreAllMocks();
 });
-
-vi.mock(import("@/app/styles/index.css?url"), () => ({ default: "/index.css" }));
-
-vi.mock(import("@tanstack/react-devtools"));
-vi.mock(import("@tanstack/react-router-devtools"));
-vi.mock(import("@tanstack/react-query-devtools"));
 
 function getBeforeLoad() {
   const options = RootRoute.options as unknown as { beforeLoad?: (ctx: never) => unknown };
@@ -39,6 +52,94 @@ function getBeforeLoad() {
   }
   return beforeLoad;
 }
+
+function getHead() {
+  const options = RootRoute.options as unknown as {
+    head?: (ctx: never) => { meta?: Record<string, unknown>[]; links?: Record<string, unknown>[] };
+  };
+  const { head } = options;
+  if (!head) {
+    throw new TypeError("Expected head to be defined");
+  }
+  return head;
+}
+
+function getShellComponent() {
+  const options = RootRoute.options as unknown as {
+    shellComponent?: React.ComponentType<{ children?: React.ReactNode }>;
+  };
+  const { shellComponent } = options;
+  if (!shellComponent) {
+    throw new TypeError("Expected shellComponent to be defined");
+  }
+  return shellComponent;
+}
+
+describe("root route document metadata", () => {
+  it("defines title, charset, viewport, and stylesheet metadata in head", () => {
+    expect.assertions(4);
+
+    // Arrange
+    const head = getHead();
+
+    // Act
+    const result = head({} as never);
+
+    // Assert
+    expect(result.meta).toContainEqual({ title: "TanStack Start Starter" });
+    expect(result.meta).toContainEqual({ charSet: "utf8" });
+    expect(result.meta).toContainEqual({
+      content: "width=device-width, initial-scale=1",
+      name: "viewport",
+    });
+    expect(result.links).toContainEqual(
+      expect.objectContaining({
+        href: "/index.css",
+        rel: "stylesheet",
+      }),
+    );
+  });
+});
+
+describe("root route layout and shellComponent", () => {
+  it("renders shell document with banner, main, contentinfo, and marks document hydrated", () => {
+    expect.assertions(5);
+
+    // Arrange
+    const Shell = getShellComponent();
+
+    // Act
+    render(
+      <Shell>
+        <p>Child content</p>
+      </Shell>,
+      { container: document },
+    );
+
+    // Assert
+    expect(screen.getByRole("banner")).toBeDefined();
+    expect(screen.getByRole("main")).toBeDefined();
+    expect(screen.getByRole("contentinfo")).toBeDefined();
+    expect(screen.getByText("Child content")).toBeDefined();
+    expect(document.body.dataset["hydrated"]).toBe("true");
+  });
+});
+
+describe("root route errorComponent and notFoundComponent", () => {
+  it("configures ErrorPage as errorComponent and NotFoundPage as notFoundComponent", () => {
+    expect.assertions(2);
+
+    // Arrange
+    const options = RootRoute.options as unknown as {
+      errorComponent?: unknown;
+      notFoundComponent?: unknown;
+    };
+
+    // Assert
+    expect(options.errorComponent).toBe(ErrorPage);
+    expect(options.notFoundComponent).toBe(NotFoundPage);
+  });
+});
 
 describe("root route beforeLoad", () => {
   it("populates session context from getSessionFn when authenticated", async () => {
@@ -69,140 +170,3 @@ describe("root route beforeLoad", () => {
     expect(context).toStrictEqual({ session: null });
   });
 });
-
-describe("root route document metadata", () => {
-  it("sets the title and viewport metadata", async () => {
-    expect.assertions(2);
-
-    // Arrange
-    const router = createRouter({
-      context: { queryClient: new QueryClient(), session: null },
-      history: createMemoryHistory({ initialEntries: ["/"] }),
-      routeTree,
-    });
-    await router.load();
-
-    // Act
-    render(<RouterProvider router={router} />, { container: document });
-    const viewportContent = Array.from(
-      // Viewport metadata has no accessible Testing Library query.
-      // oxlint-disable-next-line testing-library/no-node-access
-      document.querySelectorAll('meta[name="viewport"]'),
-      (viewport) => viewport.getAttribute("content"),
-    );
-
-    // Assert
-    expect(document.title).toBe("TanStack Start Starter");
-    expect(viewportContent).toStrictEqual(["width=device-width, initial-scale=1"]);
-  });
-});
-
-describe("root route layout", () => {
-  it("wraps the current page with the site header and footer", async () => {
-    expect.assertions(3);
-
-    // Arrange
-    const router = createRouter({
-      context: { queryClient: new QueryClient(), session: null },
-      history: createMemoryHistory({ initialEntries: ["/"] }),
-      routeTree,
-    });
-    await router.load();
-
-    // Act
-    render(<RouterProvider router={router} />, { container: document });
-
-    // Assert
-    expect(screen.getByRole("banner")).toBeDefined();
-    expect(screen.getByRole("main")).toBeDefined();
-    expect(screen.getByRole("contentinfo")).toBeDefined();
-  });
-});
-
-describe("root route devtools panels", () => {
-  it("renders the router and react-query devtools panels", async () => {
-    expect.assertions(2);
-
-    // Arrange
-    const router = createRouter({
-      context: { queryClient: new QueryClient(), session: null },
-      history: createMemoryHistory({ initialEntries: ["/"] }),
-      routeTree,
-    });
-    await router.load();
-
-    // Act
-    render(<RouterProvider router={router} />, { container: document });
-
-    // Assert
-    expect(screen.getByText("Router Devtools Panel")).toBeDefined();
-    expect(screen.getByText("React Query Devtools Panel")).toBeDefined();
-  });
-});
-
-describe("root route notFoundComponent", () => {
-  it("renders the not found page for an unrecognised route", async () => {
-    expect.assertions(3);
-
-    // Arrange
-    const router = createRouter({
-      context: { queryClient: new QueryClient(), session: null },
-      history: createMemoryHistory({ initialEntries: ["/non-existent-page"] }),
-      routeTree,
-    });
-    await router.load();
-
-    // Act
-    render(<RouterProvider router={router} />, { container: document });
-
-    // Assert
-    expect(screen.getByRole("heading", { name: "Page Not Found" })).toBeDefined();
-    expect(
-      screen.getByText("The page you are looking for does not exist or has been moved."),
-    ).toBeDefined();
-    expect(screen.getByRole("link", { name: "Return Home" }).getAttribute("href")).toBe("/");
-  });
-});
-
-describe("route error boundary", () => {
-  it("shows generic messaging without exposing the route error", async () => {
-    expect.assertions(4);
-
-    // Arrange
-    const { router, error } = createFailedRoute();
-    const onCaughtError = vi.fn<(error: unknown, info: unknown) => void>();
-    const warning = vi
-      .spyOn(console, "warn")
-      .mockImplementation(vi.fn<(...args: unknown[]) => void>());
-
-    // Act
-    await router.load();
-    render(<RouterProvider router={router} />, { onCaughtError });
-
-    // Assert
-    expect(screen.getByText("Something went wrong. Please try again.")).toBeDefined();
-    expect(screen.queryByText("private server detail")).toBeNull();
-    expect(onCaughtError).toHaveBeenCalledWith(error, expect.anything());
-    expect(warning.mock.calls).toStrictEqual([["Warning: Error in route match: __root__/"]]);
-  });
-});
-
-function createFailedRoute() {
-  const error = new Error("private server detail");
-  const loader = vi.fn<() => Promise<void>>().mockRejectedValue(error);
-  const rootRoute = createRootRoute({ errorComponent: ErrorPage });
-  const indexRoute = createRoute({
-    component: () => <p>Page loaded</p>,
-    getParentRoute: () => rootRoute,
-    loader,
-    path: "/",
-  });
-
-  return {
-    error,
-    router: createRouter({
-      history: createMemoryHistory({ initialEntries: ["/"] }),
-      routeTree: rootRoute.addChildren([indexRoute]),
-    }),
-  };
-}

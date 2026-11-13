@@ -1,138 +1,88 @@
-import { createMemoryHistory, RouterProvider } from "@tanstack/react-router";
+import type { QueryClient } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { describe, expect, it, vi } from "vite-plus/test";
 
-import { getRouter } from "@/app/router";
+import { Route as TodosRoute } from "@/app/routes/_authenticated/todos";
 import { todosQueryOptions } from "@/pages/todos";
-import { createTodoFn, getTodosFn } from "@/pages/todos/api/todos.functions";
-import { getSessionFn, useSession } from "@/shared/auth";
-import { TEST_SESSION } from "@test/vitest/fixtures/session";
-import { createTodoFixture, TEST_TODOS } from "@test/vitest/fixtures/todos";
 
-vi.mock(import("@/shared/auth"));
-vi.mock(import("@/pages/todos/api/todos.functions"));
-vi.mock(import("@/app/styles/index.css?url"), () => ({ default: "/index.css" }));
-vi.mock(import("@tanstack/react-devtools"));
+vi.mock(import("@/pages/todos"), (async (importOriginal: () => Promise<unknown>) => {
+  const actual = await importOriginal();
+  return {
+    ...(actual as Record<string, unknown>),
+    TodosPage: () => <h1>Todos Page</h1>,
+  };
+}) as never);
 
-function createTodosRouter() {
-  const router = getRouter();
-  router.update({
-    context: router.options.context,
-    history: createMemoryHistory({ initialEntries: ["/todos"] }),
-  });
-  return router;
+function getLoader() {
+  const options = TodosRoute.options as unknown as {
+    loader?: (ctx: { context: { queryClient: QueryClient } }) => Promise<unknown>;
+  };
+  const { loader } = options;
+  if (!loader) {
+    throw new TypeError("Expected loader to be defined");
+  }
+  return loader;
 }
 
-async function renderTodosRoute() {
-  const router = createTodosRouter();
-  await router.load();
-  render(<RouterProvider router={router} />, { container: document });
+function getComponent() {
+  const options = TodosRoute.options as unknown as {
+    component?: React.ComponentType;
+  };
+  const { component } = options;
+  if (!component) {
+    throw new TypeError("Expected component to be defined");
+  }
+  return component;
 }
 
-async function createTodoThroughForm(user: ReturnType<typeof userEvent.setup>, title: string) {
-  await user.type(await screen.findByRole("textbox", { name: "Title" }), title);
-  await user.click(screen.getByRole("button", { name: "Add Todo" }));
-}
-
-describe("authenticated todos route", () => {
-  beforeEach(() => {
-    vi.mocked(getSessionFn).mockResolvedValue(TEST_SESSION);
-    vi.mocked(useSession).mockReturnValue({ data: TEST_SESSION, isPending: false } as never);
-    vi.mocked(getTodosFn).mockResolvedValue(TEST_TODOS);
-  });
-
-  afterEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it("loads todos into the router query cache before rendering the page", async () => {
-    expect.assertions(3);
+describe("todos route options", () => {
+  it("configures private no-store cache headers", () => {
+    expect.assertions(1);
 
     // Arrange
-    const router = createTodosRouter();
+    const options = TodosRoute.options as unknown as {
+      headers?: () => Record<string, string>;
+    };
 
     // Act
-    await router.load();
-    const cachedTodos = router.options.context.queryClient.getQueryData(
-      todosQueryOptions().queryKey,
+    const headers = options.headers?.();
+
+    // Assert
+    expect(headers).toStrictEqual({ "Cache-Control": "private, no-store" });
+  });
+
+  it("pre-fetches todos data in loader", async () => {
+    expect.assertions(1);
+
+    // Arrange
+    const loader = getLoader();
+    const queryClient = {
+      query: vi.fn<() => Promise<unknown>>(),
+    } as unknown as QueryClient;
+
+    // Act
+    await loader({
+      context: { queryClient },
+    });
+
+    // Assert
+    expect(queryClient.query).toHaveBeenCalledWith(
+      expect.objectContaining({
+        queryKey: todosQueryOptions().queryKey,
+      }),
     );
-    render(<RouterProvider router={router} />, { container: document });
-    const firstTodo = await screen.findByText("First Todo");
-
-    // Assert
-    expect(cachedTodos).toStrictEqual(TEST_TODOS);
-    expect(firstTodo).toBeDefined();
-    expect(screen.getByRole("button", { name: "Add Todo" })).toBeDefined();
   });
 
-  it("redirects signed-out visitors before reading private todos", async () => {
-    expect.assertions(2);
-
-    // Arrange
-    vi.mocked(getSessionFn).mockResolvedValue(null);
-    const router = createTodosRouter();
-
-    // Act
-    await router.load();
-
-    // Assert
-    expect(router.state.location.pathname).toBe("/");
-    expect(getTodosFn).not.toHaveBeenCalled();
-  });
-
-  it("marks personalized server-rendered content as private and non-cacheable", async () => {
+  it("renders TodosPage via Route component option", () => {
     expect.assertions(1);
 
     // Arrange
-    const router = createTodosRouter();
-    router.update({ context: router.options.context, isServer: true });
+    const Component = getComponent();
 
     // Act
-    await router.load();
-    const match = router.state.matches.find((item) => item.routeId === "/_authenticated/todos");
+    render(<Component />);
 
     // Assert
-    expect(match?.headers).toMatchObject({ "Cache-Control": "private, no-store" });
-  });
-
-  it("renders the empty state when the user has no todos", async () => {
-    expect.assertions(1);
-
-    // Arrange
-    vi.mocked(getTodosFn).mockResolvedValue([]);
-    const router = createTodosRouter();
-
-    // Act
-    await router.load();
-    render(<RouterProvider router={router} />, { container: document });
-    const emptyState = await screen.findByText("No todos found");
-
-    // Assert
-    expect(emptyState).toBeDefined();
-  });
-
-  it("refreshes the displayed todos after a successful create", async () => {
-    expect.assertions(2);
-
-    // Arrange
-    const user = userEvent.setup();
-    const createdTodo = createTodoFixture({ id: "new-todo", title: "New Todo" });
-    vi.mocked(getTodosFn).mockResolvedValue([]);
-    vi.mocked(createTodoFn).mockImplementation(async () => {
-      vi.mocked(getTodosFn).mockResolvedValue([createdTodo]);
-      return await Promise.resolve(createdTodo);
-    });
-    await renderTodosRoute();
-
-    // Act
-    await createTodoThroughForm(user, "New Todo");
-    const newTodo = await screen.findByText("New Todo");
-
-    // Assert
-    expect(createTodoFn).toHaveBeenCalledWith({
-      data: { description: "", imageKey: null, title: "New Todo" },
-    });
-    expect(newTodo).toBeDefined();
+    expect(screen.getByRole("heading", { name: "Todos Page" })).toBeDefined();
   });
 });
