@@ -1,11 +1,11 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import { act, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { getRouter } from "@/app/router";
 import { toast } from "@/shared/ui/shadcn/toast";
 import { TEST_TODO } from "@test/vitest/fixtures/todos";
-import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
+import { createDeferred } from "@test/vitest/helpers/deferred";
+import { renderWithProviders } from "@test/vitest/wrappers/testing-wrapper";
 
 import { deleteTodoFn } from "../../api/todos.functions";
 import { DeleteTodoDialog } from "../delete-todo-dialog";
@@ -22,7 +22,9 @@ describe("delete todo dialog", () => {
     expect.assertions(1);
 
     // Arrange
-    const { user } = renderDeleteDialog();
+    const { user } = renderWithProviders(<DeleteTodoDialog todo={TEST_TODO} />, {
+      queryClient: getRouter().options.context.queryClient,
+    });
 
     // Act
     await user.click(screen.getByRole("button", { name: "Delete Item" }));
@@ -35,7 +37,9 @@ describe("delete todo dialog", () => {
     expect.hasAssertions();
 
     // Arrange
-    const { user } = renderDeleteDialog();
+    const { user } = renderWithProviders(<DeleteTodoDialog todo={TEST_TODO} />, {
+      queryClient: getRouter().options.context.queryClient,
+    });
     await user.click(screen.getByRole("button", { name: "Delete Item" }));
 
     // Act
@@ -51,8 +55,23 @@ describe("delete todo dialog", () => {
   it("disables confirmation while deletion is pending", async () => {
     expect.hasAssertions();
 
+    // Arrange
+    const deferred = createDeferred<typeof TEST_TODO>();
+    vi.mocked(deleteTodoFn).mockReturnValueOnce(deferred.promise);
+    const { user } = renderWithProviders(<DeleteTodoDialog todo={TEST_TODO} />, {
+      queryClient: getRouter().options.context.queryClient,
+    });
+    await user.click(screen.getByRole("button", { name: "Delete Item" }));
+
     // Act
-    const pendingDisabled = await completePendingDelete();
+    await user.click(screen.getByRole("button", { name: "Delete Todo" }));
+    const pendingDisabled = screen.getByRole<HTMLButtonElement>("button", {
+      name: "Deleting...",
+    }).disabled;
+    await act(async () => {
+      deferred.resolve(TEST_TODO);
+      await deferred.promise;
+    });
 
     // Assert
     expect(pendingDisabled).toBe(true);
@@ -65,10 +84,22 @@ describe("delete todo dialog", () => {
     expect.hasAssertions();
 
     // Arrange
-    const { user } = await setupFailedDelete();
+    vi.mocked(deleteTodoFn).mockRejectedValueOnce(new Error("Network unavailable"));
+    const { user } = renderWithProviders(<DeleteTodoDialog todo={TEST_TODO} />, {
+      queryClient: getRouter().options.context.queryClient,
+    });
+    await user.click(screen.getByRole("button", { name: "Delete Item" }));
 
-    // Act
-    const failure = await retryFailedDelete(user);
+    // Act: first attempt fails
+    await user.click(screen.getByRole("button", { name: "Delete Todo" }));
+    const feedback = await screen.findByRole("alert");
+    const failure = {
+      dialogOpen: Boolean(screen.queryByRole("dialog")),
+      message: feedback.textContent,
+    };
+
+    // Act: retry succeeds
+    await user.click(screen.getByRole("button", { name: "Delete Todo" }));
 
     // Assert
     expect(failure).toStrictEqual({ dialogOpen: true, message: "Network unavailable" });
@@ -83,7 +114,11 @@ describe("delete todo dialog", () => {
     expect.assertions(2);
 
     // Arrange
-    const { user } = await setupFailedDelete();
+    vi.mocked(deleteTodoFn).mockRejectedValueOnce(new Error("Network unavailable"));
+    const { user } = renderWithProviders(<DeleteTodoDialog todo={TEST_TODO} />, {
+      queryClient: getRouter().options.context.queryClient,
+    });
+    await user.click(screen.getByRole("button", { name: "Delete Item" }));
     await user.click(screen.getByRole("button", { name: "Delete Todo" }));
     const previousError = await screen.findByRole("alert");
     const previousMessage = previousError.textContent;
@@ -97,48 +132,3 @@ describe("delete todo dialog", () => {
     expect(screen.queryByRole("alert")).toBeNull();
   });
 });
-
-function renderDeleteDialog() {
-  const { wrapper } = createTestingWrapper({
-    queryClient: getRouter().options.context.queryClient,
-  });
-  render(<DeleteTodoDialog todo={TEST_TODO} />, { wrapper });
-  return { user: userEvent.setup() };
-}
-
-async function setupFailedDelete() {
-  vi.mocked(deleteTodoFn).mockRejectedValueOnce(new Error("Network unavailable"));
-  const { user } = renderDeleteDialog();
-  await user.click(screen.getByRole("button", { name: "Delete Item" }));
-  return { user };
-}
-
-async function retryFailedDelete(user: ReturnType<typeof userEvent.setup>) {
-  await user.click(screen.getByRole("button", { name: "Delete Todo" }));
-  const feedback = await screen.findByRole("alert");
-  const failure = {
-    dialogOpen: Boolean(screen.queryByRole("dialog")),
-    message: feedback.textContent,
-  };
-  await user.click(screen.getByRole("button", { name: "Delete Todo" }));
-  return failure;
-}
-
-async function completePendingDelete() {
-  const deletion: { complete?: () => void } = {};
-  const pending = new Promise<typeof TEST_TODO>((resolve) => {
-    deletion.complete = () => {
-      resolve(TEST_TODO);
-    };
-  });
-  vi.mocked(deleteTodoFn).mockReturnValueOnce(pending);
-  const { user } = renderDeleteDialog();
-  await user.click(screen.getByRole("button", { name: "Delete Item" }));
-  await user.click(screen.getByRole("button", { name: "Delete Todo" }));
-  const { disabled } = screen.getByRole<HTMLButtonElement>("button", { name: "Deleting..." });
-  await act(async () => {
-    deletion.complete?.();
-    await pending;
-  });
-  return disabled;
-}

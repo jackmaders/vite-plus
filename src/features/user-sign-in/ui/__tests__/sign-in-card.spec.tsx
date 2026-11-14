@@ -3,9 +3,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 
 import { SignInCard } from "../sign-in-card";
 
-vi.mock(import("../sign-in-form"), () => ({
-  SignInForm: () => <div>Sign In Form</div>,
-}));
+vi.mock(import("../sign-in-form"));
 
 describe("sign in card", () => {
   it("renders todo-focused description copy and sign in form", () => {

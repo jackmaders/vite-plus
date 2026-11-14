@@ -1,80 +1,76 @@
-import { createFormHookContexts } from "@tanstack/react-form";
-import { render, screen } from "@testing-library/react";
-import type { ReactElement } from "react";
-import { describe, expect, it, vi } from "vite-plus/test";
+import { screen, waitFor } from "@testing-library/react";
+import { describe, expect, it } from "vite-plus/test";
+
+import { createDeferred } from "@test/vitest/helpers/deferred";
+import { renderWithForm } from "@test/vitest/wrappers/form-wrapper";
 
 import { SubmitButton } from "../submit-button";
 
-vi.mock(import("@tanstack/react-form"));
-
-const { useFormContext } = createFormHookContexts();
-
-interface SubscribeHandlerProps {
-  children: ((state: unknown) => ReactElement) | ReactElement;
-  selector?: (state: unknown) => unknown;
-}
-
 describe("submit button component", () => {
   it("renders enabled submit button and forwards props even when form cannot submit", () => {
-    expect.assertions(4);
+    expect.assertions(3);
 
-    const form = useFormContext();
-    const mockFormCannotSubmit = vi.fn<
-      ({ children, selector }: SubscribeHandlerProps) => ReactElement | null
-    >(({ children, selector }): ReactElement | null => {
-      const renderContent = children as (state: unknown) => ReactElement;
-      const selectState = selector as (state: unknown) => unknown;
-      return renderContent(selectState({ canSubmit: false, errorMap: {}, isSubmitting: false }));
-    });
-    vi.mocked(form.Subscribe).mockImplementationOnce(mockFormCannotSubmit as never);
-
-    render(
+    // Arrange & Act
+    renderWithForm(
       <SubmitButton aria-label="Save changes" className="p-2">
         Save
       </SubmitButton>,
+      {
+        validators: {
+          onMount: () => "Form error",
+        },
+      },
     );
+    const button = screen.getByRole("button", { name: "Save changes" });
 
-    const button = screen.getByText("Save");
-
+    // Assert
     expect(button.getAttribute("type")).toBe("submit");
     expect(button.className).toContain("p-2");
     expect(button.hasAttribute("disabled")).toBe(false);
-    expect(form.Subscribe).toHaveBeenCalledOnce();
   });
 
   it("handles explicit type and disabled states", () => {
     expect.assertions(3);
 
-    const { rerender } = render(<SubmitButton disabled>Save</SubmitButton>);
-    expect(screen.getByText("Save").hasAttribute("disabled")).toBe(true);
+    // Arrange
+    const { rerender } = renderWithForm(<SubmitButton disabled>Save</SubmitButton>);
+    const saveDisabled = screen.getByText("Save").hasAttribute("disabled");
 
+    // Act
     rerender(
       <SubmitButton type="button" variant="secondary">
         Cancel
       </SubmitButton>,
     );
     const cancelButton = screen.getByText("Cancel");
+
+    // Assert
+    expect(saveDisabled).toBe(true);
     expect(cancelButton.getAttribute("type")).toBe("button");
     expect(cancelButton.hasAttribute("disabled")).toBe(false);
   });
 
-  it("disables the button and shows a busy label while submitting", () => {
+  it("disables the button and shows a busy label while submitting", async () => {
     expect.assertions(2);
 
-    const form = useFormContext();
-    const mockFormSubmitting = vi.fn<
-      ({ children, selector }: SubscribeHandlerProps) => ReactElement | null
-    >(({ children, selector }): ReactElement | null => {
-      const renderContent = children as (state: unknown) => ReactElement;
-      const selectState = selector as (state: unknown) => unknown;
-      return renderContent(selectState({ canSubmit: true, errorMap: {}, isSubmitting: true }));
+    // Arrange
+    const deferred = createDeferred();
+    const { user } = renderWithForm(<SubmitButton aria-label="Save">Save</SubmitButton>, {
+      onSubmit: async () => {
+        await deferred.promise;
+      },
     });
-    vi.mocked(form.Subscribe).mockImplementationOnce(mockFormSubmitting as never);
-
-    render(<SubmitButton aria-label="Save">Save</SubmitButton>);
     const button = screen.getByLabelText("Save");
 
-    expect(button.hasAttribute("disabled")).toBe(true);
-    expect(button.getAttribute("aria-busy")).toBe("true");
+    // Act
+    await user.click(button);
+
+    // Assert
+    await waitFor(() => {
+      expect(button.hasAttribute("disabled")).toBe(true);
+      expect(button.getAttribute("aria-busy")).toBe("true");
+    });
+
+    deferred.resolve(null);
   });
 });

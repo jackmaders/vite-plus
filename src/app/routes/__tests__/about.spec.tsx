@@ -3,13 +3,7 @@ import { describe, expect, it, vi } from "vite-plus/test";
 
 import { Route as AboutRoute } from "@/app/routes/about";
 
-vi.mock(
-  import("@/pages/about"),
-  () =>
-    ({
-      AboutPage: () => <h1>About Page</h1>,
-    }) as never,
-);
+vi.mock(import("@/pages/about"));
 
 describe("about route presentation", () => {
   it("renders AboutPage via Route component option", () => {

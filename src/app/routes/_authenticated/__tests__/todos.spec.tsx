@@ -4,48 +4,19 @@ import { describe, expect, it, vi } from "vite-plus/test";
 
 import { Route as TodosRoute } from "@/app/routes/_authenticated/todos";
 import { todosQueryOptions } from "@/pages/todos";
+import { getRouteOption } from "@test/vitest/helpers/route";
 
-vi.mock(import("@/pages/todos"), (async (importOriginal: () => Promise<unknown>) => {
-  const actual = await importOriginal();
-  return {
-    ...(actual as Record<string, unknown>),
-    TodosPage: () => <h1>Todos Page</h1>,
-  };
-}) as never);
-
-function getLoader() {
-  const options = TodosRoute.options as unknown as {
-    loader?: (ctx: { context: { queryClient: QueryClient } }) => Promise<unknown>;
-  };
-  const { loader } = options;
-  if (!loader) {
-    throw new TypeError("Expected loader to be defined");
-  }
-  return loader;
-}
-
-function getComponent() {
-  const options = TodosRoute.options as unknown as {
-    component?: React.ComponentType;
-  };
-  const { component } = options;
-  if (!component) {
-    throw new TypeError("Expected component to be defined");
-  }
-  return component;
-}
+vi.mock(import("@/pages/todos"));
 
 describe("todos route options", () => {
   it("configures private no-store cache headers", () => {
     expect.assertions(1);
 
     // Arrange
-    const options = TodosRoute.options as unknown as {
-      headers?: () => Record<string, string>;
-    };
+    const headersFn = getRouteOption(TodosRoute, "headers") as () => Record<string, string>;
 
     // Act
-    const headers = options.headers?.();
+    const headers = headersFn();
 
     // Assert
     expect(headers).toStrictEqual({ "Cache-Control": "private, no-store" });
@@ -55,7 +26,9 @@ describe("todos route options", () => {
     expect.assertions(1);
 
     // Arrange
-    const loader = getLoader();
+    const loader = getRouteOption(TodosRoute, "loader") as (ctx: {
+      context: { queryClient: QueryClient };
+    }) => Promise<unknown>;
     const queryClient = {
       query: vi.fn<() => Promise<unknown>>(),
     } as unknown as QueryClient;
@@ -77,7 +50,7 @@ describe("todos route options", () => {
     expect.assertions(1);
 
     // Arrange
-    const Component = getComponent();
+    const Component = getRouteOption(TodosRoute, "component") as React.ComponentType;
 
     // Act
     render(<Component />);

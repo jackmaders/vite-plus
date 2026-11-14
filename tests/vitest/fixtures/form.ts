@@ -1,50 +1,27 @@
-import { vi } from "vite-plus/test";
+import * as z from "zod";
 
-import type { useFieldContext } from "@/shared/ui/form/form-context";
+const TEST_ACCOUNT_SCHEMA = z.object({
+  accountName: z.string().trim().min(1, "Account name is required"),
+});
 
-type Field<FieldValue = string> = ReturnType<typeof useFieldContext<FieldValue>>;
+const TEST_EMAIL_SCHEMA = z.string().email("Enter a valid email address");
 
-interface CreateFormFieldFixtureProps<FieldValue = string> {
-  form?: unknown;
-  handleBlur?: Field<FieldValue>["handleBlur"];
-  handleChange?: Field<FieldValue>["handleChange"];
-  name?: string | undefined;
-  state?:
-    | {
-        meta?:
-          | {
-              errors?: { message?: string }[] | undefined;
-              isBlurred?: boolean | undefined;
-              isTouched?: boolean | undefined;
-              isValid?: boolean | undefined;
-            }
-          | undefined;
-        value?: FieldValue | undefined;
-      }
-    | undefined;
-}
+const TEST_FORM_VALUES = {
+  accountName: "Account",
+  email: "ada@example.com",
+  emptyEmail: "",
+  updatedEmail: "grace@example.com",
+  validAccountName: "Valid Account",
+} as const;
 
-function createFormFieldFixture<FieldValue = string>({
-  form = { state: { submissionAttempts: 0 } },
-  state: { meta = {}, ...state } = {},
-  ...overrides
-}: CreateFormFieldFixtureProps<FieldValue> = {}) {
-  return {
-    form,
-    handleBlur: vi.fn<Field<FieldValue>["handleBlur"]>(),
-    handleChange: vi.fn<Field<FieldValue>["handleChange"]>(),
-    name: "email",
-    state: {
-      meta: { errors: [], isBlurred: false, isTouched: false, isValid: true, ...meta },
-      value: "" as FieldValue,
-      ...state,
-    },
-    ...overrides,
-  } as unknown as Field<FieldValue>;
-}
+const TEST_FORM_ERRORS = {
+  invalidCredentials: "Invalid credentials",
+  invalidEmail: "Enter a valid email address",
+  objectError: { message: "Object error message" },
+  requestUnavailable: "request unavailable",
+  required: "Required",
+  stringError: "String error message",
+  stringRejection: "string rejection",
+} as const;
 
-export {
-  createFormFieldFixture,
-  createFormFieldFixture as createTextFieldFixture,
-  createFormFieldFixture as createToggleGroupFieldFixture,
-};
+export { TEST_ACCOUNT_SCHEMA, TEST_EMAIL_SCHEMA, TEST_FORM_ERRORS, TEST_FORM_VALUES };
