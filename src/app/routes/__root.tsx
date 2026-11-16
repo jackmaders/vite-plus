@@ -8,6 +8,7 @@ import { getSessionFn, type Session } from "@/shared/auth";
 import { Toaster } from "@/shared/ui/shadcn/toast";
 
 import { Devtools, Footer, Header } from "../layouts";
+import { applyTheme } from "../theme";
 
 import appCss from "../styles/index.css?url";
 
@@ -52,8 +53,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Server and client minifiers serialize this self-contained function differently. */}
+        <script suppressHydrationWarning>{`(${applyTheme.toString()})()`}</script>
         <HeadContent />
       </head>
       <body

@@ -1,5 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 
+import { ThemeControl } from "./components/theme-control";
 import { waitForHydration } from "./hydration";
 
 class HomePage {
@@ -11,11 +12,13 @@ class HomePage {
   public readonly passwordInput: Locator;
   public readonly nameInput: Locator;
   public readonly submitButton: Locator;
+  public readonly theme: ThemeControl;
 
   private readonly page: Page;
 
   public constructor(page: Page) {
     this.page = page;
+    this.theme = new ThemeControl(page);
     this.heading = page.getByRole("main").getByRole("heading", { name: "Sign In" });
     this.signUpHeading = page.getByRole("main").getByRole("heading", { name: "Sign Up" });
     this.signInTab = page.getByRole("tab", { name: "Sign In" });
@@ -38,13 +41,26 @@ class HomePage {
     if (await menu.isVisible()) {
       await menu.click();
       await this.page.getByRole("dialog").getByRole("link", { name: "About" }).click();
-      return;
+    } else {
+      await this.page.getByRole("banner").getByRole("link", { name: "About" }).click();
     }
-    await this.page.getByRole("banner").getByRole("link", { name: "About" }).click();
+    await this.page.getByRole("heading", { level: 1, name: "About" }).waitFor();
   }
 
   public async switchToSignUp() {
     await this.signUpTab.click();
+  }
+
+  public async reload() {
+    await this.page.reload();
+    await waitForHydration(this.page);
+  }
+
+  public async gotoBeforeHydration() {
+    await this.page.route("**/assets/*.js", async (route) => {
+      await route.fulfill({ body: "", contentType: "application/javascript" });
+    });
+    await this.page.goto("/", { waitUntil: "load" });
   }
 
   public async switchToSignIn() {

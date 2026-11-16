@@ -1,8 +1,10 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { renderToString } from "react-dom/server";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { Header } from "@/app/layouts/header";
+import { applyTheme } from "@/app/theme";
 import { signOut, useSession, type Session } from "@/shared/auth";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";
@@ -150,5 +152,132 @@ describe("mobile navigation", () => {
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).toBeNull();
     });
+  });
+});
+
+describe("header theme preference", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    delete document.documentElement.dataset["theme"];
+  });
+
+  afterEach(() => {
+    localStorage.clear();
+    delete document.documentElement.dataset["theme"];
+    document.documentElement.classList.remove("dark");
+    document.documentElement.style.colorScheme = "";
+  });
+
+  it.each([
+    ["invalid", "Theme: System. Switch to Light", "light"],
+    ["system", "Theme: System. Switch to Light", "light"],
+    ["light", "Theme: Light. Switch to Dark", "light"],
+    ["dark", "Theme: Dark. Switch to System", "dark"],
+  ])("restores %s before the header mounts", async (saved, label, scheme) => {
+    expect.assertions(2);
+    // Arrange
+    localStorage.setItem("theme", saved);
+    applyTheme();
+
+    // Act
+    await renderHeader();
+    const control = screen.getByRole("button", { name: label });
+
+    // Assert
+    expect(control).toBeDefined();
+    expect(document.documentElement.style.colorScheme).toBe(scheme);
+  });
+
+  it("cycles through all preferences from the header", async () => {
+    expect.assertions(2);
+    // Arrange
+    const user = userEvent.setup();
+    applyTheme();
+    await renderHeader();
+
+    // Act
+    await user.click(screen.getByRole("button", { name: "Theme: System. Switch to Light" }));
+    await user.click(screen.getByRole("button", { name: "Theme: Light. Switch to Dark" }));
+    await user.click(screen.getByRole("button", { name: "Theme: Dark. Switch to System" }));
+
+    // Assert
+    expect(screen.getByRole("button", { name: "Theme: System. Switch to Light" })).toBeDefined();
+    expect(document.documentElement.style.colorScheme).toBe("light");
+  });
+
+  it("uses system when storage cannot be read", async () => {
+    expect.assertions(1);
+    // Arrange
+    vi.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
+      throw new Error("Storage blocked");
+    });
+    applyTheme();
+
+    // Act
+    await renderHeader();
+
+    // Assert
+    expect(screen.getByRole("button", { name: "Theme: System. Switch to Light" })).toBeDefined();
+  });
+
+  it("still switches when storage cannot be written", async () => {
+    expect.assertions(2);
+    // Arrange
+    const user = userEvent.setup();
+    vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
+      throw new Error("Storage blocked");
+    });
+    applyTheme();
+    await renderHeader();
+
+    // Act
+    await user.click(screen.getByRole("button", { name: "Theme: System. Switch to Light" }));
+
+    // Assert
+    expect(screen.getByRole("button", { name: "Theme: Light. Switch to Dark" })).toBeDefined();
+    expect(document.documentElement.style.colorScheme).toBe("light");
+  });
+
+  it("follows the device until the visitor chooses an override", async () => {
+    expect.assertions(2);
+    // Arrange
+    const user = userEvent.setup();
+    const device = matchMedia("(prefers-color-scheme: dark)");
+    const matches = vi.spyOn(device, "matches", "get").mockReturnValue(false);
+    vi.spyOn(window, "matchMedia").mockReturnValue(device);
+    applyTheme();
+    await renderHeader();
+
+    // Act
+    matches.mockReturnValue(true);
+    act(() => {
+      device.dispatchEvent(new Event("change"));
+    });
+    const systemScheme = document.documentElement.style.colorScheme;
+    await user.click(screen.getByRole("button", { name: "Theme: System. Switch to Light" }));
+    act(() => {
+      device.dispatchEvent(new Event("change"));
+    });
+
+    // Assert
+    expect(systemScheme).toBe("dark");
+    expect(document.documentElement.style.colorScheme).toBe("light");
+  });
+
+  it("renders the system choice on the server without browser preferences", async () => {
+    expect.assertions(1);
+    // Arrange
+    const { router, wrapper: Wrapper } = createTestingWrapper({ context: { session: null } });
+    await router.load();
+
+    // Act
+    const view = renderToString(
+      <Wrapper>
+        <Header />
+      </Wrapper>,
+    );
+
+    // Assert
+    expect(view).toContain("Theme: System. Switch to Light");
   });
 });
