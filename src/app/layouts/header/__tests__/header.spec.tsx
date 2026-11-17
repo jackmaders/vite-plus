@@ -4,7 +4,7 @@ import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
 import { Header } from "@/app/layouts/header";
-import { applyTheme } from "@/app/theme";
+import { applyTheme } from "@/app/layouts/header/theme";
 import { signOut, useSession, type Session } from "@/shared/auth";
 import { TEST_SESSION } from "@test/vitest/fixtures/session";
 import { createTestingWrapper } from "@test/vitest/wrappers/testing-wrapper";

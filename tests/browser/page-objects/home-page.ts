@@ -1,6 +1,6 @@
 import type { Locator, Page } from "@playwright/test";
 
-import { ThemeControl } from "./components/theme-control";
+import { ThemeControl } from "./components";
 import { waitForHydration } from "./hydration";
 
 class HomePage {
@@ -57,7 +57,7 @@ class HomePage {
   }
 
   public async gotoBeforeHydration() {
-    await this.page.route("**/assets/*.js", async (route) => {
+    await this.page.route("**/assets/index-*.js", async (route) => {
       await route.fulfill({ body: "", contentType: "application/javascript" });
     });
     await this.page.goto("/", { waitUntil: "load" });

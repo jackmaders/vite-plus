@@ -8,7 +8,7 @@ import { getSessionFn, type Session } from "@/shared/auth";
 import { Toaster } from "@/shared/ui/shadcn/toast";
 
 import { Devtools, Footer, Header } from "../layouts";
-import { applyTheme } from "../theme";
+import { THEME_INIT_SCRIPT } from "../layouts/header/theme";
 
 import appCss from "../styles/index.css?url";
 
@@ -52,11 +52,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     document.body.dataset["hydrated"] = "true";
   }, []);
 
+  // The early script applies browser-only preferences before hydration.
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Server and client minifiers serialize this self-contained function differently. */}
-        <script suppressHydrationWarning>{`(${applyTheme.toString()})()`}</script>
+        <script>{THEME_INIT_SCRIPT}</script>
         <HeadContent />
       </head>
       <body

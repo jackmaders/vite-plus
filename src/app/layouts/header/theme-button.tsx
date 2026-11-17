@@ -3,7 +3,7 @@ import { useEffect, useSyncExternalStore } from "react";
 
 import { Button } from "@/shared/ui/shadcn/button";
 
-import { applyTheme } from "../../theme";
+import { applyTheme } from "./theme";
 
 const choices = {
   dark: { icon: Moon, label: "Dark", next: "system" },
