@@ -1,5 +1,10 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
+import {
+  HeadContent,
+  ScriptOnce,
+  Scripts,
+  createRootRouteWithContext,
+} from "@tanstack/react-router";
 import { useEffect } from "react";
 
 import { ErrorPage } from "@/pages/error";
@@ -8,6 +13,7 @@ import { getSessionFn, type Session } from "@/shared/auth";
 import { Toaster } from "@/shared/ui/shadcn/toast";
 
 import { Devtools, Footer, Header } from "../layouts";
+import { THEME_INIT_SCRIPT } from "../layouts/header/theme";
 
 import appCss from "../styles/index.css?url";
 
@@ -51,9 +57,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     document.body.dataset["hydrated"] = "true";
   }, []);
 
+  // The early script applies browser-only preferences before hydration.
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <ScriptOnce>{THEME_INIT_SCRIPT}</ScriptOnce>
         <HeadContent />
       </head>
       <body

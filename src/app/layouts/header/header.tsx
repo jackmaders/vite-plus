@@ -9,6 +9,7 @@ import { hasPermission, type Session } from "@/shared/auth";
 
 import { MobileDrawer } from "./mobile-drawer";
 import { SignOutDialog } from "./sign-out-dialog";
+import { ThemeButton } from "./theme-button";
 
 const rootRouteApi = getRouteApi("__root__");
 
@@ -38,6 +39,7 @@ export function Header({ className, ...props }: ComponentProps<"header">) {
 
         <div className="flex items-center gap-2">
           <AuthActions className="max-md:hidden" session={session} />
+          <ThemeButton />
           <MobileDrawer
             className="md:hidden"
             links={links}
