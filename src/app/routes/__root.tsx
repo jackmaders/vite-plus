@@ -1,5 +1,10 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { HeadContent, Scripts, createRootRouteWithContext } from "@tanstack/react-router";
+import {
+  HeadContent,
+  ScriptOnce,
+  Scripts,
+  createRootRouteWithContext,
+} from "@tanstack/react-router";
 import { useEffect } from "react";
 
 import { ErrorPage } from "@/pages/error";
@@ -56,7 +61,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script>{THEME_INIT_SCRIPT}</script>
+        <ScriptOnce>{THEME_INIT_SCRIPT}</ScriptOnce>
         <HeadContent />
       </head>
       <body
