@@ -15,9 +15,6 @@ function createTodoFixture(overrides: Partial<Todo> = {}): Todo {
   return { ...TEST_TODO, ...overrides };
 }
 
-const TEST_UPDATED_TODO: Todo = createTodoFixture({ title: "Updated title" });
-const TEST_TOGGLED_TODO: Todo = createTodoFixture({ completed: true });
-
 const TEST_TODOS: Todo[] = [
   createTodoFixture({
     description: "First Description",
@@ -32,4 +29,4 @@ const TEST_TODOS: Todo[] = [
   }),
 ];
 
-export { TEST_TODO, TEST_TODOS, TEST_TOGGLED_TODO, TEST_UPDATED_TODO, createTodoFixture };
+export { TEST_TODO, TEST_TODOS, createTodoFixture };

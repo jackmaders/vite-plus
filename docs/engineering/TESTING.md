@@ -27,6 +27,8 @@ Applies when implementing new behavior or writing, reviewing, or organizing test
   require customized copies of domain entities.
 - Provide `createMock<Service>(...)` factory functions for mocked runtimes or
   databases.
+- Place slice-private fixtures exclusively used by a single test suite in
+  `__tests__/fixtures/` within that slice.
 - Never place test fixtures or mock helpers in un-prefixed directories under
   `src/` (such as `src/**/testing/`).
 
@@ -83,6 +85,7 @@ Applies when implementing new behavior or writing, reviewing, or organizing test
 ## Diagnostics and reporters
 
 - Test and check outputs default to minimal reporters (such as `dot` reporter) to keep tool output concise.
+- `vp check` and `vpr check:full` share unified strict lint, warning, and type-check enforcement (`denyWarnings`, `typeAware`, and `typeCheck` always enabled); `vpr check:full` adds `steiger` architecture checks and `knip` export checks in parallel.
 - When running targeted tests during development, execute `vp test <path>`. Do NOT pass `--coverage` on single test paths, because Vitest enforces a 100% per-file coverage threshold across the entire project, which will fail on single-file subsets. Full coverage must be run exclusively via `vp test --coverage` across the complete suite.
 - When diagnosing a test or typecheck failure, pass explicit reporter or verbose flags for detailed traces:
   - Run unit tests with `--reporter=default` or `--reporter=verbose` (e.g. `vp test <path> --reporter=default`).
@@ -90,7 +93,11 @@ Applies when implementing new behavior or writing, reviewing, or organizing test
 
 ## Browser test execution and preview
 
-Run browser checks with `vpr test:browser` (or `vpr test:browser --project=chromium` for PR parity). Playwright launches the local preview server automatically (`vp preview`) with fallback auth configuration when `PLAYWRIGHT_BASE_URL` is not provided. The current Cloudflare Vite plugin configuration disables remote bindings (`remoteBindings: false`) for local development, preview, and Workers unit tests.
+Run browser checks with `vpr test:browser` (or `vpr test:browser --project=chromium` for PR parity). For isolated worktree runs on a dedicated port, pass `PLAYWRIGHT_PORT=4174 vpr test:browser --project=chromium` so Playwright launches and tears down `vp preview --port 4174` on that port without colliding with other worktrees.
+
+Before running preview browser tests on a fresh worktree, apply local preview D1 migrations via `vpr db:migrate --local --env preview` (confirming the interactive `(Y/n)` prompt).
+
+Playwright launches the local preview server automatically (`vp preview`) with fallback auth configuration when `PLAYWRIGHT_BASE_URL` is not provided. The current Cloudflare Vite plugin configuration disables remote bindings (`remoteBindings: false`) for local development, preview, and Workers unit tests.
 
 ## Worktree and subagent hygiene
 

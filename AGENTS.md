@@ -10,6 +10,10 @@ Docs are local at `node_modules/vite-plus/docs` or online at https://viteplus.de
 
 `vp <name>` runs a built-in command. `vp run <name>` runs a `package.json` script or a `vite.config.ts` task. Scripts cannot overwrite built-ins, so `vp dev` and `vp run dev` may do different things. Check `package.json` and `vite.config.ts` first, and run `vp run <name>` when the project defines a script or task with that name.
 
+## Running Scripts
+
+Run TypeScript and JavaScript files with `vpx <file>`, for example `vpx ./scripts/seed.ts --dry-run`. It handles enums, decorators, JSX, and tsconfig `paths`, so do not add `tsx` or `ts-node` to run scripts. `vpx --watch <file>` reruns the file when a file it uses changes, in place of `tsx watch`. `vp node <file>` runs plain Node.js.
+
 ## Tool Versions
 
 Run `vp toolchain` to show versions and relationships in the active Vite+
@@ -19,9 +23,8 @@ release. Add a tool name to select part of the graph. For example, run
 
 ## Review Checklist
 
-- [ ] Run `vp install` after pulling remote changes, switching worktrees, or if project-local vite-plus is missing.
-- [ ] Run `vp run check:full` and `vp test` before pushing to run full CI-parity checks. Note that warnings are denied in CI (`denyWarnings: true` under `FULL_CHECK=1`) and must be treated as blocking.
-- [ ] If tests fail or need detailed traces, rerun with explicit reporter: `vp test <filter> --reporter=default`.
+- [ ] Run `vp install` after pulling remote changes and before getting started.
+- [ ] Run `vp check` and `vp test` to format, lint, type check and test changes.
 - [ ] Check if there are `vite.config.ts` tasks or `package.json` scripts necessary for validation, run via `vp run <script>`.
 - [ ] If setup, runtime, or package-manager behavior looks wrong, run `vp env doctor` and include its output when asking for help.
 
@@ -35,14 +38,14 @@ release. Add a tool name to select part of the graph. For example, run
 
 ### Command Hygiene & Sandbox Auto-Approval
 
-- Standalone prefix-matchable binaries only (`rg`, `vp`, `vpr`, `git`).
+- Standalone prefix-matchable binaries only (`rg`, `vp`, `vpr`, `git`, `gh`).
 - Zero shell chaining: Never use pipes (`|`), `xargs`, `&&`, `;`, `||`, subshells `$()`, or backticks.
 - For file inspection and edits: Use native tools (`read_file`, `edit_file`, `write_file`) with absolute workspace paths instead of shell commands (`cat`, `head`, `tail`, `ls`).
 - For code search: Use `rg "<pattern>" <path>` directly instead of `find | grep` or `find | xargs`.
 - Do not read or write `/tmp/` files; subagents return all findings, summaries, and status reports directly via `send_message`.
 - Use workspace-relative paths (`src/...`, `tests/...`, `docs/...`, `AGENTS.md`) for all command arguments passed to `run_command` binaries (`git`, `vp`, `vpr`, `rg`).
 - Validate full repository health with `vpr check:full`, full CI parity with `vpr check:ci`, and complete test coverage with `vp test --coverage` (do not pass `--coverage` on single test paths).
-- Maintain standard sandbox enforcement (`BypassSandbox: false`) at all times.
+- Keep `BypassSandbox: false` for all local commands; reserve `BypassSandbox: true` strictly for network (`gh`), Wrangler remote/preview-deploy, and Playwright browser commands.
 - Preserve Herdr worktree integrity: worktrees contain `.git` pointer files; execute git status or inspection commands directly within the active workspace root without traversing parent directories.
 
 ---
@@ -51,11 +54,11 @@ release. Add a tool name to select part of the graph. For example, run
 
 - Consult only the specific pointer matching the active task. When identifying applicable guidelines or answering routing requests, cite only the positively applicable documents matching the branch; omit unselected or unrelated skills.
 - When managing development workflow or pull requests, read [workflow](docs/agents/workflow.md).
-- When updating architecture decisions, read [domain](docs/agents/domain.md).
+- When updating architecture decisions, ADRs, or glossary entries, read [domain](docs/agents/domain.md).
 - When defining domain terminology, read [glossary](GLOSSARY.md).
-- When reviewing coding conventions or error structures, read [coding standards](docs/engineering/CODING_STANDARDS.md).
+- When reviewing naming, return types, query keys, DB operations, Knip tags, error structures, or UI hierarchy, read [coding standards](docs/engineering/CODING_STANDARDS.md).
 - When designing routes, FSD slices, or server functions, read [architecture](docs/engineering/ARCHITECTURE.md).
 - When working with TanStack Start, Router, Query, or Form, first read [architecture](docs/engineering/ARCHITECTURE.md). Follow its integration guidance when managed skills conflict.
-- When writing unit tests or coverage assertions, read [testing](docs/engineering/TESTING.md).
+- When writing unit tests, coverage assertions, Playwright browser tests, or running local preview D1 migrations, read [testing](docs/engineering/TESTING.md).
 - When managing GitHub issues or specifications, read [issue tracker](docs/agents/issue-tracker.md).
 - When assigning triage roles, read [triage labels](docs/agents/triage-labels.md).

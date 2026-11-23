@@ -143,4 +143,4 @@ function TodoImageField({
   );
 }
 
-export { TodoImageField, type TodoImageFieldProps };
+export { TodoImageField };

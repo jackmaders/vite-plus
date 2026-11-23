@@ -11,4 +11,6 @@ interface DbContext {
   db?: Database | undefined;
 }
 
-export { getDb, type Database, type DbContext };
+export { getDb, type DbContext };
+/** @internal Exported solely to enable enhanced testability. */
+export type { Database };

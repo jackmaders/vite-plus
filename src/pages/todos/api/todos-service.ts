@@ -161,12 +161,6 @@ async function uploadTempTodoImage(
   return { tempKey };
 }
 
-export {
-  createTodo,
-  deleteTodo,
-  getTodos,
-  promoteTempTodoImage,
-  updateTodo,
-  uploadTempTodoImage,
-  type TodoContext,
-};
+export { createTodo, deleteTodo, getTodos, updateTodo, uploadTempTodoImage };
+/** @internal Exported solely to enable enhanced testability. */
+export { promoteTempTodoImage, type TodoContext };

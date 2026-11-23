@@ -42,6 +42,9 @@ writing comments or suppression comments, or applying function-level design conv
   name it `<name>.client.ts`.
 - Keep ordinary filenames for files that only import local server or client
   modules.
+- Keep pure worker and service modules free of runtime barrel imports (`import type`
+  from schema modules and split shared constants into standalone files) so
+  Cloudflare Workers tests never pull `@tanstack/react-start`.
 - When a slice needs separate barrel files for server and client exports,
   use `index.server.ts` and `index.client.ts`.
 - Only export from the slice root (`index.ts` or `index.{client,server}.ts`).
@@ -64,6 +67,8 @@ writing comments or suppression comments, or applying function-level design conv
 
 ## Function design
 
+- Omit explicit function return types when TypeScript infers them cleanly, and
+  avoid single-use return-type-only interfaces.
 - When positional arguments are hard to understand or allow invalid
   combinations, use a named parameter object.
 - Replace boolean mode arguments with separate operations or named options so
@@ -91,12 +96,13 @@ writing comments or suppression comments, or applying function-level design conv
 
 ## Knip export tags
 
-- **Top-level export only**: Only add `@public` or `@internal` to the single top-level exported symbol that will be imported by external consumers or tests (e.g., `todosQueryOptions` or `TodosPage` in the slice barrel `src/pages/todos/index.ts`). Do not duplicate tags on underlying implementation functions, schemas, or transitive types that are already referenced by that top-level export, and do not add tags to files already configured as `entry` points in `knip.json` (such as worker entries or Vitest automocks). Knip traces transitive usages from tagged exports and configured entry points automatically.
-- **`@internal`**: Must ONLY be added to exports to enable enhanced testability of internal functions/schemas, and must ONLY be added **AFTER** tests and functionality are already implemented. **DO NOT ADD `@internal` preemptively.**
-- **`@public`**: Must include a specific ticket or PR reference explaining where/when the export will be consumed (or an explicit rationale such as shadcn completeness or Vitest runtime mock contract).
+- **Reachable exports by default**: Only export symbols that trace back to true application/script entrypoints configured in `knip.jsonc` or discovered by Knip plugins (e.g., `src/app/routes/**`, `src/app/start.ts`, `src/app/router.tsx`, `src/app/server.ts` via Wrangler, `src/shared/db/schema/index.ts` via Drizzle, `scripts/seed.ts` via `package.json`), carry `@internal` for test-only access, or carry `@public` with a specific issue/PR reference (`/** @public Tracked in #123. */`). Remove `@public` tags (and any unconsumed barrel re-exports) once the consuming route or caller is wired.
+- **Pre-implemented slices or standalone files**: Wildcard slice barrels (`src/**/index.ts!`) are excluded from `knip.jsonc` `entry`. When an entire file or FSD slice is implemented ahead of its consuming route (so no reachable file imports it yet and `@public` alone cannot satisfy Knip's `files` check), add the specific slice root barrel (`src/<layer>/<slice>/index.ts!`) or standalone file to `entry` in `knip.jsonc` with an inline comment referencing the tracking issue or PR (`// Tracked in #123`), and remove the `entry` item once wired.
+- **Entrypoints vs. non-entry barrels**: True entrypoints (`src/app/server.ts`, `tests/vitest/worker-entry.ts`, `src/shared/db/schema/index.ts`, or a temporary `entry` barrel) have their exports treated as consumed by the runtime/plugin without needing `@public` or `@internal` tags. For regular non-entry slice barrels, Knip does not propagate `@public` or `@internal` from the barrel down to the underlying segment module—tag both the underlying export and the barrel re-export when neither has a reachable production caller (or omit unused re-exports from the barrel). Never add `@internal` to symbols that are used in production (`treatTagHintsAsErrors: true` fails on unused `@internal` tags in `knip --production`), and do not add tags to files already handled by plugins, runtime entrypoints, or `ignoreIssues` (such as Vitest `__mocks__`, `tests/vitest/worker-entry.ts`, `src/app/server.ts`, or `src/shared/db/schema/index.ts`).
+- **`@internal`**: Must ONLY be added to exports to enable enhanced testability of internal functions, constants, or types, and must ONLY be added **AFTER** tests and functionality are already implemented. Without a `"tags"` filter in `knip.jsonc`, Knip checks that `@internal` exports are actually imported by tests in `knip` dev mode and ignores them in `knip --production`. **DO NOT ADD `@internal` preemptively.**
+- **`@public`**: Must strictly include a specific ticket or PR reference explaining where/when the export will be consumed (`/** @public Tracked in #123. */`). Ticketless `@public` tags are prohibited; runtime entry exports (such as `src/app/server.ts` and `tests/vitest/worker-entry.ts`) are consumed implicitly by Knip without `@public` tags.
 - **One-liner JSDoc syntax**: Use clean one-liner JSDoc comments with inline explanations (`jsdoc/empty-tags` is disabled in `vite.config.ts` to allow this):
   ```ts
-  /** @public Kept for shadcn completeness. */
   /** @public Tracked in #173. */
   /** @internal Exported solely to enable enhanced testability. */
   ```
@@ -181,6 +187,9 @@ writing comments or suppression comments, or applying function-level design conv
   failures at the owning Router, query, mutation, or form UI boundary.
 - Use configured public error messages or a generic fallback for unknown
   failures displayed in the owning UI.
+- Nest slice query keys under the parent entity's root key (for example,
+  `[...entityKeys.all, "manage"] as const`) so entity mutations automatically
+  invalidate slice caches without upward FSD imports.
 
 ## UI component implementation hierarchy (Ponytail)
 

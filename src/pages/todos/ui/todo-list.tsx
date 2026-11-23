@@ -21,4 +21,3 @@ function TodoList({ todos }: TodoListProps) {
 }
 
 export { TodoList };
-export type { TodoListProps };

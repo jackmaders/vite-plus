@@ -47,4 +47,3 @@ class AuthClient {
 }
 
 export { AuthClient };
-export type { SignInOptions, SignUpOptions };

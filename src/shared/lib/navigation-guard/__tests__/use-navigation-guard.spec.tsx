@@ -90,4 +90,43 @@ describe("navigation guard hook", () => {
     expect(addEventListenerSpy).toHaveBeenCalledWith("beforeunload", expect.any(Function));
     expect(preventDefaultSpy).toHaveBeenCalledOnce();
   });
+
+  it("keeps a stable NavigationGuardDialog identity across prop updates", async () => {
+    expect.assertions(2);
+
+    // Arrange
+    const { rerender, router } = renderWithProviders(<TestComponent shouldBlock title="Warning" />);
+    await router.load();
+
+    // Act
+    const navigation = router.navigate({ to: "/about" });
+    await expect(screen.findByText("Warning")).resolves.toBeDefined();
+
+    rerender(<TestComponent shouldBlock title="Updated Warning" />);
+
+    // Assert
+    expect(screen.getByText("Updated Warning")).toBeDefined();
+    await navigation;
+  });
+
+  it("clears open state when shouldBlock becomes false and keeps it closed if re-enabled", async () => {
+    expect.hasAssertions();
+
+    // Arrange
+    const { rerender, router } = renderWithProviders(<TestComponent shouldBlock title="Warning" />);
+    await router.load();
+
+    // Act
+    const navigation = router.navigate({ to: "/about" });
+    await expect(screen.findByText("Warning")).resolves.toBeDefined();
+
+    rerender(<TestComponent shouldBlock={false} title="Warning" />);
+    await waitFor(() => {
+      expect(screen.queryByText("Warning")).toBeNull();
+    });
+
+    rerender(<TestComponent shouldBlock title="Warning" />);
+    expect(screen.queryByText("Warning")).toBeNull();
+    await navigation;
+  });
 });

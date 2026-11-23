@@ -45,4 +45,4 @@ const TEST_ADMIN_SESSION = createSessionFixture({
   user: TEST_ADMIN_USER,
 });
 
-export { TEST_ADMIN_SESSION, TEST_SESSION, TEST_USER, createSessionFixture, createUserFixture };
+export { TEST_ADMIN_SESSION, TEST_SESSION, createSessionFixture, createUserFixture };

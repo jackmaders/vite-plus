@@ -19,7 +19,7 @@
       "preview_bucket_name": "tanstack-start-images-preview"
     }
   ],
-  "main": "@tanstack/react-start/server-entry",
+  "main": "src/app/server.ts",
   "observability": {
     "enabled": true,
     "traces": {
@@ -57,6 +57,7 @@
       }
     },
     "production": {
+      "workers_dev": true,
       "d1_databases": [
         {
           "binding": "DB",

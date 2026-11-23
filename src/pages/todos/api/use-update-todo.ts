@@ -27,4 +27,5 @@ function useUpdateTodo({ onSuccess, ...options }: UpdateTodoMutationOptions = {}
 }
 
 export { useUpdateTodo };
+/** @internal Exported solely to enable enhanced testability. */
 export type { UpdateTodoMutationOptions };

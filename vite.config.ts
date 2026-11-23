@@ -1,10 +1,10 @@
 import { defineConfig, lazyPlugins } from "vite-plus";
 
-const FULL_CHECK = process.env["FULL_CHECK"] === "1";
 const VITEST = process.env["VITEST"] === "true";
 const CI = Boolean(process.env["CI"]);
 
 process.env["WRANGLER_LOG"] ??= "error";
+process.env["WRANGLER_LOG_PATH"] ??= ".wrangler/logs";
 
 export default defineConfig(async ({ mode, command }) => ({
   ...fmtConfig,
@@ -14,18 +14,35 @@ export default defineConfig(async ({ mode, command }) => ({
   resolve: { tsconfigPaths: true },
   run: {
     tasks: {
+      "check:arch": {
+        cache: false,
+        command: "steiger ./src --fail-on-warnings",
+      },
       "check:ci": {
         cache: false,
         command:
           "vpr check:full && CLOUDFLARE_ENV=preview vp build && git diff --exit-code -- src/app/routeTree.gen.ts && vpr cf:generate && git diff --exit-code -- worker-configuration.d.ts && vpr db:generate && git diff --exit-code -- drizzle/ && vpr deploy --dry-run && vp test --coverage && CI=1 vpr db:migrate --local --env preview && vpr test:browser --project=chromium",
       },
+      "check:exports:dev": {
+        cache: false,
+        command: "knip",
+      },
+      "check:exports:prod": {
+        cache: false,
+        command: "knip --production",
+      },
       "check:full": {
         cache: false,
-        command: "FULL_CHECK=1 vp check && vpr lint:arch --fail-on-warnings && vpr lint:exports",
+        command: "true",
+        dependsOn: ["check:lint", "check:arch", "check:exports:dev", "check:exports:prod"],
+      },
+      "check:lint": {
+        cache: false,
+        command: "vp check",
       },
     },
   },
-  staged: { "*": "vp fmt" },
+  staged: { "*": "vp check --fix" },
 }));
 
 const lintConfig = defineConfig({
@@ -56,10 +73,10 @@ const lintConfig = defineConfig({
       { name: "tailwindcss", specifier: "eslint-plugin-tailwindcss" },
     ],
     options: {
-      denyWarnings: FULL_CHECK,
+      denyWarnings: true,
       reportUnusedDisableDirectives: "error",
-      typeAware: FULL_CHECK,
-      typeCheck: FULL_CHECK,
+      typeAware: true,
+      typeCheck: true,
     },
     overrides: [
       { env: { browser: true }, files: ["src/**"] },
@@ -302,7 +319,7 @@ const lintConfig = defineConfig({
       "react/require-render-return": "error",
       "react/rules-of-hooks": "error",
       "tailwindcss/classnames-order": "warn",
-      "tailwindcss/enforces-canonical-classname": FULL_CHECK ? "warn" : "off",
+      "tailwindcss/enforces-canonical-classname": "warn",
       "tailwindcss/enforces-negative-arbitrary-values": "warn",
       "tailwindcss/enforces-shorthand": "warn",
       "tailwindcss/important-modifier-suffix": "warn",
@@ -332,6 +349,7 @@ const lintConfig = defineConfig({
         "warn",
         { allTestPattern: "__tests__", pattern: String.raw`\.spec\.[tj]sx?$` },
       ],
+      "vitest/max-expects": "error",
       "vitest/no-hooks": "off",
       "vitest/no-importing-vitest-globals": "off",
       "vitest/prefer-importing-vitest-globals": "warn",

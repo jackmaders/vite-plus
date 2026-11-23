@@ -98,5 +98,4 @@ function renderWithForm<TFormData extends Record<string, unknown> = { email: str
   };
 }
 
-export { createFormWrapper, renderWithForm };
-export type { FormWrapperOptions };
+export { renderWithForm };

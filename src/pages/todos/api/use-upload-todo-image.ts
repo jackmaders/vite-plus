@@ -24,4 +24,6 @@ function useUploadTodoImage(options: UseUploadTodoImageOptions = {}) {
   });
 }
 
-export { useUploadTodoImage, type UseUploadTodoImageOptions };
+export { useUploadTodoImage };
+/** @internal Exported solely to enable enhanced testability. */
+export type { UseUploadTodoImageOptions };
