@@ -6,7 +6,9 @@ import { seedAdmin } from "../src/shared/db/seed";
 
 const seeders = [{ name: "seedAdmin", seeder: seedAdmin }];
 
-const proxy = await getPlatformProxy<{ DB: Parameters<typeof drizzle>[0] }>();
+const proxy = await getPlatformProxy<{ DB: Parameters<typeof drizzle>[0] }>({
+  remoteBindings: false,
+});
 
 try {
   const db = drizzle(proxy.env.DB);

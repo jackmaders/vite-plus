@@ -33,10 +33,8 @@ pnpm build
 
 This project uses [Tailwind CSS](https://tailwindcss.com/) for styling.
 
-Replace `src/app/styles/theme.css` with a tweakcn theme export to change the theme.
-Keep framework imports, base styles, and compatibility aliases in
-`src/app/styles/index.css`. Load any custom fonts required by the theme from
-`theme.css`.
+Replace `src/app/styles/theme.css` with a verbatim tweakcn theme export to change the theme.
+Keep Base UI and app-level token overrides in `src/app/styles/theme-bridge.css` (see [ADR 0001](docs/adr/0001-tweakcn-theme-bridge.md)), and keep framework imports, custom `@font-face` declarations, and base `html` setup in `src/app/styles/index.css`.
 
 ### Removing Tailwind CSS
 

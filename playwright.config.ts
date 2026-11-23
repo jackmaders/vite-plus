@@ -5,17 +5,19 @@ const CI_RETRIES = 2;
 const CI_WORKERS = 1;
 
 const PLAYWRIGHT_BASE_URL = (process.env["PLAYWRIGHT_BASE_URL"] ?? "").trim();
-const PREVIEW_URL = "http://localhost:4173";
+const EXPLICIT_PLAYWRIGHT_PORT = (process.env["PLAYWRIGHT_PORT"] ?? "").trim();
+const PLAYWRIGHT_PORT = EXPLICIT_PLAYWRIGHT_PORT || "4173";
+const PREVIEW_URL = `http://localhost:${PLAYWRIGHT_PORT}`;
 
 const baseURL = PLAYWRIGHT_BASE_URL || PREVIEW_URL;
 
 const webServer = {
-  command: "vp preview",
+  command: `vp preview --port ${PLAYWRIGHT_PORT}`,
   env: {
     BETTER_AUTH_SECRET: process.env["BETTER_AUTH_SECRET"] ?? "template-ci-local-only-secret-value",
-    BETTER_AUTH_URL: process.env["BETTER_AUTH_URL"] ?? "http://localhost:4173",
+    BETTER_AUTH_URL: process.env["BETTER_AUTH_URL"] ?? PREVIEW_URL,
   },
-  reuseExistingServer: !CI,
+  reuseExistingServer: !CI && EXPLICIT_PLAYWRIGHT_PORT.length === 0,
   stderr: "ignore" as const,
   stdout: "ignore" as const,
   url: baseURL,

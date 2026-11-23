@@ -16,20 +16,18 @@
 ## Validation Commands
 
 - **Targeted test execution**: Run focused tests with `vp test <path>` during active TDD cycles. Do NOT pass `--coverage` on single test paths (Vitest enforces 100% per-file coverage across the full suite).
-- **Full suite coverage**: Run the complete test suite with coverage using `vp test --coverage`.
-- **Browser tests**: Run browser tests using `vpr test:browser` when UI, routes, or pages are touched.
-- **Repository health**: Run full repository validation using `vpr check:full`, and full CI parity using `vpr check:ci`.
+- **Tiered local verification (per PR and in stacked PRs)**:
+  - **Every PR**: run `vpr check:full` and `vp test --coverage`.
+  - **Routes, UI, or browser tests changed**: run `CLOUDFLARE_ENV=preview vp build` and `PLAYWRIGHT_PORT=4174 vpr test:browser --project=chromium` (or `vpr test:browser`).
+  - **Drizzle schema changed**: run `vpr db:generate`.
+  - **Wrangler config or server entry changed**: run `vpr deploy --dry-run`.
+  - **Full CI parity**: run `vpr check:ci`.
 
 ---
 
-## UI Implementation Hierarchy (Ponytail)
+## UI Implementation Hierarchy
 
-When implementing or reviewing UI features, controls, or components, apply the Ponytail anti-over-engineering preference hierarchy. Stop at the first tier that satisfies the requirement:
-
-1. **Browser-native**: Built-in HTML platform capabilities and native elements (e.g. `<input type="date">`, `<dialog>`, `<details>`, `<button>`, native validation) before third-party wrappers.
-2. **Existing shadcn primitives**: Primitives and components already present in `src/shared/ui/shadcn/` (or added via the shadcn registry). Compose existing primitives (`Field`, `Card`, `ToggleGroup`, `Dialog`, `Sheet`) rather than authoring bespoke layouts.
-3. **Dedicated package**: Established, lightweight external package (e.g. `cmdk`, `react-day-picker`, `embla-carousel-react`) when native and shadcn primitives cannot meet the specification.
-4. **Custom build**: Bespoke custom UI components or state machines only as a last resort when simpler tiers cannot satisfy requirements.
+Follow the Ponytail UI implementation hierarchy (browser-native -> existing shadcn primitives -> dedicated package -> custom build) defined in [coding standards](../engineering/CODING_STANDARDS.md#ui-component-implementation-hierarchy-ponytail).
 
 ---
 

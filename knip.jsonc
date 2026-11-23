@@ -1,0 +1,51 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema-jsonc.json",
+
+  // Strict FSD entrypoint rule:
+  // Only true application/test entrypoints not auto-discovered by Knip plugins
+  // (routes, router, client/server start, and Vitest worker/setup files) belong in `entry`.
+  // Wrangler (`src/app/server.ts`), Drizzle (`src/shared/db/schema/index.ts`),
+  // Playwright (`tests/browser/**`), and package.json scripts (`scripts/seed.ts`)
+  // are discovered automatically. Do NOT add wildcard slice barrels (`src/**/index.ts!`).
+  // If an entire slice or standalone file is implemented ahead of its consuming route,
+  // add its specific slice barrel (or file) here with a `// Tracked in #<issue>` comment
+  // and remove it once wired.
+  "entry": [
+    "src/app/start.ts!",
+    "src/app/router.tsx!",
+    "src/app/routes/**/*.{ts,tsx}!",
+    "scripts/seed.ts",
+    "tests/vitest/worker-entry.ts",
+    "tests/vitest/setup/*.ts",
+  ],
+  "project": [
+    "src/**/*.{ts,tsx,css}!",
+    "!src/**/__tests__/**",
+    "!src/**/__mocks__/**",
+    // Seed helpers are invoked only by the dev `db:seed` script (excluded in `--production`).
+    "!src/shared/db/seed/**!",
+    "tests/**/*.{ts,tsx}",
+  ],
+  "ignore": ["src/shared/ui/shadcn/**"],
+  "ignoreDependencies": ["cloudflare"],
+  "ignoreExportsUsedInFile": false,
+  "treatConfigHintsAsErrors": true,
+  "treatTagHintsAsErrors": true,
+  "include": [
+    "binaries",
+    "catalog",
+    "catalogReferences",
+    "cycles",
+    "duplicates",
+    "enumMembers",
+    "exports",
+    "files",
+    "namespaceMembers",
+    "nsExports",
+    "nsTypes",
+    "optionalPeerDependencies",
+    "types",
+    "unlisted",
+    "unresolved",
+  ],
+}

@@ -20,8 +20,8 @@ afterEach(() => {
 });
 
 describe("root route document metadata", () => {
-  it("defines title, charset, viewport, and stylesheet metadata in head", () => {
-    expect.assertions(4);
+  it("defines title, charset, viewport, color-scheme, and text-scale metadata in head", () => {
+    expect.assertions(5);
 
     // Arrange
     const head = getRouteOption(RootRoute, "head") as (ctx: never) => {
@@ -39,6 +39,28 @@ describe("root route document metadata", () => {
       content: "width=device-width, initial-scale=1",
       name: "viewport",
     });
+    expect(result.meta).toContainEqual({
+      content: "light dark",
+      name: "color-scheme",
+    });
+    expect(result.meta).toContainEqual({
+      content: "scale",
+      name: "text-scale",
+    });
+  });
+
+  it("defines stylesheet link in head", () => {
+    expect.assertions(1);
+
+    // Arrange
+    const head = getRouteOption(RootRoute, "head") as (ctx: never) => {
+      links?: Record<string, unknown>[];
+    };
+
+    // Act
+    const result = head({} as never);
+
+    // Assert
     expect(result.links).toContainEqual(
       expect.objectContaining({
         href: appCss,
@@ -72,6 +94,32 @@ describe("root route layout and shellComponent", () => {
     expect(screen.getByRole("contentinfo")).toBeDefined();
     expect(screen.getByText("Child content")).toBeDefined();
     expect(document.body.dataset["hydrated"]).toBe("true");
+  });
+
+  it("renders skip-to-content link targeting main landmark", () => {
+    expect.assertions(3);
+
+    // Arrange
+    const Shell = getRouteOption(RootRoute, "shellComponent") as React.ComponentType<{
+      children?: React.ReactNode;
+    }>;
+    const { wrapper } = createTestingWrapper();
+
+    // Act
+    render(
+      <Shell>
+        <p>Child content</p>
+      </Shell>,
+      { container: document, wrapper },
+    );
+
+    const skipLink = screen.getByRole("link", { name: "Skip to main content" });
+    const main = screen.getByRole("main");
+
+    // Assert
+    expect(skipLink.getAttribute("href")).toBe("#main-content");
+    expect(main.id).toBe("main-content");
+    expect(main.tabIndex).toBe(-1);
   });
 });
 

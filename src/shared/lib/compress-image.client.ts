@@ -73,6 +73,7 @@ function handleCompressionError(error: unknown): never {
   throw new ImageCompressionError("Failed to decode or compress image.", "IMAGE_LOAD_FAILED");
 }
 
+/** @internal Exported solely to enable enhanced testability. */
 export {
   ACCEPTED_IMAGE_TYPES,
   ImageCompressionError,

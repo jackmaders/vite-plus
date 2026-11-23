@@ -27,4 +27,5 @@ function useDeleteTodo({ onSuccess, ...options }: DeleteTodoMutationOptions = {}
 }
 
 export { useDeleteTodo };
+/** @internal Exported solely to enable enhanced testability. */
 export type { DeleteTodoMutationOptions };

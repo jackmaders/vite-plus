@@ -27,4 +27,3 @@ function useCreateTodo({ onSuccess, ...options }: CreateTodoMutationOptions = {}
 }
 
 export { useCreateTodo };
-export type { CreateTodoMutationOptions };

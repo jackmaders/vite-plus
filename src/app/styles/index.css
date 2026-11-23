@@ -1,21 +1,11 @@
+@import "./theme.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "./theme.css";
-
-@custom-variant dark (&:is(.dark *));
-
-@theme inline {
-  --font-heading: var(--font-sans);
-}
+@import "./theme-bridge.css";
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
   html {
     @apply font-sans;
+    font-size-adjust: from-font;
   }
 }

@@ -1,0 +1,105 @@
+/* theme.css is verbatim upstream tweakcn; Base UI/app variable overrides live here. */
+
+:root,
+.dark {
+  --input: var(--border);
+  --sidebar-border: var(--border);
+}
+
+@theme inline {
+  --breakpoint-xs: 30rem;
+  --color-input: var(--border);
+  --color-sidebar-border: var(--border);
+  --font-heading: var(--font-sans);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --tracking-tighter: calc(var(--tracking-normal, 0em) - 0.05em);
+  --tracking-tight: calc(var(--tracking-normal, 0em) - 0.025em);
+  --tracking-wide: calc(var(--tracking-normal, 0em) + 0.025em);
+  --tracking-wider: calc(var(--tracking-normal, 0em) + 0.05em);
+  --tracking-widest: calc(var(--tracking-normal, 0em) + 0.1em);
+}
+
+@layer base {
+  :root,
+  .light {
+    color-scheme: light;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+
+  body {
+    letter-spacing: var(--tracking-normal, 0em);
+  }
+
+  @media (forced-colors: active) {
+    :focus-visible {
+      outline: 2px solid CanvasText;
+      outline-offset: 2px;
+    }
+  }
+}
+
+@layer utilities {
+  :is(
+    [data-slot="card"],
+    [data-slot="dialog-content"],
+    [data-slot="alert-dialog-content"],
+    [data-slot="popover-content"],
+    [data-slot="hover-card-content"],
+    [data-slot="select-content"],
+    [data-slot="combobox-content"],
+    [data-slot="dropdown-menu-content"],
+    [data-slot="dropdown-menu-sub-content"],
+    [data-slot="context-menu-content"],
+    [data-slot="menubar-content"],
+    [data-slot="menubar-sub-content"],
+    [data-slot="navigation-menu-content"]
+  ).ring-foreground\/10,
+  [data-slot="navigation-menu"] .ring-foreground\/10,
+  [data-slot="code-block-actions"] > button.ring-foreground\/10 {
+    --tw-ring-color: var(--border);
+  }
+
+  [data-slot="card"].ring-foreground\/10 {
+    --tw-ring-inset: inset;
+  }
+}
+
+@utility scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@utility scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+@utility scrollbar-gutter-stable {
+  scrollbar-gutter: stable;
+}
+
+@utility scrollbar-thumb-transparent {
+  --tw-scrollbar-thumb: transparent;
+  scrollbar-color: var(--tw-scrollbar-thumb, currentColor) var(--tw-scrollbar-track, transparent);
+
+  &::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+}
+
+@utility scrollbar-track-transparent {
+  --tw-scrollbar-track: transparent;
+  scrollbar-color: var(--tw-scrollbar-thumb, currentColor) var(--tw-scrollbar-track, transparent);
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+}

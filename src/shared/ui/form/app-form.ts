@@ -56,4 +56,6 @@ type AppFormApi<TFormData> = ReturnType<
 >;
 
 export { useAppForm };
-export type { AppFormProps, AppFormOptions, AppFormApi };
+export type { AppFormProps };
+/** @internal Exported solely to enable enhanced testability. */
+export type { AppFormOptions, AppFormApi };

@@ -93,4 +93,3 @@ function renderWithProviders(
 }
 
 export { createTestingWrapper, renderWithProviders };
-export type { TestingWrapperOptions };
